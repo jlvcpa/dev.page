@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Quiz Results Dashboard</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f4f4f4;
+      padding: 20px;
+    }
+
+    h2 {
+      text-align: center;
+      color: #2c3e50;
+    }
+
+    .toggle-group {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .toggle-group label {
+      margin: 0 15px;
+      font-weight: bold;
+    }
+
+    #resultsContainer {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .result-card {
+      background: #fff;
+      border: 1px solid #ccc;
+      padding: 15px;
+      margin-bottom: 15px;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    .result-card strong {
+      font-size: 18px;
+      color: #007acc;
+    }
+
+    .result-card em {
+      color: #34495e;
+    }
+
+    .result-card small {
+      color: #888;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>📊 Quiz Results Dashboard</h2>
+
+  <div class="toggle-group">
+    <label>
+      <input type="radio" name="modeToggle" value="live" checked onchange="loadResults()"> Live Results
+    </label>
+    <label>
+      <input type="radio" name="modeToggle" value="dev" onchange="loadResults()"> Dev Results
+    </label>
+  </div>
+
+  <div id="resultsContainer">Loading results...</div>
+
+  <!-- 🔥 Firebase Initialization and Dashboard Logic -->
+  <script type="module">
+    (async () => {
+      try {
+        const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js");
+        const { getFirestore, doc, setDoc, getDoc, getDocs, collection } = await import("https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js");
+
+        const firebaseConfig = {
+          apiKey: "AIzaSyAgOsKAZWwExUzupxSNytsfOo9BOppF0ng",
+          authDomain: "jlvcpa-quizzes.firebaseapp.com",
+          projectId: "jlvcpa-quizzes",
+          storageBucket: "jlvcpa-quizzes.appspot.com",
+          messagingSenderId: "629158256557",
+          appId: "1:629158256557:web:b3d1a424b32e28cd578b24"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        window.db = db;
+        window.getDocs = getDocs;
+        window.collection = collection;
+
+        console.log("✅ Firebase initialized");
+
+        // Load results after DOM is ready
+        window.addEventListener('DOMContentLoaded', loadResults);
+
+        async function loadResults() {
+          const selectedMode = document.querySelector('input[name="modeToggle"]:checked').value;
+          const resultsContainer = document.getElementById('resultsContainer');
+          resultsContainer.innerHTML = "⏳ Fetching results...";
+
+          try {
+            const snapshot = await getDocs(collection(db, "results"));
+            const results = [];
+
+            snapshot.forEach(doc => {
+              const data = doc.data();
+              const isDev = data.mode === "dev" || doc.id.startsWith("devresult");
+              if ((selectedMode === "dev" && isDev) || (selectedMode === "live" && !isDev)) {
+                results.push({ id: doc.id, ...data });
+              }
+            });
+
+            if (results.length === 0) {
+              resultsContainer.innerHTML = `<p>No ${selectedMode} results found.</p>`;
+              return;
+            }
+
+            resultsContainer.innerHTML = results.map(result => `
+              <div class="result-card">
+                <strong>${result.lastName}, ${result.firstName}</strong> (${result.studentId})<br>
+                <em>${result.quizTitle}</em> — Section: ${result.section}<br>
+                Score: ${result.score}/${result.questions?.length || 'N/A'} (${result.percentage}%)<br>
+                Grade: ${result.grade} — Submitted: ${result.submittedAt}<br>
+                <small>ID: ${result.id}</small>
+              </div>
+            `).join('');
+          } catch (error) {
+            console.error("❌ Error loading results:", error);
+            resultsContainer.innerHTML = `<p>Error loading results. Please try again.</p>`;
+          }
+        }
+      } catch (error) {
+        console.error("❌ Firebase initialization failed:", error);
+        document.getElementById('resultsContainer').innerHTML = `<p>Failed to initialize Firebase.</p>`;
+      }
+    })();
+  </script>
+
+</body>
+</html>
