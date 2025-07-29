@@ -106,22 +106,23 @@
 
       let currentStudent = null;
 
-      async function loadStudentResults(idNumber) {
-  // Step 1: Get student record
-  const studentRef = doc(db, "students", idNumber);
+async function loadStudentResults(studentDocId) {
+  // Step 1: Get student record using actual document ID
+  const studentRef = doc(db, "students", studentDocId);
   const studentSnap = await getDoc(studentRef);
 
   if (!studentSnap.exists()) {
     console.error("Student not found");
+    alert("Student record could not be retrieved.");
     return;
   }
 
   const studentData = studentSnap.data();
 
-  // Step 2: Construct studentId
-  const studentId = `${studentData.idNumber}-${studentData.CN}-${studentData.lastName}-${studentData.firstName}`;
+  // Step 2: Construct studentID string used in results
+  const studentId = `${studentData.Idnumber}-${studentData.CN}-${studentData.LastName}-${studentData.FirstName}`;
 
-  // Step 3: Query results
+  // Step 3: Query results collection using studentID
   const resultsRef = collection(db, "results");
   const q = query(resultsRef, where("studentID", "==", studentId));
   const querySnapshot = await getDocs(q);
@@ -143,6 +144,7 @@
     div.onclick = () => showResult(data);
     quizList.appendChild(div);
   });
+}
 }
       
 window.handleLogin = async () => {
