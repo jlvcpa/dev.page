@@ -106,7 +106,7 @@ async function generateQuiz() {
 }
       
       // ✅ Load quizzes and filter logic
-      async function loadQuizzes() {
+ /*     async function loadQuizzes() {
         const quizList = document.getElementById('generatedQuizzes');
         quizList.innerHTML = ''; // Clear previous list
 
@@ -126,7 +126,30 @@ async function generateQuiz() {
             quizList.appendChild(item);
           }
         });
-      }
+      }*/
+
+      async function loadQuizzes() {
+  const quizList = document.getElementById('generatedQuizzes');
+  quizList.innerHTML = ''; // Clear previous list
+
+  const selectedSection = document.getElementById('sectionFilter').value;
+  const querySnapshot = await getDocs(collection(db, "quizzes"));
+
+  querySnapshot.forEach(doc => {
+    const data = doc.data();
+
+    if (!selectedSection || data.section === selectedSection) {
+      const item = document.createElement('div');
+      item.className = 'quiz-item';
+      item.innerHTML = `
+        <strong>ID: ${doc.id}</strong><br>
+        <strong>${data.title}</strong> (${data.section})
+        <button onclick="loadQuiz('${doc.id}')">✏️ Edit</button>
+      `;
+      quizList.appendChild(item);
+    }
+  });
+}
 
       function filterQuizzes() {
         loadQuizzes();
