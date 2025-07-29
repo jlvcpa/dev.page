@@ -169,13 +169,6 @@ async function generateQuiz() {
             return;
           }
           const data = docSnap.data();
-          ...
-        } catch (error) {
-          console.error("❌ Error loading quiz:", error);
-        }
-      }
-
-      const data = docSnap.data();
       console.log("📋 Quiz data:", data);
 
       // ✅ Populate form fields
