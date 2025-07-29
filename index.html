@@ -8,8 +8,8 @@
   (async () => {
     try {
       const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js");
-      const { getFirestore, doc, setDoc, getDoc, getDocs, collection } = await import("https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js");
-      const { deleteDoc } = await import("https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js");
+      const { getFirestore, doc, setDoc, getDoc, getDocs, collection, deleteDoc } = await import("https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js");
+      /*const { deleteDoc } = await import("https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js");*/ // deleteDoc is already included in prevous line
 
       const firebaseConfig = {
         apiKey: "AIzaSyAgOsKAZWwExUzupxSNytsfOo9BOppF0ng",
@@ -73,7 +73,10 @@ async function generateQuiz() {
   const topics = Array.from(document.getElementById('topicSelector').selectedOptions).map(opt => opt.value);
   const num = parseInt(document.getElementById('numQuestions').value);
   const instructions = document.getElementById('instructions').value.trim();
-  const rubricHTML = document.getElementById('rubricTable').outerHTML;
+  /* const rubricHTML = document.getElementById('rubricTable').outerHTML; */ // replaced by the next two lines
+  const rubricEl = document.getElementById('rubricTable');
+  const rubricHTML = rubricEl ? rubricEl.outerHTML : '';
+ 
   const endTimeStr = document.getElementById('endTime').value;
   const endTime = new Date(endTimeStr).getTime();
   const timestamp = Date.now();
@@ -135,8 +138,11 @@ async function generateQuiz() {
   const selectedSection = document.getElementById('sectionFilter').value;
   const querySnapshot = await getDocs(collection(db, "quizzes"));
 
-  querySnapshot.forEach(doc => {
-    const data = doc.data();
+  /* querySnapshot.forEach(doc => {
+    const data = doc.data(); */
+  querySnapshot.forEach(docSnap => {
+    const data = docSnap.data();
+    const id = docSnap.id;
 
     if (!selectedSection || data.section === selectedSection) {
       const item = document.createElement('div');
@@ -155,14 +161,18 @@ async function generateQuiz() {
         loadQuizzes();
       }
 
-      function loadQuiz(quizId) {
-  console.log("🛠️ Loading quiz:", quizId);
-
-  getDoc(doc(db, "quizzes", quizId))
-    .then(docSnap => {
-      if (!docSnap.exists()) {
-        console.warn("⚠️ Quiz not found:", quizId);
-        return;
+      async function loadQuiz(quizId) {
+        try {
+          const docSnap = await getDoc(doc(db, "quizzes", quizId));
+          if (!docSnap.exists()) {
+            console.warn("⚠️ Quiz not found:", quizId);
+            return;
+          }
+          const data = docSnap.data();
+          ...
+        } catch (error) {
+          console.error("❌ Error loading quiz:", error);
+        }
       }
 
       const data = docSnap.data();
@@ -264,11 +274,25 @@ window.loadQuizzes = loadQuizzes;
 
 
         // ✅ DOMContentLoaded listeners OUTSIDE the async IIFE
-window.addEventListener('DOMContentLoaded', () => {
-  loadQuizzes();
-  const quizId = window.activeQuizId;
-  if (quizId) loadQuiz(quizId);
-  });
+      window.addEventListener('DOMContentLoaded', () => {
+        // 🔄 Load quizzes
+        loadQuizzes();
+        const quizId = window.activeQuizId;
+        if (quizId) loadQuiz(quizId);
+
+        // 🕵️‍♂️ Label mismatch checker
+        document.querySelectorAll('label[for]').forEach(label => {
+          const forValue = label.getAttribute('for');
+          const target = document.getElementById(forValue);
+
+          if (!target) {
+            console.warn(`⚠️ Mismatched label detected:
+            - for="${forValue}"
+            - No matching element with id="${forValue}"
+            - Label HTML: ${label.outerHTML}`);
+          }
+        });
+      });
 
     } catch (error) {
       console.error("❌ Firebase initialization failed:", error);
@@ -495,7 +519,7 @@ window.addEventListener('DOMContentLoaded', () => {
     <label for="instructions">Instructions</label>
     <textarea id="instructions" rows="5" placeholder="Enter instructions here..."></textarea>
 
-    <label for="rubric">Rubric</label>
+   <label for="rubricTable">Rubric</label>
     <table id="rubricTable">
       <thead>
         <tr>
