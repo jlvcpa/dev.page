@@ -130,6 +130,10 @@ async function generateQuiz() {
         });
       }
 
+      function filterQuizzes() {
+        loadQuizzes();
+      }
+      
       async function loadQuiz(quizId) {
         try {
           const docSnap = await getDoc(doc(db, "quizzes", quizId)); // 🔍 Fetch quiz document
