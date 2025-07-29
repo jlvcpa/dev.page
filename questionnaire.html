@@ -572,23 +572,23 @@ function submitQuiz() {
   const resultId = `devresult-${studentId}-${quizData.section}-${quizData.title}-${timestamp}`;
   const resultRef = window.doc(window.db, "results", resultId);
 
-  const resultData = {
-    studentId,
-    cnNo,
-    lastName,
-    firstName,
-    quizId: quizData.id || `quiz-${quizData.timestamp || timestamp}`,
-    quizTitle: quizData.title,
-    section: quizData.section,
-    type: quizData.type,
-    score,
-    percentage,
-    grade,
-    timestamp,
-    submittedAt: readableTime, // ✅ Human-readable time
-    responses,
-    questions: selectedQuestions // ✅ Include full question context
-  };
+const resultData = {
+  studentId,
+  cnNo,
+  lastName,
+  firstName,
+  quizId: quizData.id || `quiz-${quizData.timestamp || timestamp}`,
+  quizTitle: quizData.title,
+  section: quizData.section,
+  type: quizData.type,
+  score,
+  percentage,
+  grade,
+  timestamp,
+  submittedAt: readableTime, // ✅ Human-readable time
+  responses,
+  questions: selectedQuestions // ✅ Include full question context
+};
 
   window.setDoc(resultRef, resultData)
     .then(() => {
@@ -601,5 +601,6 @@ function submitQuiz() {
     });
 }
 </script>
+<script src="questionnaire.js?v=2"></script>
 </body>
 </html>
