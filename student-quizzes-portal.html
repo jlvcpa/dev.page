@@ -180,7 +180,7 @@ async function loadStudentResults(idNumber) {
   const studentData = studentSnap.data();
 
   // Step 2: Construct studentId
-  const studentId = `${studentData.idNumber}-${studentData.cnNo}-${studentData.lastName}-${studentData.firstName}`;
+  const studentId = `${studentData.IdNumber}-${studentData.CN}-${studentData.LastName}-${studentData.FirstName}`;
 
   // Step 3: Query results
   const resultsRef = collection(db, "results");
