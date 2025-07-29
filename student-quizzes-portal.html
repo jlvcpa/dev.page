@@ -144,10 +144,9 @@ async function loadStudentResults(studentDocId) {
     div.onclick = () => showResult(data);
     quizList.appendChild(div);
   });
-}
-}
-      
-window.handleLogin = async () => {
+} // ✅ This is the correct closing brace for the function
+
+ window.handleLogin = async () => {
   const loginBtn = document.querySelector("#loginForm button");
   loginBtn.disabled = true;
   loginBtn.textContent = "Logging in...";
@@ -202,7 +201,7 @@ window.handleLogin = async () => {
   document.getElementById("loginForm").style.display = "none";
   document.getElementById("quizContainer").style.display = "block";
   document.getElementById("studentName").textContent = `${studentData.FirstName} ${studentData.LastName}`;
-  loadStudentResults(studentData.Idnumber);
+  loadStudentResults(studentDoc.id);
 
   loginBtn.disabled = false;
   loginBtn.textContent = "Login";
