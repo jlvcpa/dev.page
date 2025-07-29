@@ -119,32 +119,37 @@ async function loadStudentResults(studentDocId) {
 
   const studentData = studentSnap.data();
 
-  // Step 2: Construct studentID string used in results
+  // Step 2: Construct studentId string used in result document IDs
   const studentId = `${studentData.Idnumber}-${studentData.CN}-${studentData.LastName}-${studentData.FirstName}`;
 
-  // Step 3: Query results collection using studentID
+  // Step 3: Fetch all results and filter by document ID
   const resultsRef = collection(db, "results");
-  const q = query(resultsRef, where("studentID", "==", studentId));
-  const querySnapshot = await getDocs(q);
+  const querySnapshot = await getDocs(resultsRef);
 
-  // Step 4: Display results
   const quizList = document.getElementById("quizList");
   quizList.innerHTML = "<h3>📋 Taken Quizzes</h3>";
 
-  if (querySnapshot.empty) {
-    quizList.innerHTML += "<p>No quizzes found.</p>";
-    return;
-  }
+  let matchCount = 0;
 
   querySnapshot.forEach(docSnap => {
-    const data = docSnap.data();
-    const div = document.createElement("div");
-    div.className = "quiz-item";
-    div.textContent = `${data.quizTitle} (${data.percentage}%)`;
-    div.onclick = () => showResult(data);
-    quizList.appendChild(div);
+    const docId = docSnap.id;
+
+    // Match either devresult- or result- prefix
+    if (docId.includes(`-${studentId}-`)) {
+      const data = docSnap.data();
+      const div = document.createElement("div");
+      div.className = "quiz-item";
+      div.textContent = `${data.quizTitle} (${data.percentage}%)`;
+      div.onclick = () => showResult(data);
+      quizList.appendChild(div);
+      matchCount++;
+    }
   });
-} // ✅ This is the correct closing brace for the function
+
+  if (matchCount === 0) {
+    quizList.innerHTML += "<p>No quizzes found for this student.</p>";
+  }
+}
 
  window.handleLogin = async () => {
   const loginBtn = document.querySelector("#loginForm button");
