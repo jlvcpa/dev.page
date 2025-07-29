@@ -377,22 +377,6 @@
       }
     }
 
-    //function startTimer() {
-    //timerInterval = setInterval(() => {
-    //  const now = Date.now();
-    // const remaining = Math.max(0, Math.floor((quizData.endTime - now) / 1000));
-
-    //if (remaining <= 0) {
-    //    clearInterval(timerInterval);
-    //    submitQuiz();
-    //  } else {
-    //    const min = Math.floor(remaining / 60);
-    //    const sec = remaining % 60;
-     //   document.getElementById('timer').textContent =
-     //     `⏱️ Time Remaining: ${min}:${sec.toString().padStart(2, '0')}`;
-     // }
-   // }, 1000);
-  //}
 function startTimer(durationMinutes = 60) {
   const endTime = Date.now() + durationMinutes * 60 * 1000;
 
@@ -584,8 +568,8 @@ function submitQuiz() {
   document.write(resultHTML);
   document.close();
 
-  const resultId = `devresult-${studentId}-${sanitize(quizData.section)}-${sanitize(quizData.title)}-${timestamp}`;
-  /*const resultId = `devresult-${studentId}-${quizData.section}-${quizData.title}-${timestamp}`;*/
+  /*const resultId = `devresult-${studentId}-${sanitize(quizData.section)}-${sanitize(quizData.title)}-${timestamp}`;*/
+  const resultId = `devresult-${studentId}-${quizData.section}-${quizData.title}-${timestamp}`;
   const resultRef = window.doc(window.db, "results", resultId);
 
   const resultData = {
