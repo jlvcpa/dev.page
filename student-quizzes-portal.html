@@ -106,39 +106,66 @@
 
       let currentStudent = null;
 
-      window.handleLogin = async () => {
-        const idNumber = document.getElementById("idNumber").value.trim();
-        const password = document.getElementById("password").value.trim();
-        const studentRef = doc(db, "students", idNumber);
-        const studentSnap = await getDoc(studentRef);
+window.handleLogin = async () => {
+  const loginBtn = document.querySelector("#loginForm button");
+  loginBtn.disabled = true;
+  loginBtn.textContent = "Logging in...";
 
-        if (!studentSnap.exists()) {
-          alert("Student not found.");
-          return;
-        }
+  const idNumber = document.getElementById("idNumber").value.trim().toLowerCase();
+  const password = document.getElementById("password").value.trim();
 
-        const studentData = studentSnap.data();
+  const studentsRef = collection(db, "students");
+  const q = query(studentsRef, where("Idnumber", "==", idNumber));
+  const querySnapshot = await getDocs(q);
 
-        if (!studentData.Password) {
-          const newPassword = prompt("Set your permanent password:");
-          if (newPassword) {
-            await setDoc(studentRef, { ...studentData, Password: newPassword });
-            alert("Password set successfully. Please login again.");
-            return;
-          }
-        }
+  if (querySnapshot.empty) {
+    alert("Student not found.");
+    loginBtn.disabled = false;
+    loginBtn.textContent = "Login";
+    return;
+  }
 
-        if (studentData.Password !== password) {
-          alert("Incorrect password.");
-          return;
-        }
+  const studentDoc = querySnapshot.docs[0];
+  const studentData = studentDoc.data();
+  const studentDocRef = studentDoc.ref;
 
-        currentStudent = studentData;
-        document.getElementById("loginForm").style.display = "none";
-        document.getElementById("quizContainer").style.display = "block";
-        document.getElementById("studentName").textContent = `${studentData.FirstName} ${studentData.LastName}`;
-        loadQuizzes(studentData.Idnumber);
-      };
+  if (!studentData.Password) {
+    const newPassword = prompt("Set your permanent password:");
+    if (newPassword) {
+      if (newPassword.length < 4) {
+        alert("Password must be at least 4 characters.");
+        loginBtn.disabled = false;
+        loginBtn.textContent = "Login";
+        return;
+      }
+      await setDoc(studentDocRef, { ...studentData, Password: newPassword });
+      alert("Password set successfully. Please login again.");
+    } else {
+      alert("Password setup cancelled.");
+    }
+    loginBtn.disabled = false;
+    loginBtn.textContent = "Login";
+    return;
+  }
+
+  if (studentData.Password !== password) {
+    alert("Incorrect password.");
+    loginBtn.disabled = false;
+    loginBtn.textContent = "Login";
+    return;
+  }
+
+  currentStudent = studentData;
+  localStorage.setItem("currentStudent", JSON.stringify(studentData));
+
+  document.getElementById("loginForm").style.display = "none";
+  document.getElementById("quizContainer").style.display = "block";
+  document.getElementById("studentName").textContent = `${studentData.FirstName} ${studentData.LastName}`;
+  loadQuizzes(studentData.Idnumber);
+
+  loginBtn.disabled = false;
+  loginBtn.textContent = "Login";
+};
 
       async function loadQuizzes(idNumber) {
         const resultsRef = collection(db, "results");
