@@ -9,8 +9,7 @@
     try {
       const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js");
       const { getFirestore, doc, setDoc, getDoc, getDocs, collection, deleteDoc } = await import("https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js");
-      /*const { deleteDoc } = await import("https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js");*/ // deleteDoc is already included in prevous line
-
+  
       const firebaseConfig = {
         apiKey: "AIzaSyAgOsKAZWwExUzupxSNytsfOo9BOppF0ng",
         authDomain: "jlvcpa-quizzes.firebaseapp.com",
@@ -73,7 +72,6 @@ async function generateQuiz() {
   const topics = Array.from(document.getElementById('topicSelector').selectedOptions).map(opt => opt.value);
   const num = parseInt(document.getElementById('numQuestions').value);
   const instructions = document.getElementById('instructions').value.trim();
-  /* const rubricHTML = document.getElementById('rubricTable').outerHTML; */ // replaced by the next two lines
   const rubricEl = document.getElementById('rubricTable');
   const rubricHTML = rubricEl ? rubricEl.outerHTML : '';
  
@@ -107,55 +105,30 @@ async function generateQuiz() {
     alert("Failed to save quiz.");
   }
 }
-      
-      // ✅ Load quizzes and filter logic
- /*     async function loadQuizzes() {
+
+      async function loadQuizzes() {
         const quizList = document.getElementById('generatedQuizzes');
         quizList.innerHTML = ''; // Clear previous list
 
         const selectedSection = document.getElementById('sectionFilter').value;
         const querySnapshot = await getDocs(collection(db, "quizzes"));
 
-        querySnapshot.forEach(doc => {
-          const data = doc.data();
+        querySnapshot.forEach(docSnap => {
+          const data = docSnap.data();
+          const id = docSnap.id;
 
           if (!selectedSection || data.section === selectedSection) {
             const item = document.createElement('div');
             item.className = 'quiz-item';
             item.innerHTML = `
+              <strong>ID: ${doc.id}</strong><br>
               <strong>${data.title}</strong> (${data.section})
               <button onclick="loadQuiz('${doc.id}')">✏️ Edit</button>
             `;
             quizList.appendChild(item);
           }
         });
-      }*/
-
-      async function loadQuizzes() {
-  const quizList = document.getElementById('generatedQuizzes');
-  quizList.innerHTML = ''; // Clear previous list
-
-  const selectedSection = document.getElementById('sectionFilter').value;
-  const querySnapshot = await getDocs(collection(db, "quizzes"));
-
-  /* querySnapshot.forEach(doc => {
-    const data = doc.data(); */
-  querySnapshot.forEach(docSnap => {
-    const data = docSnap.data();
-    const id = docSnap.id;
-
-    if (!selectedSection || data.section === selectedSection) {
-      const item = document.createElement('div');
-      item.className = 'quiz-item';
-      item.innerHTML = `
-        <strong>ID: ${doc.id}</strong><br>
-        <strong>${data.title}</strong> (${data.section})
-        <button onclick="loadQuiz('${doc.id}')">✏️ Edit</button>
-      `;
-      quizList.appendChild(item);
-    }
-  });
-}
+      }
 
       async function loadQuiz(quizId) {
         try {
