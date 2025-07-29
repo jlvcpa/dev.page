@@ -200,13 +200,13 @@ window.handleLogin = async () => {
   document.getElementById("loginForm").style.display = "none";
   document.getElementById("quizContainer").style.display = "block";
   document.getElementById("studentName").textContent = `${studentData.FirstName} ${studentData.LastName}`;
-  loadQuizzes(studentData.Idnumber);
+  loadStudentResults(studentData.Idnumber);
 
   loginBtn.disabled = false;
   loginBtn.textContent = "Login";
 };
 
-async function loadStudentResults(idNumber) {
+/*async function loadStudentResults(idNumber) {
   // Step 1: Get student record
   const studentRef = doc(db, "students", idNumber);
   const studentSnap = await getDoc(studentRef);
@@ -243,7 +243,7 @@ async function loadStudentResults(idNumber) {
     div.onclick = () => showResult(data);
     quizList.appendChild(div);
   });
-}
+} */
 
       function showResult(data) {
         const resultPanel = document.getElementById("resultPanel");
