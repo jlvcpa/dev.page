@@ -119,7 +119,7 @@
   const studentData = studentSnap.data();
 
   // Step 2: Construct studentId
-  const studentId = `${studentData.IdNumber}-${studentData.CN}-${studentData.LastName}-${studentData.FirstName}`;
+  const studentId = `${studentData.idNumber}-${studentData.CN}-${studentData.lastName}-${studentData.firstName}`;
 
   // Step 3: Query results
   const resultsRef = collection(db, "results");
