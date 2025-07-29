@@ -167,23 +167,44 @@ window.handleLogin = async () => {
   loginBtn.textContent = "Login";
 };
 
-      async function loadQuizzes(idNumber) {
-        const resultsRef = collection(db, "results");
-        const q = query(resultsRef, where("studentID", ">=", idNumber));
-        const querySnapshot = await getDocs(q);
+async function loadStudentResults(idNumber) {
+  // Step 1: Get student record
+  const studentRef = doc(db, "students", idNumber);
+  const studentSnap = await getDoc(studentRef);
 
-        const quizList = document.getElementById("quizList");
-        quizList.innerHTML = "<h3>📋 Taken Quizzes</h3>";
+  if (!studentSnap.exists()) {
+    console.error("Student not found");
+    return;
+  }
 
-        querySnapshot.forEach(docSnap => {
-          const data = docSnap.data();
-          const div = document.createElement("div");
-          div.className = "quiz-item";
-          div.textContent = `${data.quizTitle} (${data.percentage}%)`;
-          div.onclick = () => showResult(data);
-          quizList.appendChild(div);
-        });
-      }
+  const studentData = studentSnap.data();
+
+  // Step 2: Construct studentId
+  const studentId = `${studentData.idNumber}-${studentData.cnNo}-${studentData.lastName}-${studentData.firstName}`;
+
+  // Step 3: Query results
+  const resultsRef = collection(db, "results");
+  const q = query(resultsRef, where("studentID", "==", studentId));
+  const querySnapshot = await getDocs(q);
+
+  // Step 4: Display results
+  const quizList = document.getElementById("quizList");
+  quizList.innerHTML = "<h3>📋 Taken Quizzes</h3>";
+
+  if (querySnapshot.empty) {
+    quizList.innerHTML += "<p>No quizzes found.</p>";
+    return;
+  }
+
+  querySnapshot.forEach(docSnap => {
+    const data = docSnap.data();
+    const div = document.createElement("div");
+    div.className = "quiz-item";
+    div.textContent = `${data.quizTitle} (${data.percentage}%)`;
+    div.onclick = () => showResult(data);
+    quizList.appendChild(div);
+  });
+}
 
       function showResult(data) {
         const resultPanel = document.getElementById("resultPanel");
