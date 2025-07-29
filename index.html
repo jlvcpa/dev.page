@@ -157,7 +157,7 @@ async function generateQuiz() {
   });
 }
 
-      function filterQuizzes() {
+/*      function filterQuizzes() {
         loadQuizzes();
       }
 
@@ -169,7 +169,7 @@ async function generateQuiz() {
             return;
           }
           const data = docSnap.data();
-      /*console.log("📋 Quiz data:", data);*/
+  
 
       // ✅ Populate form fields
       const titleInput = document.getElementById('quizTitle');
@@ -211,6 +211,59 @@ if (instructionsInput) instructionsInput.value = data.instructions || '';
     .catch(error => {
       console.error("❌ Error loading quiz:", error);
     });
+}*/
+async function loadQuiz(quizId) {
+  try {
+    const docSnap = await getDoc(doc(db, "quizzes", quizId)); // 🔍 Fetch quiz document
+    if (!docSnap.exists()) {
+      console.warn("⚠️ Quiz not found:", quizId);
+      return;
+    }
+
+    const data = docSnap.data(); // 📦 Extract quiz data
+    console.log("📋 Quiz data:", data); // ✅ Safely log the data here
+
+    // ✅ Populate form fields
+    const titleInput = document.getElementById('quizTitle');
+    if (titleInput) titleInput.value = data.title || '';
+
+    const sectionInput = document.getElementById('gradeSection');
+    if (sectionInput) sectionInput.value = data.section || '';
+
+    const typeInput = document.getElementById('testType');
+    if (typeInput) typeInput.value = data.type || '';
+
+    const numInput = document.getElementById('numQuestions');
+    if (numInput) numInput.value = data.num || '';
+
+    const instructionsInput = document.getElementById('instructions');
+    if (instructionsInput) instructionsInput.value = data.instructions || '';
+
+    // ✅ Topics (multi-select)
+    const topicSelector = document.getElementById('topicSelector');
+    Array.from(topicSelector.options).forEach(opt => {
+      opt.selected = data.topics?.includes(opt.value) || false;
+    });
+
+    // ✅ Rubric (HTML injection)
+    const rubricContainer = document.getElementById('rubricTable');
+    if (rubricContainer && data.rubricHTML) {
+      rubricContainer.outerHTML = data.rubricHTML;
+    }
+
+    // ✅ End time
+    if (data.endTime) {
+      const endTimeInput = document.getElementById('endTime');
+      const dateStr = new Date(data.endTime).toISOString().slice(0, 16);
+      endTimeInput.value = dateStr;
+    }
+
+    // ✅ Store quizId for later use
+    window.activeQuizId = quizId;
+
+  } catch (error) {
+    console.error("❌ Error loading quiz:", error);
+  }
 }
       function deleteQuiz() {
   const quizId = window.activeQuizId;
