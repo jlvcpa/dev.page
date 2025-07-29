@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Student Quiz Portal</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #f4f4f4;
+    }
+    header {
+      background: #007acc;
+      color: white;
+      padding: 20px;
+      text-align: center;
+    }
+    #loginForm, #quizContainer {
+      max-width: 800px;
+      margin: 30px auto;
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    input[type="text"], input[type="password"] {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+    }
+    button {
+      padding: 10px 20px;
+      background: #007acc;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    #quizList {
+      margin-top: 20px;
+    }
+    .quiz-item {
+      padding: 10px;
+      border-bottom: 1px solid #ddd;
+      cursor: pointer;
+    }
+    .quiz-item:hover {
+      background: #f0f8ff;
+    }
+    #resultPanel {
+      margin-top: 20px;
+      padding: 20px;
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 0 5px rgba(0,0,0,0.1);
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>📚 Student Quiz Portal</h1>
+  </header>
+
+  <div id="loginForm">
+    <h2>Login</h2>
+    <input type="text" id="idNumber" placeholder="ID Number" />
+    <input type="password" id="password" placeholder="Password" />
+    <button onclick="handleLogin()">Login</button>
+  </div>
+
+  <div id="quizContainer" style="display:none;">
+    <h2>Welcome, <span id="studentName"></span></h2>
+    <div id="quizList"></div>
+    <div id="resultPanel"></div>
+  </div>
+
+  <!-- Firebase Configuration -->
+  <script type="module">
+    (async () => {
+      const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js");
+      const { getFirestore, doc, setDoc, getDoc, getDocs, collection, query, where } = await import("https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js");
+
+      const firebaseConfig = {
+        apiKey: "AIzaSyAgOsKAZWwExUzupxSNytsfOo9BOppF0ng",
+        authDomain: "jlvcpa-quizzes.firebaseapp.com",
+        projectId: "jlvcpa-quizzes",
+        storageBucket: "jlvcpa-quizzes.appspot.com",
+        messagingSenderId: "629158256557",
+        appId: "1:629158256557:web:b3d1a424b32e28cd578b24"
+      };
+
+      const app = initializeApp(firebaseConfig);
+      const db = getFirestore(app);
+
+      window.db = db;
+      window.doc = doc;
+      window.setDoc = setDoc;
+      window.getDoc = getDoc;
+      window.getDocs = getDocs;
+      window.collection = collection;
+      window.query = query;
+      window.where = where;
+
+      let currentStudent = null;
+
+      window.handleLogin = async () => {
+        const idNumber = document.getElementById("idNumber").value.trim();
+        const password = document.getElementById("password").value.trim();
+        const studentRef = doc(db, "students", idNumber);
+        const studentSnap = await getDoc(studentRef);
+
+        if (!studentSnap.exists()) {
+          alert("Student not found.");
+          return;
+        }
+
+        const studentData = studentSnap.data();
+
+        if (!studentData.Password) {
+          const newPassword = prompt("Set your permanent password:");
+          if (newPassword) {
+            await setDoc(studentRef, { ...studentData, Password: newPassword });
+            alert("Password set successfully. Please login again.");
+            return;
+          }
+        }
+
+        if (studentData.Password !== password) {
+          alert("Incorrect password.");
+          return;
+        }
+
+        currentStudent = studentData;
+        document.getElementById("loginForm").style.display = "none";
+        document.getElementById("quizContainer").style.display = "block";
+        document.getElementById("studentName").textContent = `${studentData.FirstName} ${studentData.LastName}`;
+        loadQuizzes(studentData.Idnumber);
+      };
+
+      async function loadQuizzes(idNumber) {
+        const resultsRef = collection(db, "results");
+        const q = query(resultsRef, where("studentID", ">=", idNumber));
+        const querySnapshot = await getDocs(q);
+
+        const quizList = document.getElementById("quizList");
+        quizList.innerHTML = "<h3>📋 Taken Quizzes</h3>";
+
+        querySnapshot.forEach(docSnap => {
+          const data = docSnap.data();
+          const div = document.createElement("div");
+          div.className = "quiz-item";
+          div.textContent = `${data.quizTitle} (${data.percentage}%)`;
+          div.onclick = () => showResult(data);
+          quizList.appendChild(div);
+        });
+      }
+
+      function showResult(data) {
+        const resultPanel = document.getElementById("resultPanel");
+        const letterLabels = ['A', 'B', 'C', 'D'];
+        const questionsHTML = data.questions.map((q, i) => {
+          const userAnswer = data.responses[i];
+          const isCorrect = userAnswer === q.answer;
+          const optionsHTML = q.options.map((opt, idx) => {
+            const label = letterLabels[idx] || String.fromCharCode(65 + idx);
+            return `<div style="margin-left:20px;">${label}. ${opt}</div>`;
+          }).join('');
+          const feedback = isCorrect
+            ? `<div class="correct">Answered: ${letterLabels[q.options.indexOf(userAnswer)]} ✔</div>`
+            : `<div class="incorrect">Answered: ${letterLabels[q.options.indexOf(userAnswer)]} ❌<br>Correct Answer: ${letterLabels[q.options.indexOf(q.answer)]}</div>`;
+          return `
+            <div class="question-block">
+              <h3>${i + 1}. ${q.question}</h3>
+              ${optionsHTML}
+              ${feedback}
+              <div class="explanation"><em>Explanation:</em> ${q.explanation || 'No explanation provided.'}</div>
+            </div>
+          `;
+        }).join('');
+
+        resultPanel.innerHTML = `
+          <h3>${data.quizTitle}</h3>
+          <p><strong>Grade:</strong> ${data.grade}</p>
+          <p><strong>Score:</strong> ${data.score} / ${data.questions.length} = ${data.percentage}%</p>
+          <p><strong>Section:</strong> ${data.section}</p>
+          <p><strong>Test Type:</strong> ${data.type}</p>
+          ${questionsHTML}
+          <div class="print-btn">
+            <button onclick="window.print()">🖨️ Print This Page</button>
+          </div>
+        `;
+      }
+    })();
+  </script>
+</body>
+</html>
