@@ -261,8 +261,12 @@
           const sections = Array.from(sectionSet).sort(); // Optional: sort alphabetically
 
           const gradeSectionSelect = document.getElementById("gradeSection");
-          const sectionFilterSelect = document.getElementById("sectionFilter");
+const sectionFilterSelect = document.getElementById("sectionFilter");
 
+if (!gradeSectionSelect || !sectionFilterSelect) {
+  console.warn("⚠️ Dropdown elements not found in the DOM.");
+  return;
+}
     // Clear existing options
           gradeSectionSelect.innerHTML = '<option value="">Select Section</option>';
           sectionFilterSelect.innerHTML = '<option value="">No section selected</option>';
@@ -285,7 +289,9 @@
           console.error("❌ Failed to load sections:", error);
          }
       }
-        populateSectionDropdowns();
+        document.addEventListener("DOMContentLoaded", () => {
+  populateSectionDropdowns();
+});
 
         // 🔧 Utility Functions
         function addRubricRow() {
