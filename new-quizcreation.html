@@ -28,6 +28,8 @@
         window.getDocs = getDocs;
         window.collection = collection;
 
+        console.log("✅ Firebase initialized:", window.db);
+
 async function populateSectionDropdowns() {
   try {
     console.log("📌 Starting dropdown population...");
