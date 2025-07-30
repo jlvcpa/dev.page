@@ -3,225 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>New Quiz Creation</title>
-  <style>
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      background: #f9f9f9;
-      padding: 20px;
-    }
-
-    h1, h2 {
-      text-align: center;
-      color: #2c3e50;
-    }
-
-    #schoolLogo {
-      max-height: 100px;
-      margin-bottom: 10px;
-    }
-
-    .header {
-      text-align: center;
-      margin-bottom: 20px;
-    }
-
-    .form-section {
-      max-width: 800px;
-      margin: 0 auto 30px;
-      background: #fff;
-      padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    }
-
-    label {
-      font-weight: bold;
-      display: block;
-      margin-top: 15px;
-    }
-
-    input, select, textarea {
-      width: 100%;
-      padding: 8px;
-      margin-top: 5px;
-      font-size: 16px;
-    }
-
-    #rubricTable {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 10px;
-    }
-
-    #rubricTable th, #rubricTable td {
-      border: 1px solid #ccc;
-      padding: 8px;
-    }
-
-    button {
-      margin-top: 20px;
-      padding: 10px 20px;
-      font-size: 16px;
-      background-color: #007acc;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-
-    button:hover {
-      background-color: #005fa3;
-    }
-
-    .quiz-list {
-      max-width: 800px;
-      margin: 0 auto;
-    }
-
-    .quiz-item {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: #fff;
-      padding: 10px;
-      margin-bottom: 10px;
-      border-radius: 5px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-    }
-
-    .main-content {
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-    }
-
-    @media (min-width: 768px) {
-      .main-content {
-        flex-direction: row;
-        align-items: flex-start;
-      }
-
-      .quiz-creation-panel {
-        flex: 2;
-      }
-
-      .sidebar-panel {
-        flex: 1;
-        margin-left: 1rem;
-        border-left: 1px solid #ccc;
-        padding-left: 1rem;
-      }
-    }
-
-    @media (max-width: 767px) {
-      .sidebar-panel {
-        margin-top: 1rem;
-        border-top: 1px solid #ccc;
-        padding-top: 1rem;
-      }
-    }
-  </style>
-</head>
-<body>
-  <div class="header">
-    <img id="schoolLogo" src="shs-adc.png" alt="School Logo"><br>
-    <span style="color:#007acc; font-size:20px;">Senior High School Department</span><br>
-    <span style="color:#000;">SY 2025–2026</span><br>
-    <span style="color:#000;">2nd Semester</span><br>
-    <span style="color:#000;">FABM 1</span>
-  </div>
-
-  <div class="main-content">
-    <div class="form-section quiz-creation-panel">
-      <h2>Create New Quiz</h2>
-
-      <button onclick="saveEditedQuiz()">💾 Save Changes</button>
-      <button onclick="deleteQuiz()">🗑️ Delete</button>
-      <button onclick="window.open('https://jlvcpa.github.io/my-quizzes/topicextractor.html', '_blank')">🔍 Open Topic Extractor</button>
-
-      <label for="quizTitle">Quiz Title</label>
-      <select id="quizTitle">
-        <option value="">Select Quiz Title</option>
-        <option value="FORMATIVE EXAM">FORMATIVE EXAM</option>
-        <option value="MT SUMMATIVE EXAM 01">MT SUMMATIVE EXAM 01</option>
-        <option value="MT SUMMATIVE EXAM 02">MT SUMMATIVE EXAM 02</option>
-        <option value="MIDTERM EXAM">MIDTERM EXAM</option>
-        <option value="FINAL EXAM">FINAL EXAM</option>
-      </select>
-
-      <label for="gradeSection">Grade Level and Section</label>
-      <select id="gradeSection">
-        <option value="">Select Section</option>
-      </select>
-
-      <label for="testType">Test Type</label>
-      <select id="testType">
-        <option value="">Select Test Type</option>
-        <option value="Multiple Choice">Multiple Choice</option>
-        <option value="True/False">True/False</option>
-        <option value="Short Answer">Short Answer</option>
-        <option value="Essay">Essay</option>
-        <option value="Fill-in-the-Blank">Fill-in-the-Blank</option>
-        <option value="Problem Solving">Problem Solving</option>
-        <option value="Journalizing">Journalizing</option>
-        <option value="Preparing Worksheet">Preparing Worksheet</option>
-        <option value="Preparing Financial Statements">Preparing Financial Statements</option>
-      </select>
-
-      <label for="endTime">Set Quiz End Time:</label>
-      <input type="datetime-local" id="endTime" required>
-
-      <label for="topicSelector">Select Topics</label>
-      <select id="topicSelector" multiple>
-        <option value="Accounting Concepts and Principles">Accounting Concepts and Principles</option>
-        <option value="Branches of Accounting">Branches of Accounting</option>
-        <option value="History of Accounting">History of Accounting</option>
-      </select>
-
-      <label for="numQuestions">Number of Questions</label>
-      <input type="number" id="numQuestions" min="1" max="80" value="10">
-
-      <label for="instructions">Instructions</label>
-      <textarea id="instructions" rows="5" placeholder="Enter instructions here..."></textarea>
-
-      <p><strong>Rubric</strong></p>
-      <table id="rubricTable">
-        <thead>
-          <tr>
-            <th>Criteria</th>
-            <th>Advance</th>
-            <th>Proficient</th>
-            <th>Developing</th>
-            <th>Intervention Required</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td contenteditable="true"></td>
-            <td contenteditable="true"></td>
-            <td contenteditable="true"></td>
-            <td contenteditable="true"></td>
-            <td contenteditable="true"></td>
-          </tr>
-        </tbody>
-      </table>
-      <button type="button" onclick="addRubricRow()">➕ Add Row</button>
-      <button onclick="generateQuiz()">🎯 Generate Quiz</button>
-      <button onclick="generateLink()">🔗 Generate Link</button>
-    </div>
-
-    <div class="sidebar-panel">
-      <h3>Filter by Section</h3>
-      <select id="sectionFilter" onchange="filterQuizzes()">
-        <option value="">No section selected</option>
-      </select>
-
-      <h2>Generated Quizzes</h2>
-      <div id="generatedQuizzes"></div>
-    </div>
-  </div>
-
-  <script type="module">
+    <script type="module">
     (async () => {
       try {
         const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js");
@@ -532,5 +314,222 @@ async function populateSectionDropdowns() {
       }
     })();
   </script>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f9f9f9;
+      padding: 20px;
+    }
+
+    h1, h2 {
+      text-align: center;
+      color: #2c3e50;
+    }
+
+    #schoolLogo {
+      max-height: 100px;
+      margin-bottom: 10px;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .form-section {
+      max-width: 800px;
+      margin: 0 auto 30px;
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    label {
+      font-weight: bold;
+      display: block;
+      margin-top: 15px;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      padding: 8px;
+      margin-top: 5px;
+      font-size: 16px;
+    }
+
+    #rubricTable {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+
+    #rubricTable th, #rubricTable td {
+      border: 1px solid #ccc;
+      padding: 8px;
+    }
+
+    button {
+      margin-top: 20px;
+      padding: 10px 20px;
+      font-size: 16px;
+      background-color: #007acc;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #005fa3;
+    }
+
+    .quiz-list {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .quiz-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #fff;
+      padding: 10px;
+      margin-bottom: 10px;
+      border-radius: 5px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    .main-content {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    @media (min-width: 768px) {
+      .main-content {
+        flex-direction: row;
+        align-items: flex-start;
+      }
+
+      .quiz-creation-panel {
+        flex: 2;
+      }
+
+      .sidebar-panel {
+        flex: 1;
+        margin-left: 1rem;
+        border-left: 1px solid #ccc;
+        padding-left: 1rem;
+      }
+    }
+
+    @media (max-width: 767px) {
+      .sidebar-panel {
+        margin-top: 1rem;
+        border-top: 1px solid #ccc;
+        padding-top: 1rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <img id="schoolLogo" src="shs-adc.png" alt="School Logo"><br>
+    <span style="color:#007acc; font-size:20px;">Senior High School Department</span><br>
+    <span style="color:#000;">SY 2025–2026</span><br>
+    <span style="color:#000;">2nd Semester</span><br>
+    <span style="color:#000;">FABM 1</span>
+  </div>
+
+  <div class="main-content">
+    <div class="form-section quiz-creation-panel">
+      <h2>Create New Quiz</h2>
+
+      <button onclick="saveEditedQuiz()">💾 Save Changes</button>
+      <button onclick="deleteQuiz()">🗑️ Delete</button>
+      <button onclick="window.open('https://jlvcpa.github.io/my-quizzes/topicextractor.html', '_blank')">🔍 Open Topic Extractor</button>
+
+      <label for="quizTitle">Quiz Title</label>
+      <select id="quizTitle">
+        <option value="">Select Quiz Title</option>
+        <option value="FORMATIVE EXAM">FORMATIVE EXAM</option>
+        <option value="MT SUMMATIVE EXAM 01">MT SUMMATIVE EXAM 01</option>
+        <option value="MT SUMMATIVE EXAM 02">MT SUMMATIVE EXAM 02</option>
+        <option value="MIDTERM EXAM">MIDTERM EXAM</option>
+        <option value="FINAL EXAM">FINAL EXAM</option>
+      </select>
+
+      <label for="gradeSection">Grade Level and Section</label>
+      <select id="gradeSection">
+        <option value="">Select Section</option>
+      </select>
+
+      <label for="testType">Test Type</label>
+      <select id="testType">
+        <option value="">Select Test Type</option>
+        <option value="Multiple Choice">Multiple Choice</option>
+        <option value="True/False">True/False</option>
+        <option value="Short Answer">Short Answer</option>
+        <option value="Essay">Essay</option>
+        <option value="Fill-in-the-Blank">Fill-in-the-Blank</option>
+        <option value="Problem Solving">Problem Solving</option>
+        <option value="Journalizing">Journalizing</option>
+        <option value="Preparing Worksheet">Preparing Worksheet</option>
+        <option value="Preparing Financial Statements">Preparing Financial Statements</option>
+      </select>
+
+      <label for="endTime">Set Quiz End Time:</label>
+      <input type="datetime-local" id="endTime" required>
+
+      <label for="topicSelector">Select Topics</label>
+      <select id="topicSelector" multiple>
+        <option value="Accounting Concepts and Principles">Accounting Concepts and Principles</option>
+        <option value="Branches of Accounting">Branches of Accounting</option>
+        <option value="History of Accounting">History of Accounting</option>
+      </select>
+
+      <label for="numQuestions">Number of Questions</label>
+      <input type="number" id="numQuestions" min="1" max="80" value="10">
+
+      <label for="instructions">Instructions</label>
+      <textarea id="instructions" rows="5" placeholder="Enter instructions here..."></textarea>
+
+      <p><strong>Rubric</strong></p>
+      <table id="rubricTable">
+        <thead>
+          <tr>
+            <th>Criteria</th>
+            <th>Advance</th>
+            <th>Proficient</th>
+            <th>Developing</th>
+            <th>Intervention Required</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td contenteditable="true"></td>
+            <td contenteditable="true"></td>
+            <td contenteditable="true"></td>
+            <td contenteditable="true"></td>
+            <td contenteditable="true"></td>
+          </tr>
+        </tbody>
+      </table>
+      <button type="button" onclick="addRubricRow()">➕ Add Row</button>
+      <button onclick="generateQuiz()">🎯 Generate Quiz</button>
+      <button onclick="generateLink()">🔗 Generate Link</button>
+    </div>
+
+    <div class="sidebar-panel">
+      <h3>Filter by Section</h3>
+      <select id="sectionFilter" onchange="filterQuizzes()">
+        <option value="">No section selected</option>
+      </select>
+
+      <h2>Generated Quizzes</h2>
+      <div id="generatedQuizzes"></div>
+    </div>
+  </div>
 </body>
 </html>
