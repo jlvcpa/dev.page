@@ -120,11 +120,30 @@ async function generateQuiz() {
           if (!selectedSection || data.section === selectedSection) {
             const item = document.createElement('div');
             item.className = 'quiz-item';
+      async function loadQuizzes() {
+        const quizList = document.getElementById('generatedQuizzes');
+        quizList.innerHTML = ''; // Clear previous list
+
+        const selectedSection = document.getElementById('sectionFilter').value;
+        const querySnapshot = await getDocs(collection(db, "quizzes"));
+
+        querySnapshot.forEach(docSnap => {
+          const data = docSnap.data();
+          const id = docSnap.id;
+
+          if (!selectedSection || data.section === selectedSection) {
+            const item = document.createElement('div');
+            item.className = 'quiz-item';
             item.innerHTML = `
-              <strong>ID: ${doc.id}</strong><br>
+              <strong>ID: ${docSnap.id}</strong><br>
               <strong>${data.title}</strong> (${data.section})
-              <button onclick="loadQuiz('${doc.id}')">✏️ Edit</button>
+              <button onclick="loadQuiz('${docSnap.id}')">✏️ Edit</button>
             `;
+
+            quizList.appendChild(item);
+          }
+        });
+      }
             quizList.appendChild(item);
           }
         });
