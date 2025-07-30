@@ -513,6 +513,8 @@ async function populateSectionDropdowns() {
         // ✅ DOMContentLoaded listeners
         window.addEventListener('DOMContentLoaded', () => {
           loadQuizzes();
+          populateSectionDropdowns(); // ✅ Add this line
+
           const quizId = window.activeQuizId;
           if (quizId) loadQuiz(quizId);
 
