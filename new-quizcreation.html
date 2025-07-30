@@ -246,39 +246,45 @@
         window.getDocs = getDocs;
         window.collection = collection;
 
-        async function populateSectionDropdowns() {
-          try {
-            const studentSnapshot = await getDocs(collection(db, "students"));
-            const sectionSet = new Set studentSnapshot.forEach(docSnap => {
-              const data = docSnap.data();
-              if (data.section) sectionSet.add(data.section.trim());
-            });
+      async function populateSectionDropdowns() {
+        try {
+          const studentSnapshot = await getDocs(collection(db, "students"));
+          const sectionSet = new Set(); // ✅ Proper Set initialization
 
-            const sections = Array.from(sectionSet).sort();
-            const gradeSectionSelect = document.getElementById("gradeSection");
-            const sectionFilterSelect = document.getElementById("sectionFilter");
+    studentSnapshot.forEach(docSnap => {
+      const data = docSnap.data();
+      if (data.section) {
+        sectionSet.add(data.section.trim());
+      }
+    });
 
-            gradeSectionSelect.innerHTML = '<option value="">Select Section</option>';
-            sectionFilterSelect.innerHTML = '<option value="">No section selected</option>';
+    const sections = Array.from(sectionSet).sort(); // Optional: sort alphabetically
 
-            sections.forEach(section => {
-              const option1 = document.createElement("option");
-              option1.value = section;
-              option1.textContent = section;
-              gradeSectionSelect.appendChild(option1);
+    const gradeSectionSelect = document.getElementById("gradeSection");
+    const sectionFilterSelect = document.getElementById("sectionFilter");
 
-              const option2 = document.createElement("option");
-              option2.value = section;
-              option2.textContent = section;
-              sectionFilterSelect.appendChild(option2);
-            });
+    // Clear existing options
+    gradeSectionSelect.innerHTML = '<option value="">Select Section</option>';
+    sectionFilterSelect.innerHTML = '<option value="">No section selected</option>';
 
-            console.log("✅ Sections loaded:", sections);
-          } catch (error) {
-            console.error("❌ Failed to load sections:", error);
-          }
-        }
+    // Add new options
+    sections.forEach(section => {
+      const option1 = document.createElement("option");
+      option1.value = section;
+      option1.textContent = section;
+      gradeSectionSelect.appendChild(option1);
 
+      const option2 = document.createElement("option");
+      option2.value = section;
+      option2.textContent = section;
+      sectionFilterSelect.appendChild(option2);
+    });
+
+    console.log("✅ Sections loaded:", sections);
+  } catch (error) {
+    console.error("❌ Failed to load sections:", error);
+  }
+}
         populateSectionDropdowns();
 
         // 🔧 Utility Functions
