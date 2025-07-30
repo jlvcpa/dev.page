@@ -106,44 +106,29 @@ async function generateQuiz() {
   }
 }
 
-      async function loadQuizzes() {
-        const quizList = document.getElementById('generatedQuizzes');
-        quizList.innerHTML = ''; // Clear previous list
+async function loadQuizzes() {
+  const quizList = document.getElementById('generatedQuizzes');
+  quizList.innerHTML = ''; // Clear previous list
 
-        const selectedSection = document.getElementById('sectionFilter').value;
-        const querySnapshot = await getDocs(collection(db, "quizzes"));
+  const selectedSection = document.getElementById('sectionFilter').value;
+  const querySnapshot = await getDocs(collection(db, "quizzes"));
 
-        querySnapshot.forEach(docSnap => {
-          const data = docSnap.data();
-          const id = docSnap.id;
+  querySnapshot.forEach(docSnap => {
+    const data = docSnap.data();
+    const id = docSnap.id;
 
-          if (!selectedSection || data.section === selectedSection) {
-            const item = document.createElement('div');
-            item.className = 'quiz-item';
-      async function loadQuizzes() {
-        const quizList = document.getElementById('generatedQuizzes');
-        quizList.innerHTML = ''; // Clear previous list
-
-        const selectedSection = document.getElementById('sectionFilter').value;
-        const querySnapshot = await getDocs(collection(db, "quizzes"));
-
-        querySnapshot.forEach(docSnap => {
-          const data = docSnap.data();
-          const id = docSnap.id;
-
-          if (!selectedSection || data.section === selectedSection) {
-            const item = document.createElement('div');
-            item.className = 'quiz-item';
-            item.innerHTML = `
-              <strong>ID: ${docSnap.id}</strong><br>
-              <strong>${data.title}</strong> (${data.section})
-              <button onclick="loadQuiz('${docSnap.id}')">✏️ Edit</button>
-            `;
-
-            quizList.appendChild(item);
-          }
-        });
-      }
+    if (!selectedSection || data.section === selectedSection) {
+      const item = document.createElement('div');
+      item.className = 'quiz-item';
+      item.innerHTML = `
+        <strong>ID: ${id}</strong><br>
+        <strong>${data.title}</strong> (${data.section})
+        <button onclick="loadQuiz('${id}')">✏️ Edit</button>
+      `;
+      quizList.appendChild(item);
+    }
+  });
+}
 
       function filterQuizzes() {
         loadQuizzes();
