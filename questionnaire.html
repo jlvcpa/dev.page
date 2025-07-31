@@ -670,15 +670,6 @@ function startTimer(durationMinutes = 60) {
       <div class="print-btn">
         <button onclick="window.print()">🖨️ Print This Page</button>
       </div>
-      <script>
-        document.addEventListener('DOMContentLoaded', () => {
-          const textarea = document.querySelector('textarea[readonly]');
-          if (textarea) {
-            textarea.style.height = 'auto'; // Reset height
-            textarea.style.height = textarea.scrollHeight + 'px'; // Set to content height
-          }
-        });
-      </script>
     </body>
     </html>
   `;
