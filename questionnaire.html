@@ -510,14 +510,13 @@ function startTimer(durationMinutes = 60) {
       console.log(msg);
     }
 
-      function submitQuiz() {
-  // This prevents Firebase from receiving an invalid payload and gives you a clear log when the issue occurs.
-        if (!studentId || typeof studentId !== 'string') {
-          alert("❌ Cannot submit quiz: student ID is missing.");
-          console.error("🚫 studentId is undefined or invalid:", studentId);
-          return;
-         }
-  // 🛡️ Prevent multiple submissions
+function submitQuiz() {
+  if (!studentId || typeof studentId !== 'string') {
+    alert("❌ Cannot submit quiz: student ID is missing.");
+    console.error("🚫 studentId is undefined or invalid:", studentId);
+    return;
+  }
+
   if (document.getElementById('navigation').style.display === 'none') return;
 
   clearInterval(timerInterval);
@@ -546,7 +545,7 @@ function startTimer(durationMinutes = 60) {
     second: '2-digit',
     hour12: true
   });
-      
+
   const resultHTML = `
     <!DOCTYPE html>
     <html lang="en">
@@ -616,6 +615,8 @@ function startTimer(durationMinutes = 60) {
         textarea {
           width: 100%;
           margin-top: 10px;
+          resize: none;
+          overflow: hidden;
         }
         .print-btn {
           text-align: center;
@@ -642,8 +643,7 @@ function startTimer(durationMinutes = 60) {
 
       <p><strong>Test Type:</strong> ${quizData.type}</p>
       <p><strong>Instructions:</strong></p>
-      <textarea readonly rows="auto">${quizData.instructions}</textarea>
-
+      <textarea readonly rows="4" id="instructions">${quizData.instructions}</textarea>
       ${quizData.rubric}
 
       ${answeredOrder.map(i => {
@@ -671,6 +671,16 @@ function startTimer(durationMinutes = 60) {
       <div class="print-btn">
         <button onclick="window.print()">🖨️ Print This Page</button>
       </div>
+
+      <script>
+        window.addEventListener('DOMContentLoaded', () => {
+          const textarea = document.getElementById('instructions');
+          if (textarea) {
+            textarea.style.height = 'auto';
+            textarea.style.height = textarea.scrollHeight + 'px';
+          }
+        });
+      </script>
     </body>
     </html>
   `;
@@ -679,27 +689,18 @@ function startTimer(durationMinutes = 60) {
   document.write(resultHTML);
   document.close();
 
-  /*const resultId = `devresult-${studentId}-${sanitize(quizData.section)}-${sanitize(quizData.title)}-${timestamp}`;*/
   const resultId = `devresult-${studentId}-${quizData.section}-${quizData.title}-${timestamp}`;
   const resultRef = window.doc(window.db, "results", resultId);
-
-const resultData = {
-  studentId,
-  cnNo,
-  lastName,
-  firstName,
-  quizId: quizData.id || `quiz-${quizData.timestamp || timestamp}`,
-  quizTitle: quizData.title,
-  section: quizData.section,
-  type: quizData.type,
-  score,
-  percentage,
-  grade,
-  timestamp,
-  submittedAt: readableTime, // ✅ Human-readable time
-  responses,
-  questions: selectedQuestions // ✅ Include full question context
-};
+  const resultData = {
+    studentId, cnNo, lastName, firstName,
+    quizId: quizData.id || `quiz-${quizData.timestamp || timestamp}`,
+    quizTitle: quizData.title,
+    section: quizData.section,
+    type: quizData.type,
+    score, percentage, grade,
+    timestamp, submittedAt: readableTime,
+    responses, questions: selectedQuestions
+  };
 
   window.setDoc(resultRef, resultData)
     .then(() => {
