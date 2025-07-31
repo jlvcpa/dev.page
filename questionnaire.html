@@ -336,7 +336,7 @@
         .slice(0, quizData.num);
     }
 
-    function showQuestion(index) {
+    /* function showQuestion(index) {
       const q = selectedQuestions[index];
       document.getElementById('quizContainer').innerHTML = `
         <div class="question-block">
@@ -356,7 +356,41 @@
           }).join('')}
         </div>
       `;
-    }
+    } */
+    async function loadQuestions() {
+        try {
+    // Reference to the 'questions' collection
+          const questionsRef = window.collection(window.db, "questions");
+
+    // Build query to match topics in quizData.topics
+          const topicFilters = quizData.topics.map(topic =>
+            window.where("topic", "==", topic)
+          );
+
+    // Combine filters into a single query using OR logic
+    // Firestore doesn't support OR directly, so we fetch each topic separately
+          const questionSnapshots = await Promise.all(
+            topicFilters.map(filter => window.getDocs(window.query(questionsRef, filter)))
+          );
+
+    // Flatten results into a single array
+          const allQuestions = questionSnapshots.flatMap(snapshot =>
+            snapshot.docs.map(doc => doc.data())
+          );
+
+    // Shuffle and slice to get the desired number of questions
+          selectedQuestions = allQuestions
+            .sort(() => 0.5 - Math.random())
+            .slice(0, quizData.num);
+
+          if (selectedQuestions.length === 0) {
+            document.getElementById('quizHeader').innerHTML = "<p>⚠️ No matching questions found.</p>";
+          }
+        } catch (error) {
+          console.error("❌ Error loading questions from Firestore:", error);
+          document.getElementById('quizHeader').innerHTML = "<p>⚠️ Failed to load questions. Please try again.</p>";
+        }
+      }
 
     function recordAnswer(index, answer) {
       responses[index] = answer;
