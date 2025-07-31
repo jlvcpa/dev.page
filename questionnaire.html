@@ -328,6 +328,7 @@
   try {
     // 🔍 Extract student ID from URL
     const studentId = new URLSearchParams(window.location.search).get('student');
+    console.log("🆔 Loaded studentId:", studentId);
     if (!studentId) {
       document.getElementById('quizHeader').innerHTML = "<p>⚠️ Missing student ID. Please restart.</p>";
       return;
