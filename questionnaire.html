@@ -551,7 +551,13 @@ function startTimer(durationMinutes = 60) {
       console.log(msg);
     }
 
-function submitQuiz() {
+      function submitQuiz() {
+  // This prevents Firebase from receiving an invalid payload and gives you a clear log when the issue occurs.
+        if (!studentId || typeof studentId !== 'string') {
+          alert("❌ Cannot submit quiz: student ID is missing.");
+          console.error("🚫 studentId is undefined or invalid:", studentId);
+          return;
+         }
   // 🛡️ Prevent multiple submissions
   if (document.getElementById('navigation').style.display === 'none') return;
 
