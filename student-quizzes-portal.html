@@ -115,14 +115,15 @@
 
 /*- 🌐 Exposes Firestore functions globally via the window object.
   - 🛠️ This allows other scripts (like your login logic) to access Firestore methods without re-importing them.*/
-      window.db = db;
-      window.doc = doc;
-      window.setDoc = setDoc;
-      window.getDoc = getDoc;
-      window.getDocs = getDocs;
-      window.collection = collection;
-      window.query = query;
-      window.where = where;
+      window.db = db;               // Firestore database instance
+      window.doc = doc;             // Function to reference a document
+      window.setDoc = setDoc;       // Function to write data to a document
+      window.getDoc = getDoc;       // Function to read a single document
+      window.getDocs = getDocs;     // Function to read multiple documents from a query
+      window.collection = collection; // Function to reference a collection
+      window.query = query;         // Function to build a query
+      window.where = where;         // Function to filter query results
+
 
 /* - 🧍 Declares a variable to hold the currently logged-in student’s data.
    - 📌 This can be updated later during login and used across your app */
