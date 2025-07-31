@@ -329,38 +329,17 @@
       `;
     }
 
-    function loadQuestions() {
+    /*function loadQuestions() {
       selectedQuestions = questionBank
         .filter(q => quizData.topics.includes(q.topic))
         .sort(() => 0.5 - Math.random())
         .slice(0, quizData.num);
-    }
+    }*/
 
-    /* function showQuestion(index) {
-      const q = selectedQuestions[index];
-      document.getElementById('quizContainer').innerHTML = `
-        <div class="question-block">
-          <h3>${index + 1}. ${q.question}</h3>
-          ${q.options.map((opt, i) => {
-            const label = String.fromCharCode(65 + i);
-            return `
-              <div>
-                <label>
-                  <input type="radio" name="question${index}" value="${opt}"
-                    ${responses[index] === opt ? 'checked' : ''}
-                    onchange="recordAnswer(${index}, '${opt}')">
-                  ${label}. ${opt}
-                </label>
-              </div>
-            `;
-          }).join('')}
-        </div>
-      `;
-    } */
-    async function loadQuestions() {
+        async function loadQuestions() {
         try {
     // Reference to the 'questions' collection
-          const questionsRef = window.collection(window.db, "questions");
+          const questionsRef = window.collection(window.db, "questionBank");
 
     // Build query to match topics in quizData.topics
           const topicFilters = quizData.topics.map(topic =>
@@ -391,6 +370,27 @@
           document.getElementById('quizHeader').innerHTML = "<p>⚠️ Failed to load questions. Please try again.</p>";
         }
       }
+    /* function showQuestion(index) {
+      const q = selectedQuestions[index];
+      document.getElementById('quizContainer').innerHTML = `
+        <div class="question-block">
+          <h3>${index + 1}. ${q.question}</h3>
+          ${q.options.map((opt, i) => {
+            const label = String.fromCharCode(65 + i);
+            return `
+              <div>
+                <label>
+                  <input type="radio" name="question${index}" value="${opt}"
+                    ${responses[index] === opt ? 'checked' : ''}
+                    onchange="recordAnswer(${index}, '${opt}')">
+                  ${label}. ${opt}
+                </label>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      `;
+    } */
 
     function recordAnswer(index, answer) {
       responses[index] = answer;
