@@ -247,7 +247,7 @@
     let selectedQuestions = [], responses = {}, answeredOrder = [];
     let currentQuestionIndex = 0, inactivityTimer;
 
-    const questionBank = [
+/*    const questionBank = [
      {
   competency: "Understand",
   topic: "History of Accounting",
@@ -261,7 +261,7 @@
   answer: "To manage agricultural production and state wealth",
   explanation: "✅ Accounting in ancient Egypt and Babylon was used to manage agricultural output and state resources, making it essential for economic control."
 } 
-    ];
+    ];*/
 
     window.addEventListener('DOMContentLoaded', async () => {
       studentId = new URLSearchParams(window.location.search).get('student');
@@ -336,7 +336,7 @@
         .slice(0, quizData.num);
     }*/
 
-        async function loadQuestions() {
+    async function loadQuestions() {
         try {
     // Reference to the 'questions' collection
           const questionsRef = window.collection(window.db, "questionBank");
@@ -370,7 +370,7 @@
           document.getElementById('quizHeader').innerHTML = "<p>⚠️ Failed to load questions. Please try again.</p>";
         }
       }
-    /* function showQuestion(index) {
+    function showQuestion(index) {
       const q = selectedQuestions[index];
       document.getElementById('quizContainer').innerHTML = `
         <div class="question-block">
@@ -390,7 +390,7 @@
           }).join('')}
         </div>
       `;
-    } */
+    }
 
     function recordAnswer(index, answer) {
       responses[index] = answer;
