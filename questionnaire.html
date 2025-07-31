@@ -324,6 +324,75 @@
       }
     }); */
 
+    window.addEventListener('DOMContentLoaded', async () => {
+  try {
+    // 🔍 Extract student ID from URL
+    const studentId = new URLSearchParams(window.location.search).get('student');
+    if (!studentId) {
+      document.getElementById('quizHeader').innerHTML = "<p>⚠️ Missing student ID. Please restart.</p>";
+      return;
+    }
+
+    // 📦 Retrieve student data from localStorage
+    const studentData = JSON.parse(localStorage.getItem(`questionnaire-${studentId}`));
+    if (!studentData || !studentData.quizId) {
+      document.getElementById('quizHeader').innerHTML = "<p>⚠️ Quiz data missing. Please restart.</p>";
+      return;
+    }
+
+    // 🧑‍🎓 Assign student info
+    ({ cnNo, lastName, firstName } = studentData);
+
+    // 📄 Fetch quiz document from Firestore
+    const docRef = window.doc(window.db, "quizzes", studentData.quizId);
+    const docSnap = await window.getDoc(docRef);
+
+    if (!docSnap.exists()) {
+      document.getElementById('quizHeader').innerHTML = "<p>❌ Quiz not found.</p>";
+      return;
+    }
+
+    // 🧠 Extract quiz data
+    quizData = docSnap.data();
+    window.quizData = quizData;
+
+    if (!Array.isArray(quizData?.topics)) {
+      document.getElementById('quizHeader').innerHTML = "<p>❌ Quiz data is corrupted or incomplete.</p>";
+      return;
+    }
+
+    // 🖼️ Render header and load questions
+    renderHeader();
+
+    await loadQuestions(); // ✅ Ensure questions are loaded before showing
+
+    if (!selectedQuestions || selectedQuestions.length === 0) {
+      document.getElementById('quizContainer').innerHTML = "<p>⚠️ No questions available.</p>";
+      return;
+    }
+
+    showQuestion(0); // ✅ Safe to call now
+
+    // ⏱️ Start timer and enable navigation
+    startTimer();
+    document.getElementById('navigation').style.display = 'block';
+    document.getElementById('submitBtn').onclick = submitQuiz;
+
+    // 🖱️ Activity tracking
+    ['keydown', 'click', 'touchstart', 'mousemove'].forEach(event =>
+      document.addEventListener(event, () => {
+        logActivity(`🟢 ${event} detected`);
+        resetInactivityTimer();
+      })
+    );
+
+    resetInactivityTimer();
+  } catch (error) {
+    console.error("❌ Error initializing quiz:", error);
+    document.getElementById('quizHeader').innerHTML = "<p>❌ Failed to load quiz. Please try again later.</p>";
+  }
+});
+
     function renderHeader() {
       document.getElementById('quizHeader').innerHTML = `
         <div class="quiz-title">${quizData.title}</div>
