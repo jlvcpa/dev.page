@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Classroom Challenge Game</title>
+  <style>
+    body { font-family: sans-serif; display: flex; flex-direction: row; height: 100vh; margin: 0; }
+    .panel { flex: 1; padding: 10px; border-right: 1px solid #ccc; overflow-y: auto; }
+    .teacher-controls { margin-bottom: 10px; }
+    .group-panel { background-color: #f9f9f9; margin-bottom: 10px; padding: 10px; border-radius: 8px; }
+  </style>
+</head>
+<body>
+
+  <!-- Left Panel: Teacher Controls + Game Panels -->
+  <div class="panel">
+    <div class="teacher-controls">
+      <button onclick="groupStudents()">Group the Students</button>
+      <button onclick="selectStudentsForQuestion()">Randomize Answerers</button>
+      <button onclick="startTimer()">Start Question</button>
+    </div>
+    <div id="group1" class="group-panel">Group 1 Display</div>
+    <div id="group2" class="group-panel">Group 2 Display</div>
+    <div id="group3" class="group-panel">Group 3 Display</div>
+  </div>
+
+  <!-- Middle Panel: Questions -->
+  <div class="panel" id="question-panel">
+    <h3>Question #</h3>
+    <p id="question-text"></p>
+    <p><strong>Timer:</strong> <span id="timer">60</span>s</p>
+    <div id="answers-display"></div>
+  </div>
+
+  <!-- Right Panel: Logged-in Students -->
+  <div class="panel">
+    <h3>Students Logged In</h3>
+    <ul id="student-list"></ul>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/9.x.x/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.x.x/firebase-firestore.js"></script>
+  <!-- Firebase config + app logic goes here -->
+
+</body>
+</html>
