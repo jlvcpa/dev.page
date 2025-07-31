@@ -510,13 +510,14 @@ function startTimer(durationMinutes = 60) {
       console.log(msg);
     }
 
-function submitQuiz() {
-  if (!studentId || typeof studentId !== 'string') {
-    alert("❌ Cannot submit quiz: student ID is missing.");
-    console.error("🚫 studentId is undefined or invalid:", studentId);
-    return;
-  }
-
+      function submitQuiz() {
+  // This prevents Firebase from receiving an invalid payload and gives you a clear log when the issue occurs.
+        if (!studentId || typeof studentId !== 'string') {
+          alert("❌ Cannot submit quiz: student ID is missing.");
+          console.error("🚫 studentId is undefined or invalid:", studentId);
+          return;
+         }
+  // 🛡️ Prevent multiple submissions
   if (document.getElementById('navigation').style.display === 'none') return;
 
   clearInterval(timerInterval);
@@ -545,7 +546,7 @@ function submitQuiz() {
     second: '2-digit',
     hour12: true
   });
-
+      
   const resultHTML = `
     <!DOCTYPE html>
     <html lang="en">
@@ -591,6 +592,16 @@ function submitQuiz() {
           color: #28a745;
           margin-bottom: 10px;
         }
+        .instruction-block {
+  white-space: pre-wrap;
+  background-color: #f5f5f5;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 10px;
+  font-size: 16px;
+  font-family: inherit;
+}
+
         .question-block {
           background: #f9f9f9;
           padding: 15px;
@@ -615,8 +626,6 @@ function submitQuiz() {
         textarea {
           width: 100%;
           margin-top: 10px;
-          resize: none;
-          overflow: hidden;
         }
         .print-btn {
           text-align: center;
@@ -643,7 +652,7 @@ function submitQuiz() {
 
       <p><strong>Test Type:</strong> ${quizData.type}</p>
       <p><strong>Instructions:</strong></p>
-      <textarea readonly rows="4" id="instructions">${quizData.instructions}</textarea>
+      <div class="instruction-block">${quizData.instructions}</div>
       ${quizData.rubric}
 
       ${answeredOrder.map(i => {
@@ -671,16 +680,6 @@ function submitQuiz() {
       <div class="print-btn">
         <button onclick="window.print()">🖨️ Print This Page</button>
       </div>
-
-      <script>
-        window.addEventListener('DOMContentLoaded', () => {
-          const textarea = document.getElementById('instructions');
-          if (textarea) {
-            textarea.style.height = 'auto';
-            textarea.style.height = textarea.scrollHeight + 'px';
-          }
-        });
-      </script>
     </body>
     </html>
   `;
@@ -689,18 +688,27 @@ function submitQuiz() {
   document.write(resultHTML);
   document.close();
 
+  /*const resultId = `devresult-${studentId}-${sanitize(quizData.section)}-${sanitize(quizData.title)}-${timestamp}`;*/
   const resultId = `devresult-${studentId}-${quizData.section}-${quizData.title}-${timestamp}`;
   const resultRef = window.doc(window.db, "results", resultId);
-  const resultData = {
-    studentId, cnNo, lastName, firstName,
-    quizId: quizData.id || `quiz-${quizData.timestamp || timestamp}`,
-    quizTitle: quizData.title,
-    section: quizData.section,
-    type: quizData.type,
-    score, percentage, grade,
-    timestamp, submittedAt: readableTime,
-    responses, questions: selectedQuestions
-  };
+
+const resultData = {
+  studentId,
+  cnNo,
+  lastName,
+  firstName,
+  quizId: quizData.id || `quiz-${quizData.timestamp || timestamp}`,
+  quizTitle: quizData.title,
+  section: quizData.section,
+  type: quizData.type,
+  score,
+  percentage,
+  grade,
+  timestamp,
+  submittedAt: readableTime, // ✅ Human-readable time
+  responses,
+  questions: selectedQuestions // ✅ Include full question context
+};
 
   window.setDoc(resultRef, resultData)
     .then(() => {
