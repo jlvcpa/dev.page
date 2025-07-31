@@ -277,7 +277,7 @@
 } 
     ];*/
 
-    window.addEventListener('DOMContentLoaded', async () => {
+  /*  window.addEventListener('DOMContentLoaded', async () => {
       studentId = new URLSearchParams(window.location.search).get('student');
       const studentData = JSON.parse(localStorage.getItem(`questionnaire-${studentId}`));
       if (!studentData || !studentData.quizId) {
@@ -322,7 +322,7 @@
         console.error("❌ Error loading quiz:", error);
         alert("Failed to load quiz.");
       }
-    });
+    }); */
 
     function renderHeader() {
       document.getElementById('quizHeader').innerHTML = `
