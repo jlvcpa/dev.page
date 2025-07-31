@@ -384,7 +384,7 @@
           document.getElementById('quizHeader').innerHTML = "<p>⚠️ Failed to load questions. Please try again.</p>";
         }
       }
-    function showQuestion(index) {
+    /* function showQuestion(index) {
       const q = selectedQuestions[index];
       document.getElementById('quizContainer').innerHTML = `
         <div class="question-block">
@@ -404,7 +404,35 @@
           }).join('')}
         </div>
       `;
-    }
+    } */
+
+function showQuestion(index) {
+  const q = selectedQuestions?.[index];
+  if (!q || !q.question || !Array.isArray(q.options)) {
+    document.getElementById('quizContainer').innerHTML = "<p>⚠️ Question data is missing or invalid.</p>";
+    console.warn("🚫 Invalid question at index", index, q);
+    return;
+  }
+
+  document.getElementById('quizContainer').innerHTML = `
+    <div class="question-block">
+      <h3>${index + 1}. ${q.question}</h3>
+      ${q.options.map((opt, i) => {
+        const label = String.fromCharCode(65 + i);
+        return `
+          <div>
+            <label>
+              <input type="radio" name="question${index}" value="${opt}"
+                ${responses[index] === opt ? 'checked' : ''}
+                onchange="recordAnswer(${index}, '${opt}')">
+              ${label}. ${opt}
+            </label>
+          </div>
+        `;
+      }).join('')}
+    </div>
+  `;
+}
 
     function recordAnswer(index, answer) {
       responses[index] = answer;
