@@ -643,6 +643,15 @@ function startTimer(durationMinutes = 60) {
       <p><strong>Test Type:</strong> ${quizData.type}</p>
       <p><strong>Instructions:</strong></p>
       <textarea readonly rows="4">${quizData.instructions}</textarea>
+      <script>
+        window.addEventListener('DOMContentLoaded', () => {
+          const textarea = document.getElementById('instructions');
+          if (textarea) {
+            textarea.style.height = 'auto';
+            textarea.style.height = textarea.scrollHeight + 'px';
+          }
+        });
+      </script>
       ${quizData.rubric}
 
       ${answeredOrder.map(i => {
