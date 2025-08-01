@@ -341,11 +341,21 @@
         return;
       }
 
-      const selectedItems = document.querySelectorAll(".doc-item input[type='checkbox']:checked");
-      if (selectedItems.length === 0) {
-        statusDiv.textContent = "❌ Please select student documents to fix.";
-        return;
-      }
+      
+  // 🔍 Diagnostic: Fetch and log all students
+  const snapshot = await getDocs(collection(db, "students"));
+  console.log("Total students fetched:", snapshot.size);
+  snapshot.forEach(doc => {
+    const data = doc.data();
+    console.log("Student:", data.name, "Email:", data.email);
+  });
+
+  const selectedItems = document.querySelectorAll(".doc-item input[type='checkbox']:checked");
+  if (selectedItems.length === 0) {
+    statusDiv.textContent = "❌ Please select student documents to fix.";
+    return;
+  }
+
 
       statusDiv.textContent = "⏳ Fixing student emails...";
       progressBar.style.width = "0%";
