@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Update Quizzes Metadata</title>
+</head>
+<body>
+  <h2>Update All Quizzes</h2>
+  <form id="updateForm">
+    <label>School Year: <input type="text" id="schoolYear" value="SY 2025–2026" required></label><br><br>
+    <label>Term: <input type="text" id="term" value="1st Semester" required></label><br><br>
+    <label>Subject: <input type="text" id="subject" value="FABM 1" required></label><br><br>
+    <button type="submit">Update All Quizzes</button>
+  </form>
+
+  <div id="status" style="margin-top:20px;"></div>
+
+  <script type="module">
+    (async () => {
+      try {
+        const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js");
+        const {
+          getFirestore,
+          doc,
+          setDoc,
+          getDocs,
+          collection
+        } = await import("https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js");
+
+        const firebaseConfig = {
+          apiKey: "AIzaSyAgOsKAZWwExUzupxSNytsfOo9BOppF0ng",
+          authDomain: "jlvcpa-quizzes.firebaseapp.com",
+          projectId: "jlvcpa-quizzes",
+          storageBucket: "jlvcpa-quizzes.appspot.com",
+          messagingSenderId: "629158256557",
+          appId: "1:629158256557:web:b3d1a424b32e28cd578b24"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        document.getElementById("updateForm").addEventListener("submit", async (e) => {
+          e.preventDefault();
+
+          const schoolYear = document.getElementById("schoolYear").value.trim();
+          const term = document.getElementById("term").value.trim();
+          const subject = document.getElementById("subject").value.trim();
+          const statusDiv = document.getElementById("status");
+
+          statusDiv.innerHTML = "⏳ Updating documents...";
+
+          try {
+            const querySnapshot = await getDocs(collection(db, "quizzes"));
+            let updatedCount = 0;
+
+            for (const docSnap of querySnapshot.docs) {
+              const quizRef = doc(db, "quizzes", docSnap.id);
+              const existingData = docSnap.data();
+
+              await setDoc(quizRef, {
+                ...existingData,
+                schoolYear,
+                term,
+                subject
+              });
+
+              updatedCount++;
+            }
+
+            statusDiv.innerHTML = `✅ Successfully updated ${updatedCount} quizzes.`;
+          } catch (err) {
+            console.error("Error updating quizzes:", err);
+            statusDiv.innerHTML = `❌ Error: ${err.message}`;
+          }
+        });
+      } catch (error) {
+        console.error("Firebase initialization failed:", error);
+      }
+    })();
+  </script>
+</body>
+</html>
