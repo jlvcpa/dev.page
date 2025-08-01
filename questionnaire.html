@@ -692,14 +692,18 @@ function showQuestion(index) {
   box-shadow: 0 2px 6px rgba(0,0,0,0.2);
   z-index: 1000;
 }
+@page {
+  margin-bottom: 1in; /* Reserve 1 inch for footer */
+}
+
 @media print {
   body {
-    padding-bottom: 60px; /* Prevent overlap with footer */
+    padding-bottom: 1in; /* Prevent content from entering footer space */
   }
 
   .print-footer {
     position: fixed;
-    bottom: 0;
+    bottom: 0.5in; /* Halfway into the 1-inch margin */
     left: 50%;
     transform: translateX(-50%);
     width: 90%; /* Adjust width as needed */
