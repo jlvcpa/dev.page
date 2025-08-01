@@ -233,6 +233,33 @@ docFilterInput.addEventListener("input", () => {
         }
       });
 
+      let lastClickedItem = null;
+
+documentList.addEventListener("click", (e) => {
+  const item = e.target.closest(".doc-item");
+  if (!item) return;
+
+  const checkbox = item.querySelector("input[type='checkbox']");
+  const allItems = Array.from(document.querySelectorAll(".doc-item"));
+  const clickedIndex = allItems.indexOf(item);
+
+  if (e.shiftKey && lastClickedItem) {
+    const lastIndex = allItems.indexOf(lastClickedItem);
+    const [start, end] = [Math.min(clickedIndex, lastIndex), Math.max(clickedIndex, lastIndex)];
+
+    for (let i = start; i <= end; i++) {
+      const cb = allItems[i].querySelector("input[type='checkbox']");
+      if (cb && !cb.disabled) cb.checked = true;
+    }
+  } else {
+    if (checkbox && !checkbox.disabled) {
+      checkbox.checked = !checkbox.checked;
+    }
+  }
+
+  lastClickedItem = item;
+});
+      
  updateSelectedBtn.addEventListener("click", async () => {
   const collectionName = document.getElementById("collectionSelect").value;
   const updateData = getUpdateData();
