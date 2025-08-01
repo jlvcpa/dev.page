@@ -62,6 +62,31 @@
       font-style: italic;
       color: #555;
     }
+
+    #documentList {
+      margin-top: 20px;
+      max-height: 500px;
+      overflow: auto;
+      border: 1px solid #ccc;
+      padding: 10px;
+      background: #fff;
+    }
+
+    .doc-item {
+      display: flex;
+      align-items: center;
+      margin-bottom: 5px;
+    }
+
+    .doc-item input[type="checkbox"] {
+      margin-right: 10px;
+    }
+
+    .doc-item.updated {
+      color: #999;
+      background-color: #f0f0f0;
+      pointer-events: none;
+    }
   </style>
 </head>
 <body>
@@ -75,6 +100,7 @@
     <option value="results">results</option>
     <option value="questionBank">questionBank</option>
   </select>
+  <button id="loadDocsBtn">📄 Load Documents</button>
 
   <div id="fieldsContainer">
     <h3>Fields to Add/Update</h3>
@@ -86,13 +112,10 @@
 
   <button id="addField">➕ Add Another Field</button>
 
-  <h3>Update a Single Document</h3>
-  <label for="docIdInput">Document ID:</label>
-  <input type="text" id="docIdInput" placeholder="Enter Document ID">
-  <button id="updateOneBtn">📝 Update This Document</button>
+  <h3>Update Selected Documents</h3>
+  <button id="updateSelectedBtn">✅ Update Selected</button>
 
-  <h3>Update All Documents</h3>
-  <button id="updateAllBtn">🚀 Update All Documents</button>
+  <div id="documentList"></div>
 
   <div id="progress-container">
     <div id="progress-bar"></div>
@@ -125,11 +148,12 @@
       const db = getFirestore(app);
 
       const addFieldBtn = document.getElementById("addField");
-      const updateOneBtn = document.getElementById("updateOneBtn");
-      const updateAllBtn = document.getElementById("updateAllBtn");
+      const loadDocsBtn = document.getElementById("loadDocsBtn");
+      const updateSelectedBtn = document.getElementById("updateSelectedBtn");
       const statusDiv = document.getElementById("status");
       const progressBar = document.getElementById("progress-bar");
       const progressText = document.getElementById("progress-text");
+      const documentList = document.getElementById("documentList");
 
       addFieldBtn.addEventListener("click", () => {
         const div = document.createElement("div");
@@ -161,59 +185,76 @@
         progressText.textContent = `Progress: ${percent}%`;
       }
 
-      updateOneBtn.addEventListener("click", async () => {
+      loadDocsBtn.addEventListener("click", async () => {
         const collectionName = document.getElementById("collectionSelect").value;
-        const docId = document.getElementById("docIdInput").value.trim();
-        const updateData = getUpdateData();
-
-        if (!collectionName || !docId || Object.keys(updateData).length === 0) {
-          statusDiv.innerHTML = "❌ Please select a collection, enter a document ID, and provide at least one field.";
+        if (!collectionName) {
+          statusDiv.textContent = "❌ Please select a collection.";
           return;
         }
 
-        statusDiv.innerHTML = "⏳ Updating single document...";
-
-        try {
-          const docRef = doc(db, collectionName, docId);
-          await setDoc(docRef, updateData, { merge: true });
-          statusDiv.innerHTML = `✅ Document "${docId}" updated in "${collectionName}".`;
-        } catch (err) {
-          console.error("Error updating document:", err);
-          statusDiv.innerHTML = `❌ Error: ${err.message}`;
-        }
-      });
-
-      updateAllBtn.addEventListener("click", async () => {
-        const collectionName = document.getElementById("collectionSelect").value;
-        const updateData = getUpdateData();
-
-        if (!collectionName || Object.keys(updateData).length === 0) {
-          statusDiv.innerHTML = "❌ Please select a collection and provide at least one field.";
-          return;
-        }
-
-        statusDiv.innerHTML = "⏳ Updating all documents...";
-        progressBar.style.width = "0%";
-        progressText.textContent = "Progress: 0%";
+        statusDiv.textContent = "⏳ Loading documents...";
+        documentList.innerHTML = "";
 
         try {
           const querySnapshot = await getDocs(collection(db, collectionName));
-          const totalDocs = querySnapshot.size;
-          let updatedCount = 0;
+          querySnapshot.forEach(docSnap => {
+            const div = document.createElement("div");
+            div.className = "doc-item";
+            div.dataset.docId = docSnap.id;
+            div.innerHTML = `
+              <input type="checkbox">
+              <span>${docSnap.id}</span>
+            `;
+            documentList.appendChild(div);
+          });
 
-          for (const docSnap of querySnapshot.docs) {
-            const docRef = doc(db, collectionName, docSnap.id);
+          statusDiv.textContent = `📄 Loaded ${querySnapshot.size} documents from "${collectionName}".`;
+        } catch (err) {
+          console.error("Error loading documents:", err);
+          statusDiv.textContent = `❌ Error: ${err.message}`;
+        }
+      });
+
+      updateSelectedBtn.addEventListener("click", async () => {
+        const collectionName = document.getElementById("collectionSelect").value;
+        const updateData = getUpdateData();
+        const selectedItems = document.querySelectorAll(".doc-item input[type='checkbox']:checked");
+
+        if (!collectionName || Object.keys(updateData).length === 0 || selectedItems.length === 0) {
+          statusDiv.textContent = "❌ Please select a collection, provide fields, and choose documents.";
+          return;
+        }
+
+        statusDiv.textContent = "⏳ Updating selected documents...";
+        progressBar.style.width = "0%";
+        progressText.textContent = "Progress: 0%";
+
+        let updatedCount = 0;
+        const total = selectedItems.length;
+
+        for (const checkbox of selectedItems) {
+          const docItem = checkbox.closest(".doc-item");
+          const docId = docItem.dataset.docId;
+          const docRef = doc(db, collectionName, docId);
+
+          try {
             await setDoc(docRef, updateData, { merge: true });
             updatedCount++;
-            updateProgress(updatedCount, totalDocs);
-            await new Promise(res => setTimeout(res, 150)); // throttle delay
-          }
+            updateProgress(updatedCount, total);
 
-          statusDiv.innerHTML = `✅ Updated ${updatedCount} documents in "${collectionName}".`;
-        } catch (err) {
-          console.error("Error updating documents:", err);
-          statusDiv.innerHTML = `❌ Error: ${err.message}`;
+            // Move to bottom and gray out
+            docItem.classList.add("updated");
+            checkbox.disabled = true;
+            checkbox.checked = false;
+            documentList.appendChild(docItem);
+
+            await new Promise(res => setTimeout(res, 150)); // throttle
+          } catch (err) {
+            console.error(`Error updating ${docId}:`, err);
+          }
         }
+
+        statusDiv.textContent = `✅ Updated ${updatedCount} documents.`;
       });
     })();
   </script>
