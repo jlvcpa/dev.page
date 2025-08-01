@@ -242,7 +242,7 @@
           div.className = "doc-item";
           div.dataset.docId = docSnap.id;
 
-          const lastName = data.lastName || data.lastName || "(no last name)";
+          const lastName = data.LastName || data.lastName || "(no last name)";
           const email = data.Email || data.email || "(no email)";
 
           div.innerHTML = `
@@ -382,7 +382,7 @@
             allDocItems = allDocItems.filter(item => item.dataset.docId !== docId);
             allDocItems.push(docItem);
 
-                       await new Promise(res => setTimeout(res, 150)); // throttle
+                        await new Promise(res => setTimeout(res, 150)); // throttle
           }
         } catch (err) {
           console.error(`Error fixing email for ${docId}:`, err);
@@ -392,6 +392,6 @@
       statusDiv.textContent = `✅ Fixed emails for ${updatedCount} students.`;
     });
   })();
-  </script>
+</script>
 </body>
 </html>
