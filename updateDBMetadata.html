@@ -241,8 +241,8 @@ docFilterInput.addEventListener("input", () => {
   div.className = "doc-item";
   div.dataset.docId = docSnap.id;
 
-  const lastName = data.lastName || "(no last name)";
-  const email = data.email || "(no email)";
+  const lastName = data.LastName || "(no last name)";
+  const email = data.Email || "(no email)";
 
   div.innerHTML = `
     <input type="checkbox">
