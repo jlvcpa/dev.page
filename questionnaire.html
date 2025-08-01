@@ -531,14 +531,13 @@ function showQuestion(index) {
       console.log(msg);
     }
 
-      function submitQuiz() {
-  // This prevents Firebase from receiving an invalid payload and gives you a clear log when the issue occurs.
-        if (!studentId || typeof studentId !== 'string') {
-          alert("❌ Cannot submit quiz: student ID is missing.");
-          console.error("🚫 studentId is undefined or invalid:", studentId);
-          return;
-         }
-  // 🛡️ Prevent multiple submissions
+function submitQuiz() {
+  if (!studentId || typeof studentId !== 'string') {
+    alert("❌ Cannot submit quiz: student ID is missing.");
+    console.error("🚫 studentId is undefined or invalid:", studentId);
+    return;
+  }
+
   if (document.getElementById('navigation').style.display === 'none') return;
 
   clearInterval(timerInterval);
@@ -567,7 +566,7 @@ function showQuestion(index) {
     second: '2-digit',
     hour12: true
   });
-      
+
   const resultHTML = `
     <!DOCTYPE html>
     <html lang="en">
@@ -579,6 +578,7 @@ function showQuestion(index) {
           font-family: 'Segoe UI', sans-serif;
           background: #fff;
           padding: 20px;
+          counter-reset: page;
         }
         .header {
           text-align: center;
@@ -614,9 +614,9 @@ function showQuestion(index) {
           margin-bottom: 10px;
         }
         p {
-         margin: 2px 0;
+          margin: 2px 0;
         }
-       .instruction-block {
+        .instruction-block {
           margin: 2px 0;
           white-space: pre-wrap;
           background-color: #f5f5f5;
@@ -631,24 +631,20 @@ function showQuestion(index) {
           border-collapse: collapse;
           margin: 4px 0;
         }
-
         .rubric-block th,
         .rubric-block td {
           border: 1px solid #ccc;
           padding: 8px;
           text-align: left;
         }
-
         .rubric-block th {
           background-color: #f0f0f0;
           font-weight: bold;
         }
-
         .rubric-block {
           margin: 4px 0;
           font-size: 16px;
         }
-
         .question-block {
           background: #f9f9f9;
           padding: 15px;
@@ -680,46 +676,26 @@ function showQuestion(index) {
         }
 
         /* Print-specific styles */
-@media print {
-  @page {
-    margin: 20mm;
-    size: auto;
-  }
+        @media print {
+          @page {
+            margin: 20mm;
+            size: auto;
+            @bottom-right {
+              content: "Page " counter(page) " of " counter(pages);
+              font-size: 12px;
+              font-family: 'Arial', sans-serif;
+            }
+          }
 
-  body {
-    padding-bottom: 0 !important;
-  }
+          body {
+            padding-bottom: 0 !important;
+          }
 
-  .footer-box {
-    display: none !important;
-  }
-
-  .print-footer {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    font-size: 12px;
-    font-family: 'Arial', sans-serif;
-    display: flex;
-    justify-content: space-between;
-    padding: 0 20mm;
-  }
-
-  .print-footer .motto {
-    text-align: left;
-    flex: 1;
-  }
-
-  .print-footer .page-number {
-    text-align: right;
-    flex: 1;
-  }
-
-  .print-btn {
-    display: none !important;
-  }
-}
+          .footer-box,
+          .print-btn {
+            display: none !important;
+          }
+        }
       </style>
     </head>
     <body>
@@ -771,10 +747,6 @@ function showQuestion(index) {
       <div class="print-btn">
         <button onclick="window.print()">🖨️ Print This Page</button>
       </div>
-      <div class="print-footer">
-  <div class="motto">4Cs: Christ-centeredness, Competence, Character, Compassion.</div>
-  <div class="page-number">Page <span class="pageNum"></span> of <span class="totalPages"></span></div>
-</div>
     </body>
     </html>
   `;
@@ -783,27 +755,26 @@ function showQuestion(index) {
   document.write(resultHTML);
   document.close();
 
-  /*const resultId = `devresult-${studentId}-${sanitize(quizData.section)}-${sanitize(quizData.title)}-${timestamp}`;*/
   const resultId = `devresult-${studentId}-${quizData.section}-${quizData.title}-${timestamp}`;
   const resultRef = window.doc(window.db, "results", resultId);
 
-const resultData = {
-  studentId,
-  cnNo,
-  lastName,
-  firstName,
-  quizId: quizData.id || `quiz-${quizData.timestamp || timestamp}`,
-  quizTitle: quizData.title,
-  section: quizData.section,
-  type: quizData.type,
-  score,
-  percentage,
-  grade,
-  timestamp,
-  submittedAt: readableTime, // ✅ Human-readable time
-  responses,
-  questions: selectedQuestions // ✅ Include full question context
-};
+  const resultData = {
+    studentId,
+    cnNo,
+    lastName,
+    firstName,
+    quizId: quizData.id || `quiz-${quizData.timestamp || timestamp}`,
+    quizTitle: quizData.title,
+    section: quizData.section,
+    type: quizData.type,
+    score,
+    percentage,
+    grade,
+    timestamp,
+    submittedAt: readableTime,
+    responses,
+    questions: selectedQuestions
+  };
 
   window.setDoc(resultRef, resultData)
     .then(() => {
@@ -815,6 +786,7 @@ const resultData = {
       alert("There was an error saving your result. Please try again.");
     });
 }
+
 </script>
 <!--<script src="questionnaire.js?v=2"></script> -->
 </body>
