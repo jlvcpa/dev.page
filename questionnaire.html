@@ -605,28 +605,28 @@ function startTimer(durationMinutes = 60) {
           font-size: 16px;
           font-family: inherit;
         }
-.rubric-block table {
-  width: 100%;
-  border-collapse: collapse;
-  margin: 4px 0;
-}
+        .rubric-block table {
+          width: 100%;
+          border-collapse: collapse;
+          margin: 4px 0;
+        }
 
-.rubric-block th,
-.rubric-block td {
-  border: 1px solid #ccc;
-  padding: 8px;
-  text-align: left;
-}
+        .rubric-block th,
+        .rubric-block td {
+          border: 1px solid #ccc;
+          padding: 8px;
+          text-align: left;
+        }
 
-.rubric-block th {
-  background-color: #f0f0f0;
-  font-weight: bold;
-}
+        .rubric-block th {
+          background-color: #f0f0f0;
+          font-weight: bold;
+        }
 
-.rubric-block {
-  margin: 4px 0;
-  font-size: 16px;
-}
+        .rubric-block {
+          margin: 4px 0;
+          font-size: 16px;
+        }
 
         .question-block {
           background: #f9f9f9;
@@ -681,7 +681,7 @@ function startTimer(durationMinutes = 60) {
       <p><strong>Instructions:</strong></p>
       <div class="instruction-block">${quizData.instructions}</div>
       <p><strong>Rubric:</strong> This table outlines how your answers will be evaluated.</p>
-      <div class="rubric-block">${quizData.rubric}</div>
+      <div class="rubric-block">${quizData.rubricHTML}</div>
 
       ${answeredOrder.map(i => {
         const q = selectedQuestions[i];
