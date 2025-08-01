@@ -686,17 +686,7 @@ function submitQuiz() {
               font-size: 12px;
               font-family: 'Arial', sans-serif;
             }
-            
-            /* Prevent orphaned blocks during printing */
-            .question-block,
-            .choice-block,
-            .correct,
-            .incorrect,
-            .explanation {
-              page-break-inside: avoid;
-              break-inside: avoid;
-            }
-
+         
             @bottom-right {
               content: "Page " counter(page) " of " counter(pages);
               font-size: 12px;
@@ -704,6 +694,18 @@ function submitQuiz() {
             }
           }
 
+            /* Prevent orphaned blocks during printing */
+            .question-block,
+            .choice-block,
+            .correct,
+            .incorrect,
+            .explanation {
+    page-break-inside: avoid;
+    break-inside: avoid;
+    display: table; /* Optional: helps some browsers treat it as atomic */
+    width: 100%;
+            }
+            
           body {
             padding-bottom: 0 !important;
           }
