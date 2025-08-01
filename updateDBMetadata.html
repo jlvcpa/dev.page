@@ -100,6 +100,8 @@
     <option value="results">results</option>
     <option value="questionBank">questionBank</option>
   </select>
+  <label for="docFilterInput">🔍 Filter Document IDs:</label>
+  <input type="text" id="docFilterInput" placeholder="Type to filter...">
   <button id="loadDocsBtn">📄 Load Documents</button>
 
   <div id="fieldsContainer">
@@ -179,6 +181,22 @@
         return updateData;
       }
 
+      const docFilterInput = document.getElementById("docFilterInput");
+
+// Store all loaded document items for filtering
+let allDocItems = [];
+
+docFilterInput.addEventListener("input", () => {
+  const filterText = docFilterInput.value.toLowerCase();
+  documentList.innerHTML = "";
+
+  allDocItems.forEach(item => {
+    const docId = item.dataset.docId.toLowerCase();
+    if (docId.includes(filterText)) {
+      documentList.appendChild(item);
+    }
+  });
+});
       function updateProgress(current, total) {
         const percent = Math.round((current / total) * 100);
         progressBar.style.width = `${percent}%`;
@@ -215,47 +233,53 @@
         }
       });
 
-      updateSelectedBtn.addEventListener("click", async () => {
-        const collectionName = document.getElementById("collectionSelect").value;
-        const updateData = getUpdateData();
-        const selectedItems = document.querySelectorAll(".doc-item input[type='checkbox']:checked");
+ updateSelectedBtn.addEventListener("click", async () => {
+  const collectionName = document.getElementById("collectionSelect").value;
+  const updateData = getUpdateData();
+  const selectedItems = document.querySelectorAll(".doc-item input[type='checkbox']:checked");
 
-        if (!collectionName || Object.keys(updateData).length === 0 || selectedItems.length === 0) {
-          statusDiv.textContent = "❌ Please select a collection, provide fields, and choose documents.";
-          return;
-        }
+  if (!collectionName || Object.keys(updateData).length === 0 || selectedItems.length === 0) {
+    statusDiv.textContent = "❌ Please select a collection, provide fields, and choose documents.";
+    return;
+  }
 
-        statusDiv.textContent = "⏳ Updating selected documents...";
-        progressBar.style.width = "0%";
-        progressText.textContent = "Progress: 0%";
+  statusDiv.textContent = "⏳ Updating selected documents...";
+  progressBar.style.width = "0%";
+  progressText.textContent = "Progress: 0%";
 
-        let updatedCount = 0;
-        const total = selectedItems.length;
+  let updatedCount = 0;
+  const total = selectedItems.length;
 
-        for (const checkbox of selectedItems) {
-          const docItem = checkbox.closest(".doc-item");
-          const docId = docItem.dataset.docId;
-          const docRef = doc(db, collectionName, docId);
+  for (const checkbox of selectedItems) {
+    const docItem = checkbox.closest(".doc-item");
+    const docId = docItem.dataset.docId;
+    const docRef = doc(db, collectionName, docId);
 
-          try {
-            await setDoc(docRef, updateData, { merge: true });
-            updatedCount++;
-            updateProgress(updatedCount, total);
+    try {
+      await setDoc(docRef, updateData, { merge: true });
+      updatedCount++;
+      updateProgress(updatedCount, total);
 
-            // Move to bottom and gray out
-            docItem.classList.add("updated");
-            checkbox.disabled = true;
-            checkbox.checked = false;
-            documentList.appendChild(docItem);
+      // Mark as updated
+      docItem.classList.add("updated");
+      checkbox.disabled = true;
+      checkbox.checked = false;
 
-            await new Promise(res => setTimeout(res, 150)); // throttle
-          } catch (err) {
-            console.error(`Error updating ${docId}:`, err);
-          }
-        }
+      // Move to bottom visually
+      documentList.appendChild(docItem);
 
-        statusDiv.textContent = `✅ Updated ${updatedCount} documents.`;
-      });
+      // Remove from filterable list and re-add at end
+      allDocItems = allDocItems.filter(item => item.dataset.docId !== docId);
+      allDocItems.push(docItem);
+
+      await new Promise(res => setTimeout(res, 150)); // throttle
+    } catch (err) {
+      console.error(`Error updating ${docId}:`, err);
+    }
+  }
+
+  statusDiv.textContent = `✅ Updated ${updatedCount} documents.`;
+});
     })();
   </script>
 </body>
