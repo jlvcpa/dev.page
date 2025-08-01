@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Firestore Batch Updater</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 2rem;
+      background-color: #f9f9f9;
+      color: #333;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      background: #fff;
+      padding: 2rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    #progress-container {
+      width: 100%;
+      background: #eee;
+      border-radius: 4px;
+      overflow: hidden;
+      margin-bottom: 1rem;
+      border: 1px solid #ccc;
+    }
+
+    #progress-bar {
+      width: 0%;
+      height: 20px;
+      background: #4caf50;
+      transition: width 0.3s ease;
+    }
+
+    #progress-text {
+      text-align: center;
+      font-weight: bold;
+      margin-bottom: 1rem;
+    }
+
+    button {
+      display: block;
+      width: 100%;
+      padding: 0.75rem;
+      font-size: 1rem;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    button:disabled {
+      background-color: #aaa;
+      cursor: not-allowed;
+    }
+
+    #status-message {
+      margin-top: 1rem;
+      text-align: center;
+      font-style: italic;
+      color: #555;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Firestore Batch Updater</h1>
+
+    <div id="progress-container">
+      <div id="progress-bar"></div>
+    </div>
+    <p id="progress-text">Progress: 0%</p>
+
+    <button id="start-button">Start Update</button>
+    <p id="status-message"></p>
+  </div>
+
+  <script type="module">
+    import { getDocs, collection, doc, setDoc } from "firebase/firestore";
+    import { db } from "./firebase.js"; // Adjust path to your Firebase config
+
+    const delay = ms => new Promise(res => setTimeout(res, ms));
+
+    const startButton = document.getElementById("start-button");
+    const progressBar = document.getElementById("progress-bar");
+    const progressText = document.getElementById("progress-text");
+    const statusMessage = document.getElementById("status-message");
+
+    async function updateResultsThrottled(updateData, delayMs = 150) {
+      startButton.disabled = true;
+      statusMessage.textContent = "Updating documents...";
+
+      const querySnapshot = await getDocs(collection(db, "results"));
+      const totalDocs = querySnapshot.size;
+      let updatedCount = 0;
+
+      for (const docSnap of querySnapshot.docs) {
+        const docRef = doc(db, "results", docSnap.id);
+
+        try {
+          await setDoc(docRef, updateData, { merge: true });
+          updatedCount++;
+          updateProgressBar(updatedCount, totalDocs);
+          await delay(delayMs);
+        } catch (error) {
+          console.error(`Failed to update ${docSnap.id}:`, error);
+        }
+      }
+
+      statusMessage.textContent = "✅ All documents updated.";
+      startButton.disabled = false;
+    }
+
+    function updateProgressBar(current, total) {
+      const percent = Math.round((current / total) * 100);
+      progressBar.style.width = `${percent}%`;
+      progressText.textContent = `Progress: ${percent}%`;
+    }
+
+    startButton.addEventListener("click", () => {
+      const updatePayload = {
+        status: "completed",
+        updatedAt: new Date().toISOString()
+      };
+      updateResultsThrottled(updatePayload, 150);
+    });
+  </script>
+</body>
+</html>
