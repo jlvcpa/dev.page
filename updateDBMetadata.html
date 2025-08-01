@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Firestore Document Updater</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    label { display: block; margin-top: 10px; }
+    .field-pair { margin-bottom: 10px; }
+    input[type="text"] { width: 250px; margin-right: 10px; }
+    button { margin-top: 10px; }
+  </style>
+</head>
+<body>
+  <h2>Firestore Document Updater</h2>
+
+  <label for="collectionSelect">Select Collection:</label>
+  <select id="collectionSelect">
+    <option value="">-- Choose a Collection --</option>
+    <option value="quizzes">quizzes</option>
+    <option value="students">students</option>
+    <option value="teachers">teachers</option>
+    <!-- Add more known collections here -->
+  </select>
+
+  <div id="fieldsContainer">
+    <h3>Fields to Add/Update</h3>
+    <div class="field-pair">
+      <input type="text" placeholder="Field Name" class="field-name">
+      <input type="text" placeholder="Field Value" class="field-value">
+    </div>
+  </div>
+
+  <button id="addField">➕ Add Another Field</button>
+
+  <hr>
+
+  <h3>Update a Single Document</h3>
+  <label for="docIdInput">Document ID:</label>
+  <input type="text" id="docIdInput" placeholder="Enter Document ID">
+  <button id="updateOneBtn">📝 Update This Document</button>
+
+  <hr>
+
+  <h3>Update All Documents</h3>
+  <button id="updateAllBtn">🚀 Update All Documents</button>
+
+  <div id="status" style="margin-top:20px;"></div>
+
+  <script type="module">
+    (async () => {
+      const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js");
+      const {
+        getFirestore,
+        doc,
+        setDoc,
+        getDocs,
+        collection
+      } = await import("https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js");
+
+      const firebaseConfig = {
+        apiKey: "AIzaSyAgOsKAZWwExUzupxSNytsfOo9BOppF0ng",
+        authDomain: "jlvcpa-quizzes.firebaseapp.com",
+        projectId: "jlvcpa-quizzes",
+        storageBucket: "jlvcpa-quizzes.appspot.com",
+        messagingSenderId: "629158256557",
+        appId: "1:629158256557:web:b3d1a424b32e28cd578b24"
+      };
+
+      const app = initializeApp(firebaseConfig);
+      const db = getFirestore(app);
+
+      const addFieldBtn = document.getElementById("addField");
+      const updateOneBtn = document.getElementById("updateOneBtn");
+      const updateAllBtn = document.getElementById("updateAllBtn");
+      const statusDiv = document.getElementById("status");
+
+      addFieldBtn.addEventListener("click", () => {
+        const div = document.createElement("div");
+        div.className = "field-pair";
+        div.innerHTML = `
+          <input type="text" placeholder="Field Name" class="field-name">
+          <input type="text" placeholder="Field Value" class="field-value">
+        `;
+        document.getElementById("fieldsContainer").appendChild(div);
+      });
+
+      function getUpdateData() {
+        const fieldNames = document.querySelectorAll(".field-name");
+        const fieldValues = document.querySelectorAll(".field-value");
+        const updateData = {};
+
+        for (let i = 0; i < fieldNames.length; i++) {
+          const name = fieldNames[i].value.trim();
+          const value = fieldValues[i].value.trim();
+          if (name) updateData[name] = value;
+        }
+
+        return updateData;
+      }
+
+      updateOneBtn.addEventListener("click", async () => {
+        const collectionName = document.getElementById("collectionSelect").value;
+        const docId = document.getElementById("docIdInput").value.trim();
+        const updateData = getUpdateData();
+
+        if (!collectionName || !docId || Object.keys(updateData).length === 0) {
+          statusDiv.innerHTML = "❌ Please select a collection, enter a document ID, and provide at least one field.";
+          return;
+        }
+
+        statusDiv.innerHTML = "⏳ Updating single document...";
+
+        try {
+          const docRef = doc(db, collectionName, docId);
+          await setDoc(docRef, updateData, { merge: true });
+          statusDiv.innerHTML = `✅ Document "${docId}" updated in "${collectionName}".`;
+        } catch (err) {
+          console.error("Error updating document:", err);
+          statusDiv.innerHTML = `❌ Error: ${err.message}`;
+        }
+      });
+
+      updateAllBtn.addEventListener("click", async () => {
+        const collectionName = document.getElementById("collectionSelect").value;
+        const updateData = getUpdateData();
+
+        if (!collectionName || Object.keys(updateData).length === 0) {
+          statusDiv.innerHTML = "❌ Please select a collection and provide at least one field.";
+          return;
+        }
+
+        statusDiv.innerHTML = "⏳ Updating all documents...";
+
+        try {
+          const querySnapshot = await getDocs(collection(db, collectionName));
+          let updatedCount = 0;
+
+          for (const docSnap of querySnapshot.docs) {
+            const docRef = doc(db, collectionName, docSnap.id);
+            await setDoc(docRef, updateData, { merge: true });
+            updatedCount++;
+          }
+
+          statusDiv.innerHTML = `✅ Updated ${updatedCount} documents in "${collectionName}".`;
+        } catch (err) {
+          console.error("Error updating documents:", err);
+          statusDiv.innerHTML = `❌ Error: ${err.message}`;
+        }
+      });
+    })();
+  </script>
+</body>
+</html>
