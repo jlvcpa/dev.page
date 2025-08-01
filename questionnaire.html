@@ -678,57 +678,48 @@ function showQuestion(index) {
           text-align: center;
           margin-top: 20px;
         }
-.footer-box {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  background-color: #f0f0f0;
-  border-top: 2px solid #333;
-  padding: 10px 20px;
-  text-align: center;
-  font-size: 14px;
-  font-family: Arial, sans-serif;
-  box-shadow: 0 -2px 6px rgba(0,0,0,0.2);
-  z-index: 1000;
-}
 
-/* Prevent overlap with content */
-body {
-  padding-bottom: 60px; /* Adjust based on footer height */
-}
-
-/* Print-specific styles */
+        /* Print-specific styles */
 @media print {
   @page {
-    margin-bottom: 80px; /* Reserve space for footer */
+    margin: 20mm;
+    size: auto;
   }
 
   body {
-    padding-bottom: 80px;
+    padding-bottom: 0 !important;
   }
 
   .footer-box {
+    display: none !important;
+  }
+
+  .print-footer {
     position: fixed;
     bottom: 0;
     left: 0;
     width: 100%;
-    background-color: #f0f0f0;
-    border-top: 2px solid #333;
-    padding: 10px 20px;
-    text-align: center;
-    font-size: 14px;
-    font-family: Arial, sans-serif;
-    box-shadow: none;
+    font-size: 12px;
+    font-family: 'Arial', sans-serif;
+    display: flex;
+    justify-content: space-between;
+    padding: 0 20mm;
+  }
+
+  .print-footer .motto {
+    text-align: left;
+    flex: 1;
+  }
+
+  .print-footer .page-number {
+    text-align: right;
+    flex: 1;
   }
 
   .print-btn {
-    display: none; /* Hide print button during print */
+    display: none !important;
   }
 }
-
-
-
       </style>
     </head>
     <body>
@@ -780,9 +771,10 @@ body {
       <div class="print-btn">
         <button onclick="window.print()">🖨️ Print This Page</button>
       </div>
-      <div class="footer-box">
-        <p>4Cs: Christ-centeredness, Competence, Character, Compassion.</p>
-      </div>
+      <div class="print-footer">
+  <div class="motto">4Cs: Christ-centeredness, Competence, Character, Compassion.</div>
+  <div class="page-number">Page <span class="pageNum"></span> of <span class="totalPages"></span></div>
+</div>
     </body>
     </html>
   `;
