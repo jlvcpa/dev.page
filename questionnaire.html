@@ -748,14 +748,15 @@ function submitQuiz() {
         const optionsHTML = q.options.map((opt, idx) => {
           const label = letterLabels[idx] || String.fromCharCode(65 + idx);
           /*return `<div style="margin-left:20px;">${label}. ${opt}</div>`;*/
-          return `
+          /*return `
   <div class="question-block">
     <h3>${i + 1}. ${q.question}</h3>
     ${optionsHTML}
     ${feedback}
     <div class="explanation"><em>Explanation:</em> ${q.explanation || 'No explanation provided.'}</div>
   </div>
-`;
+`;*/
+        return `<div class="choice-block">${label}. ${opt}</div>`;
         }).join('');
         const feedback = isCorrect
           ? `<div class="correct">Answered: ${letterLabels[q.options.indexOf(userAnswer)]} ✔</div>`
