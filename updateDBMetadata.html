@@ -373,8 +373,8 @@
           const docSnap = await getDoc(docRef);
           const data = docSnap.data();
 
-          if (data && data.idNumber) {
-            const correctedId = "0" + data.idNumber;
+          if (data && data.Idnumber) {
+            const correctedId = "0" + data.Idnumber;
             const correctedEmail = `${correctedId}@shs-adc.online`;
 
             await updateDoc(docRef, {
