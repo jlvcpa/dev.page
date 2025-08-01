@@ -222,16 +222,25 @@ docFilterInput.addEventListener("input", () => {
 
         try {
           const querySnapshot = await getDocs(collection(db, collectionName));
-          querySnapshot.forEach(docSnap => {
-            const div = document.createElement("div");
-            div.className = "doc-item";
-            div.dataset.docId = docSnap.id;
-            div.innerHTML = `
-              <input type="checkbox">
-              <span>${docSnap.id}</span>
-            `;
-            documentList.appendChild(div);
-          });
+ querySnapshot.forEach(docSnap => {
+  const data = docSnap.data();
+  const div = document.createElement("div");
+  div.className = "doc-item";
+  div.dataset.docId = docSnap.id;
+
+  const lastName = data.lastName || "(no last name)";
+  const email = data.email || "(no email)";
+
+  div.innerHTML = `
+    <input type="checkbox">
+    <span style="width: 150px; display: inline-block;">${docSnap.id}</span>
+    <span style="width: 150px; display: inline-block;">${lastName}</span>
+    <span style="width: 250px; display: inline-block;">${email}</span>
+  `;
+
+  documentList.appendChild(div);
+  allDocItems.push(div); // ✅ Add to filterable list
+});
 
           statusDiv.textContent = `📄 Loaded ${querySnapshot.size} documents from "${collectionName}".`;
         } catch (err) {
