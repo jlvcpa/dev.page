@@ -76,7 +76,15 @@
       display: flex;
       align-items: center;
       margin-bottom: 5px;
-    }
+   gap: 1rem;
+  padding: 4px 0;
+  border-bottom: 1px solid #eee;
+}
+.doc-item span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 
     .doc-item input[type="checkbox"] {
       margin-right: 10px;
@@ -122,6 +130,11 @@
   <h3>Update Selected Documents</h3>
   <button id="updateSelectedBtn">✅ Update Selected</button>
 
+  <div id="documentHeader" style="font-weight: bold; margin-bottom: 0.5rem;">
+  <span style="width: 150px; display: inline-block;">ID</span>
+  <span style="width: 150px; display: inline-block;">Last Name</span>
+  <span style="width: 250px; display: inline-block;">Email</span>
+</div>
   <div id="documentList"></div>
 
   <div id="progress-container">
