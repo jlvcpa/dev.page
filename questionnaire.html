@@ -678,6 +678,21 @@ function showQuestion(index) {
           text-align: center;
           margin-top: 20px;
         }
+        .footer-box {
+          position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #f0f0f0;
+  border: 2px solid #333;
+  padding: 10px 20px;
+  text-align: center;
+  font-size: 14px;
+  font-family: Arial, sans-serif;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+  z-index: 1000;
+}
+
       </style>
     </head>
     <body>
@@ -728,6 +743,9 @@ function showQuestion(index) {
 
       <div class="print-btn">
         <button onclick="window.print()">🖨️ Print This Page</button>
+      </div>
+      <div class="footer-box">
+        <p>4Cs: Christ-centeredness, Competence, Character, Compassion.</p>
       </div>
     </body>
     </html>
