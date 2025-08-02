@@ -211,7 +211,7 @@
 
     // Inject header + content
     const content = document.getElementById('content');
-    content.innerHTML = headerHTML + tempDiv.innerHTML;
+    /*content.innerHTML = headerHTML + tempDiv.innerHTML;*/
 
         // Extract and re-execute scripts
         const scripts = tempDiv.querySelectorAll('script');
@@ -229,6 +229,8 @@
 
         // Inject the rest of the HTML
         content.innerHTML = tempDiv.innerHTML;
+        content.innerHTML = headerHTML + tempDiv.innerHTML;
+
       } catch (error) {
         content.innerHTML = `<p>Error loading page: ${error.message}</p>`;
       }
