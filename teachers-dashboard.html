@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Teacher Dashboard</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      display: flex;
+      height: 100vh;
+    }
+
+    .sidebar {
+      width: 250px;
+      background-color: #2c3e50;
+      color: white;
+      transition: width 0.3s;
+      overflow: hidden;
+    }
+
+    .sidebar.collapsed {
+      width: 60px;
+    }
+
+    .sidebar h2 {
+      text-align: center;
+      padding: 1rem;
+      font-size: 1.2rem;
+    }
+
+    .nav-btn {
+      display: block;
+      padding: 1rem;
+      color: white;
+      text-decoration: none;
+      border-bottom: 1px solid #34495e;
+      cursor: pointer;
+    }
+
+    .nav-btn:hover {
+      background-color: #34495e;
+    }
+
+    .toggle-btn {
+      background-color: #1abc9c;
+      color: white;
+      border: none;
+      width: 100%;
+      padding: 0.5rem;
+      cursor: pointer;
+    }
+
+    .content {
+      flex-grow: 1;
+      padding: 2rem;
+      background-color: #ecf0f1;
+      overflow-y: auto;
+    }
+  </style>
+</head>
+<body>
+  <div class="sidebar" id="sidebar">
+    <button class="toggle-btn" onclick="toggleSidebar()">☰</button>
+    <h2>Dashboard</h2>
+    <div class="nav-btn" onclick="loadPage('attendance')">Attendance</div>
+    <div class="nav-btn" onclick="loadPage('quizzes')">Quizzes</div>
+    <!-- Add more buttons here -->
+  </div>
+
+  <div class="content" id="content">
+    <h1>Welcome to the Teacher Dashboard</h1>
+    <p>Select a section from the sidebar to begin.</p>
+  </div>
+
+  <script>
+    function toggleSidebar() {
+      document.getElementById('sidebar').classList.toggle('collapsed');
+    }
+
+    function loadPage(page) {
+      const content = document.getElementById('content');
+      switch (page) {
+        case 'attendance':
+          content.innerHTML = '<h2>Attendance</h2><p>Attendance tracking tools will appear here.</p>';
+          break;
+        case 'quizzes':
+          content.innerHTML = '<h2>Quizzes</h2><p>Quiz management tools will appear here.</p>';
+          break;
+        default:
+          content.innerHTML = '<h2>Unknown Page</h2>';
+      }
+    }
+  </script>
+</body>
+</html>
