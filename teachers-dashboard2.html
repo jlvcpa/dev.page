@@ -163,7 +163,7 @@
         document.getElementById('sidebar').classList.toggle('collapsed');
       }
 
-      function loadPage(page) {
+    /*  function loadPage(page) {
         const content = document.getElementById('dashboardContainer');
         switch (page) {
           case 'attendance':
@@ -173,7 +173,32 @@
             content.innerHTML = '<h2>Quizzes</h2><p>Quiz management tools will appear here.</p>';
             break;
           default:
-            content.innerHTML = '<h2>Unknown Page</h2>';
+            content.innerHTML = '<h2>Unknown Page</h2>'; */
+      async function loadPage(page) {
+  const content = document.getElementById('content');
+
+  switch (page) {
+    case 'attendance':
+      content.innerHTML = '<h2>Attendance</h2><p>Attendance tracking tools will appear here.</p>';
+      break;
+
+    case 'quizzes':
+      content.innerHTML = '<h2>Quizzes</h2><p>Quiz management tools will appear here.</p>';
+      break;
+
+    case 'quizCreation':
+      try {
+        const response = await fetch('new-QuizCreation.html');
+        if (!response.ok) throw new Error('Failed to load quiz creation page.');
+        const html = await response.text();
+        content.innerHTML = html;
+      } catch (error) {
+        content.innerHTML = `<p>Error loading page: ${error.message}</p>`;
+      }
+      break;
+
+    default:
+      content.innerHTML = '<h2>Unknown Page</h2>';
         }
       }
       window.loadPage = loadPage;
