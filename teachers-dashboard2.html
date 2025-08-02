@@ -164,7 +164,7 @@
       }
 
       function loadPage(page) {
-        const content = document.getElementById('content');
+        const content = document.getElementById('dashboardContainer');
         switch (page) {
           case 'attendance':
             content.innerHTML = '<h2>Attendance</h2><p>Attendance tracking tools will appear here.</p>';
@@ -176,6 +176,8 @@
             content.innerHTML = '<h2>Unknown Page</h2>';
         }
       }
+      window.loadPage = loadPage;
+      window.toggleSidebar = toggleSidebar;
 
       window.handleLogin = async () => {
         const loginBtn = document.querySelector("#loginForm button");
