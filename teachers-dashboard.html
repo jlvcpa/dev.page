@@ -19,7 +19,7 @@
       text-align: center;
     }
     /* #loginForm, #dashboardContainer { */
-    #loginform {
+    #loginForm {
       max-width: 800px;
       margin: 30px auto;
       background: white;
@@ -41,7 +41,7 @@
       border: none;
       border-radius: 4px;
       cursor: pointer;
-      
+    }  
     .sidebar {
       width: 250px;
       background-color: #2c3e50;
@@ -96,7 +96,9 @@
   </header>
       <div id="loginForm">
         <h2>Login</h2>
+        <label for="userName">Username</label>
         <input type="text" id="userName" placeholder="Username" />
+        <label for="passWord">Password</label>
         <input type="password" id="passWord" placeholder="Password" />
         <button onclick="handleLogin()">Login</button>
       </div>
@@ -110,11 +112,11 @@
    </div>
 
   <!-- <div class="content" id="content">
-    <h1>Welcome to the Teacher Dashboard</h1> -->
+    <h1>Welcome to the Teacher Dashboard</h1> 
   <div id=dashboardContainer" style="display:none;">
     <h1>Welcome Prof, <span id="teacherName"></span></h1>
     <p>Select a section from the sidebar to begin.</p>
-  </div>
+  </div> -->
 
    <script type="module">
     (async () => { //- ✅ Defines and immediately invokes an asynchronous function to allow use of await inside the module.
@@ -170,7 +172,7 @@
       document.getElementById('sidebar').classList.toggle('collapsed');
     }  
     function loadPage(page) {
-      const content = document.getElementById('content');
+      const content = document.getElementById('dashboardContainer');
       switch (page) {
         case 'attendance':
           content.innerHTML = '<h2>Attendance</h2><p>Attendance tracking tools will appear here.</p>';
