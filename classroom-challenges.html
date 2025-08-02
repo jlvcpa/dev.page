@@ -1,45 +1,124 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Classroom Challenge Game</title>
+  <meta charset="UTF-8">
+  <title>Group Assignment</title>
   <style>
-    body { font-family: sans-serif; display: flex; flex-direction: row; height: 100vh; margin: 0; }
-    .panel { flex: 1; padding: 10px; border-right: 1px solid #ccc; overflow-y: auto; }
-    .teacher-controls { margin-bottom: 10px; }
-    .group-panel { background-color: #f9f9f9; margin-bottom: 10px; padding: 10px; border-radius: 8px; }
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      display: flex;
+      height: 100vh;
+    }
+
+    .panel {
+      border-right: 1px solid #ccc;
+      padding: 10px;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .group-panel {
+      width: 28%;
+    }
+
+    .student-panel {
+      width: 16%;
+      border-right: none;
+    }
+
+    .header {
+      font-weight: bold;
+      font-size: 18px;
+      margin-bottom: 10px;
+      color: #007acc;
+    }
+
+    .groupMembers {
+      flex: 1;
+      background-color: #f9f9f9;
+      border: 1px solid #ccc;
+      padding: 8px;
+      margin-bottom: 10px;
+      overflow-y: auto;
+    }
+
+    .gameRecords {
+      height: 100px;
+      background-color: #e8f0fe;
+      border: 1px solid #007acc;
+      padding: 8px;
+      flex-grow: 1;
+    }
+
+    .studentList {
+      flex: 1;
+      background-color: #fff;
+      border: 1px solid #ccc;
+      padding: 8px;
+      overflow-y: auto;
+    }
+
+    button {
+      margin-top: 10px;
+      padding: 6px 12px;
+      font-size: 14px;
+    }
   </style>
 </head>
 <body>
 
-  <!-- Left Panel: Teacher Controls + Game Panels -->
-  <div class="panel">
-    <div class="teacher-controls">
-      <button onclick="groupStudents()">Group the Students</button>
-      <button onclick="selectStudentsForQuestion()">Randomize Answerers</button>
-      <button onclick="startTimer()">Start Question</button>
-    </div>
-    <div id="group1" class="group-panel">Group 1 Display</div>
-    <div id="group2" class="group-panel">Group 2 Display</div>
-    <div id="group3" class="group-panel">Group 3 Display</div>
+  <div class="panel group-panel">
+    <div class="header">Group 1</div>
+    <div class="groupMembers" id="group1Members">[Group 1 members]</div>
+    <div class="gameRecords" id="group1Records">[Game Records]</div>
   </div>
 
-  <!-- Middle Panel: Questions -->
-  <div class="panel" id="question-panel">
-    <h3>Question #</h3>
-    <p id="question-text"></p>
-    <p><strong>Timer:</strong> <span id="timer">60</span>s</p>
-    <div id="answers-display"></div>
+  <div class="panel group-panel">
+    <div class="header">Group 2</div>
+    <div class="groupMembers" id="group2Members">[Group 2 members]</div>
+    <div class="gameRecords" id="group2Records">[Game Records]</div>
   </div>
 
-  <!-- Right Panel: Logged-in Students -->
-  <div class="panel">
-    <h3>Students Logged In</h3>
-    <ul id="student-list"></ul>
+  <div class="panel group-panel">
+    <div class="header">Group 3</div>
+    <div class="groupMembers" id="group3Members">[Group 3 members]</div>
+    <div class="gameRecords" id="group3Records">[Game Records]</div>
   </div>
 
-  <script src="https://www.gstatic.com/firebasejs/9.x.x/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.x.x/firebase-firestore.js"></script>
-  <!-- Firebase config + app logic goes here -->
+  <div class="panel student-panel">
+    <div class="header">Student List</div>
+    <div class="studentList" id="studentList">[Students will load here]</div>
+    <button onclick="createGroups()">Create Groups</button>
+  </div>
+
+  <script>
+    // 🔥 Firebase logic goes here
+    // Example: Load students from Firestore and populate #studentList
+    // Then randomly assign them to group1Members, group2Members, group3Members
+
+    function createGroups() {
+      // Placeholder logic for random assignment
+      // Replace with actual Firebase data
+      const students = Array.from(document.querySelectorAll('.studentList div')).map(el => el.textContent);
+      const shuffled = students.sort(() => 0.5 - Math.random());
+      const groupSize = Math.ceil(students.length / 3);
+
+      document.getElementById('group1Members').innerHTML = shuffled.slice(0, groupSize).join('<br>');
+      document.getElementById('group2Members').innerHTML = shuffled.slice(groupSize, groupSize * 2).join('<br>');
+      document.getElementById('group3Members').innerHTML = shuffled.slice(groupSize * 2).join('<br>');
+    }
+
+    // Example static data for testing
+    const sampleStudents = ['Anna', 'Ben', 'Carlos', 'Diana', 'Eli', 'Faith', 'George', 'Hannah', 'Ivan'];
+    const studentList = document.getElementById('studentList');
+    sampleStudents.forEach(name => {
+      const div = document.createElement('div');
+      div.textContent = name;
+      studentList.appendChild(div);
+    });
+  </script>
 
 </body>
 </html>
