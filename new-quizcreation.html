@@ -1,8 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta name="robots" content="noindex, nofollow">
   <title>New Quiz Creation</title>
+  <script>
+  const teacherData = localStorage.getItem("currentTeacher");
+  if (!teacherData) {
+    alert("Access denied. Please log in through the dashboard.");
+    window.location.href = "teachers-dashboard.html"; // Redirect to login
+  }
+</script>
  <!-- Firebase Modular SDK and Quiz Logic -->
 <script type="module">
   (async () => {
