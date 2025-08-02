@@ -122,6 +122,7 @@
     <div class="sidebar" id="sidebar">
       <button class="toggle-btn" onclick="toggleSidebar()">☰</button>
       <h2>Menu</h2>
+      <div class="nav-btn" onclick="loadPage('home')">Home</div>
       <div class="nav-btn" onclick="loadPage('attendance')">Attendance</div>
       <div class="nav-btn" onclick="loadPage('quizzes')">Quizzes</div>
     </div>
@@ -203,6 +204,14 @@
         // Create a temporary container to parse HTML
         const tempDiv = document.createElement('div');
         tempDiv.innerHTML = html;
+
+        // Get teacher name from localStorage
+    const teacherData = JSON.parse(localStorage.getItem("currentTeacher"));
+    const headerHTML = `<h2>Prof ${teacherData.FirstName} ${teacherData.LastName}, you are inside the quiz creation page!</h2>`;
+
+    // Inject header + content
+    const content = document.getElementById('content');
+    content.innerHTML = headerHTML + tempDiv.innerHTML;
 
         // Extract and re-execute scripts
         const scripts = tempDiv.querySelectorAll('script');
@@ -286,7 +295,7 @@
 
         document.getElementById("loginForm").style.display = "none";
         document.getElementById("dashboardContainer").style.display = "flex";
-        document.getElementById("teacherName").textContent = `${teacherData.FirstName} ${teacherData.LastName}`;
+        document.getElementById("teacherName").textContent = `${teacherData.firstName} ${teacherData.lastName}`;
 
         loginBtn.disabled = false;
         loginBtn.textContent = "Login";
