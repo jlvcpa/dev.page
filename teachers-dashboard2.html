@@ -183,10 +183,6 @@
       break;
 
     case 'quizzes':
-      content.innerHTML = '<h2>Quizzes</h2><p>Quiz management tools will appear here.</p>';
-      break;
-
-    case 'quizCreation':
       try {
         const response = await fetch('new-QuizCreation.html');
         if (!response.ok) throw new Error('Failed to load quiz creation page.');
