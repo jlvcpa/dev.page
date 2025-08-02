@@ -184,7 +184,7 @@
 
     case 'quizzes':
       try {
-        const response = await fetch('new-QuizCreation.html');
+        const response = await fetch('new-quizcreation.html');
         if (!response.ok) throw new Error('Failed to load quiz creation page.');
         const html = await response.text();
         content.innerHTML = html;
