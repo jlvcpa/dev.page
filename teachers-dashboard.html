@@ -73,12 +73,71 @@
     <h1>Welcome to the Teacher Dashboard</h1>
     <p>Select a section from the sidebar to begin.</p>
   </div>
+    <div id="loginForm">
+    <h2>Login</h2>
+    <input type="text" id="userName" placeholder="Username" />
+    <input type="password" id="passWord" placeholder="Password" />
+    <button onclick="handleLogin()">Login</button>
+  </div>
 
-  <script>
+  <div id="teacherContainer" style="display:none;">
+    <h2>Welcome, <span id="firsttName"></span></h2>
+    <div id="quizList"></div>
+    <div id="resultPanel"></div>
+  </div>
+   <script type="module">
+    (async () => { //- ✅ Defines and immediately invokes an asynchronous function to allow use of await inside the module.
+/*📦 Dynamically imports the Firebase App module (version 10.0.0) and - 🧩 Extracts the initializeApp function, which is used to initialize your Firebase project.*/
+      const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js"); 
+ 
+/*📦 Dynamically imports the Firestore module and 
+- 🧩 Destructures and extracts Firestore functions
+- 📦 Dynamically imports the Firestore module.
+- 🧩 Destructures and extracts Firestore functions such as:
+     - getFirestore: Initializes Firestore instance.
+     - doc: Creates a reference to a specific document.
+     - setDoc: Writes data to a document.
+     - getDoc: Reads a single document.
+     - getDocs: Reads multiple documents from a query.
+     - collection: References a Firestore collection.
+     - query: Builds a query with conditions.
+     - where: Adds filtering conditions to a query*/
+      const { getFirestore, doc, setDoc, getDoc, getDocs, collection, query, where } = await import("https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js");
+
+/*- 🔐 Contains your Firebase project configuration.
+- 📡 These credentials connect your app to the correct Firebase project.
+- ⚠️ Note: While apiKey is safe to expose in client-side code, always secure sensitive operations with Firestore rules.*/
+      const firebaseConfig = {
+        apiKey: "AIzaSyAgOsKAZWwExUzupxSNytsfOo9BOppF0ng",
+        authDomain: "jlvcpa-quizzes.firebaseapp.com",
+        projectId: "jlvcpa-quizzes",
+        storageBucket: "jlvcpa-quizzes.appspot.com",
+        messagingSenderId: "629158256557",
+        appId: "1:629158256557:web:b3d1a424b32e28cd578b24"
+      };
+
+      const app = initializeApp(firebaseConfig); //🚀 Initializes the Firebase app using the provided configuration
+      const db = getFirestore(app); //🔗 Connects to Firestore using the initialized Firebase app
+
+/*- 🌐 Exposes Firestore functions globally via the window object.
+  - 🛠️ This allows other scripts (like your login logic) to access Firestore methods without re-importing them.*/
+      window.db = db;               // Firestore database instance
+      window.doc = doc;             // Function to reference a document
+      window.setDoc = setDoc;       // Function to write data to a document
+      window.getDoc = getDoc;       // Function to read a single document
+      window.getDocs = getDocs;     // Function to read multiple documents from a query
+      window.collection = collection; // Function to reference a collection
+      window.query = query;         // Function to build a query
+      window.where = where;         // Function to filter query results
+
+
+/* - 🧍 Declares a variable to hold the currently logged-in student’s data.
+   - 📌 This can be updated later during login and used across your app */
+         let currentTeacher = null;
+      
     function toggleSidebar() {
       document.getElementById('sidebar').classList.toggle('collapsed');
-    }
-
+    }  
     function loadPage(page) {
       const content = document.getElementById('content');
       switch (page) {
@@ -91,6 +150,94 @@
         default:
           content.innerHTML = '<h2>Unknown Page</h2>';
       }
+      // LOGIN HANDLER LOGIC STARTS HERE
+// Define the login handler function, triggered when the login button is clicked
+      window.handleLogin = async () => {
+  // Select the login button element
+        const loginBtn = document.querySelector("#loginForm button");
+  // Disable the button and show loading text to prevent multiple submissions
+        loginBtn.disabled = true;
+        loginBtn.textContent = "Logging in...";
+
+  // Get the student's entered ID number from the input field, trim whitespace, and convert to lowercase
+        const idNumber = document.getElementById("idNumber").value.trim().toLowerCase();
+  // Get the student's entered password from the input field and trim whitespace
+        const password = document.getElementById("password").value.trim();
+  // Reference the "students" collection in Firestore
+        const studentsRef = collection(db, "students");
+  // Create a query in to find a student document where the Idnumber matches the input
+        const q = query(studentsRef, where("Idnumber", "==", idNumber));
+  // Execute the query and get matching documents
+        const querySnapshot = await getDocs(q);
+
+  // If no matching student is found, show an alert and reset the login button
+        if (querySnapshot.empty) {
+          alert("Student not found.");
+          loginBtn.disabled = false;
+          loginBtn.textContent = "Login";
+          return;
+      }
+
+  // Get the first matching student document
+        const studentDoc = querySnapshot.docs[0];
+  // Extract the student data (fields like FirstName, LastName, Password, etc.)
+        const studentData = studentDoc.data();
+  // Get a reference to the student document (used for updating password later)
+        const studentDocRef = studentDoc.ref;
+
+  // If the student has no password set yet, prompt them to create one
+        if (!studentData.Password) {
+          const newPassword = prompt("Set your permanent password:");
+
+    // If a password was entered
+          if (newPassword) {
+      // Check if the password is at least 4 characters long
+            if (newPassword.length < 4) {
+              alert("Password must be at least 4 characters.");
+              loginBtn.disabled = false;
+              loginBtn.textContent = "Login";
+              return;
+          }
+
+      // Save the new password to the student document in Firestore
+            await setDoc(studentDocRef, { ...studentData, Password: newPassword });
+      // Notify the user and ask them to log in again
+            alert("Password set successfully. Please login again.");
+          } else {
+      // If password setup was cancelled
+            alert("Password setup cancelled.");
+          }
+
+    // Reset the login button and exit
+          loginBtn.disabled = false;
+          loginBtn.textContent = "Login";
+          return;
+        }
+
+  // If the entered password doesn't match the stored password, show an error
+        if (studentData.Password !== password) {
+          alert("Incorrect password.");
+          loginBtn.disabled = false;
+          loginBtn.textContent = "Login";
+          return;
+        }
+
+  // Save the authenticated student data to a global variable
+        currentStudent = studentData;
+  // Store the student data in localStorage for session persistence
+        localStorage.setItem("currentStudent", JSON.stringify(studentData));
+  // Hide the login form and show the quiz container
+        document.getElementById("loginForm").style.display = "none";
+        document.getElementById("quizContainer").style.display = "block";
+  // Display the student's full name on the page
+        document.getElementById("studentName").textContent = `${studentData.FirstName} ${studentData.LastName}`;
+  // Load the student's quiz results using their document ID
+        loadStudentResults(studentDoc.id);
+
+  // Re-enable the login button and reset its text
+        loginBtn.disabled = false;
+        loginBtn.textContent = "Login";
+      };
     }
   </script>
 </body>
