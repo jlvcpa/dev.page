@@ -112,7 +112,7 @@
   <!-- <div class="content" id="content">
     <h1>Welcome to the Teacher Dashboard</h1> -->
   <div id=dashboardContainer" style="display:none;">
-    <h1>Welcome Prof, <span id="firsttName"></span></h1>
+    <h1>Welcome Prof, <span id="teacherName"></span></h1>
     <p>Select a section from the sidebar to begin.</p>
   </div>
 
@@ -259,11 +259,11 @@
         localStorage.setItem("currentTeacher", JSON.stringify(teacherData));
   // Hide the login form and show the quiz container
         document.getElementById("loginForm").style.display = "none";
-        document.getElementById("quizContainer").style.display = "block";
+        document.getElementById("dashboardContainer").style.display = "block";
   // Display the student's full name on the page
-        document.getElementById("studentName").textContent = `${studentData.FirstName} ${studentData.LastName}`;
+        document.getElementById("teacherName").textContent = `${teacherData.FirstName} ${teacherData.LastName}`;
   // Load the student's quiz results using their document ID
-        loadStudentResults(studentDoc.id);
+  //      loadStudentResults(teacherDoc.id);
 
   // Re-enable the login button and reset its text
         loginBtn.disabled = false;
