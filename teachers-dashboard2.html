@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Teacher Dashboard</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      background: #007acc;
+      color: white;
+      padding: 20px;
+      text-align: center;
+    }
+
+    #loginForm {
+      max-width: 800px;
+      margin: 30px auto;
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    input[type="text"], input[type="password"] {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+    }
+
+    button {
+      padding: 10px 20px;
+      background: #007acc;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .dashboardContainer {
+      display: flex;
+      flex-grow: 1;
+      background-color: #ecf0f1;
+      overflow: hidden;
+    }
+
+    .sidebar {
+      width: 250px;
+      background-color: #2c3e50;
+      color: white;
+      transition: width 0.3s;
+      overflow: hidden;
+    }
+
+    .sidebar.collapsed {
+      width: 60px;
+    }
+
+    .sidebar h2 {
+      text-align: center;
+      padding: 1rem;
+      font-size: 1.2rem;
+    }
+
+    .nav-btn {
+      display: block;
+      padding: 1rem;
+      color: white;
+      text-decoration: none;
+      border-bottom: 1px solid #34495e;
+      cursor: pointer;
+    }
+
+    .nav-btn:hover {
+      background-color: #34495e;
+    }
+
+    .toggle-btn {
+      background-color: #1abc9c;
+      color: white;
+      border: none;
+      width: 100%;
+      padding: 0.5rem;
+      cursor: pointer;
+    }
+
+    .content {
+      flex-grow: 1;
+      padding: 2rem;
+      overflow-y: auto;
+    }
+
+    #dashboardContainer {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Teacher's Dashboard</h1>
+  </header>
+
+  <div id="loginForm">
+    <h2>Login</h2>
+    <label for="userName">Username</label>
+    <input type="text" id="userName" placeholder="Username" />
+    <label for="passWord">Password</label>
+    <input type="password" id="passWord" placeholder="Password" />
+    <button onclick="handleLogin()">Login</button>
+  </div>
+
+  <div id="dashboardContainer">
+    <div class="sidebar" id="sidebar">
+      <button class="toggle-btn" onclick="toggleSidebar()">☰</button>
+      <h2>Menu</h2>
+      <div class="nav-btn" onclick="loadPage('attendance')">Attendance</div>
+      <div class="nav-btn" onclick="loadPage('quizzes')">Quizzes</div>
+    </div>
+    <div class="content" id="content">
+      <h2>Welcome Prof, <span id="teacherName"></span></h2>
+      <p>Select a section from the sidebar to begin.</p>
+    </div>
+  </div>
+
+  <script type="module">
+    (async () => {
+      const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js");
+      const { getFirestore, doc, setDoc, getDoc, getDocs, collection, query, where } = await import("https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js");
+
+      const firebaseConfig = {
+        apiKey: "AIzaSyAgOsKAZWwExUzupxSNytsfOo9BOppF0ng",
+        authDomain: "jlvcpa-quizzes.firebaseapp.com",
+        projectId: "jlvcpa-quizzes",
+        storageBucket: "jlvcpa-quizzes.appspot.com",
+        messagingSenderId: "629158256557",
+        appId: "1:629158256557:web:b3d1a424b32e28cd578b24"
+      };
+
+      const app = initializeApp(firebaseConfig);
+      const db = getFirestore(app);
+
+      window.db = db;
+      window.doc = doc;
+      window.setDoc = setDoc;
+      window.getDoc = getDoc;
+      window.getDocs = getDocs;
+      window.collection = collection;
+      window.query = query;
+      window.where = where;
+
+      let currentTeacher = null;
+
+      function toggleSidebar() {
+        document.getElementById('sidebar').classList.toggle('collapsed');
+      }
+
+      function loadPage(page) {
+        const content = document.getElementById('content');
+        switch (page) {
+          case 'attendance':
+            content.innerHTML = '<h2>Attendance</h2><p>Attendance tracking tools will appear here.</p>';
+            break;
+          case 'quizzes':
+            content.innerHTML = '<h2>Quizzes</h2><p>Quiz management tools will appear here.</p>';
+            break;
+          default:
+            content.innerHTML = '<h2>Unknown Page</h2>';
+        }
+      }
+
+      window.handleLogin = async () => {
+        const loginBtn = document.querySelector("#loginForm button");
+        loginBtn.disabled = true;
+        loginBtn.textContent = "Logging in...";
+
+        const userName = document.getElementById("userName").value.trim().toLowerCase();
+        const passWord = document.getElementById("passWord").value.trim();
+
+        const teachersRef = collection(db, "teachers");
+        const q = query(teachersRef, where("userName", "==", userName));
+        const querySnapshot = await getDocs(q);
+
+        if (querySnapshot.empty) {
+          alert("Teacher not found.");
+          loginBtn.disabled = false;
+          loginBtn.textContent = "Login";
+          return;
+        }
+
+        const teacherDoc = querySnapshot.docs[0];
+        const teacherData = teacherDoc.data();
+        const teacherDocRef = teacherDoc.ref;
+
+        if (!teacherData.passWord) {
+          const newPassword = prompt("Set your permanent password:");
+          if (newPassword) {
+            if (newPassword.length < 4) {
+              alert("Password must be at least 4 characters.");
+              loginBtn.disabled = false;
+              loginBtn.textContent = "Login";
+              return;
+            }
+            await setDoc(teacherDocRef, { ...teacherData, passWord: newPassword });
+            alert("Password set successfully. Please login again.");
+          } else {
+            alert("Password setup cancelled.");
+          }
+          loginBtn.disabled = false;
+          loginBtn.textContent = "Login";
+          return;
+        }
+
+        if (teacherData.passWord !== passWord) {
+          alert("Incorrect password.");
+          loginBtn.disabled = false;
+          loginBtn.textContent = "Login";
+          return;
+        }
+
+        currentTeacher = teacherData;
+        localStorage.setItem("currentTeacher", JSON.stringify(teacherData));
+
+        document.getElementById("loginForm").style.display = "none";
+        document.getElementById("dashboardContainer").style.display = "flex";
+        document.getElementById("teacherName").textContent = `${teacherData.FirstName} ${teacherData.LastName}`;
+
+        loginBtn.disabled = false;
+        loginBtn.textContent = "Login";
+      };
+    })();
+  </script>
+</body>
+</html>
