@@ -11,13 +11,37 @@
       display: flex;
       height: 100vh;
     }
-    #loginForm, #quizContainer {
+    /* coppied from other html */
+        header {
+      background: #007acc;
+      color: white;
+      padding: 20px;
+      text-align: center;
+    }
+    /* #loginForm, #dashboardContainer { */
+    #loginform {
       max-width: 800px;
       margin: 30px auto;
       background: white;
       padding: 20px;
       border-radius: 8px;
       box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    input[type="text"], input[type="password"] {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+    }
+    button {
+      padding: 10px 20px;
+      background: #007acc;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      
     .sidebar {
       width: 250px;
       background-color: #2c3e50;
@@ -58,7 +82,7 @@
       cursor: pointer;
     }
 
-    .content {
+    .dashboardContainer {
       flex-grow: 1;
       padding: 2rem;
       background-color: #ecf0f1;
@@ -67,30 +91,31 @@
   </style>
 </head>
 <body>
-  <div class="sidebar" id="sidebar">
-    <button class="toggle-btn" onclick="toggleSidebar()">☰</button>
-    <h2>Dashboard</h2>
-    <div class="nav-btn" onclick="loadPage('attendance')">Attendance</div>
-    <div class="nav-btn" onclick="loadPage('quizzes')">Quizzes</div>
+  <header>
+    <h1> Teacher's Dashboard</h1>
+  </header>
+      <div id="loginForm">
+        <h2>Login</h2>
+        <input type="text" id="userName" placeholder="Username" />
+        <input type="password" id="passWord" placeholder="Password" />
+        <button onclick="handleLogin()">Login</button>
+      </div>
+  <div id="dashboardContainer" style="display:none;">
+    <div class="sidebar" id="sidebar">
+      <button class="toggle-btn" onclick="toggleSidebar()">☰</button>
+      <h2>Menu</h2>
+        <div class="nav-btn" onclick="loadPage('attendance')">Attendance</div>
+        <div class="nav-btn" onclick="loadPage('quizzes')">Quizzes</div>
     <!-- Add more buttons here -->
-  </div>
+   </div>
 
-  <div class="content" id="content">
-    <h1>Welcome to the Teacher Dashboard</h1>
+  <!-- <div class="content" id="content">
+    <h1>Welcome to the Teacher Dashboard</h1> -->
+  <div id=dashboardContainer" style="display:none;">
+    <h1>Welcome Prof, <span id="firsttName"></span></h1>
     <p>Select a section from the sidebar to begin.</p>
   </div>
-    <div id="loginForm">
-    <h2>Login</h2>
-    <input type="text" id="userName" placeholder="Username" />
-    <input type="password" id="passWord" placeholder="Password" />
-    <button onclick="handleLogin()">Login</button>
-  </div>
 
-  <div id="teacherContainer" style="display:none;">
-    <h2>Welcome, <span id="firsttName"></span></h2>
-    <div id="quizList"></div>
-    <div id="resultPanel"></div>
-  </div>
    <script type="module">
     (async () => { //- ✅ Defines and immediately invokes an asynchronous function to allow use of await inside the module.
 /*📦 Dynamically imports the Firebase App module (version 10.0.0) and - 🧩 Extracts the initializeApp function, which is used to initialize your Firebase project.*/
@@ -165,14 +190,14 @@
         loginBtn.disabled = true;
         loginBtn.textContent = "Logging in...";
 
-  // Get the student's entered ID number from the input field, trim whitespace, and convert to lowercase
-        const idNumber = document.getElementById("idNumber").value.trim().toLowerCase();
+  // Get the teacher's userName from the input field, trim whitespace, and convert to lowercase
+        const userName = document.getElementById("userName").value.trim().toLowerCase();
   // Get the student's entered password from the input field and trim whitespace
-        const password = document.getElementById("password").value.trim();
+        const passWord = document.getElementById("passWord").value.trim();
   // Reference the "students" collection in Firestore
-        const studentsRef = collection(db, "students");
+        const teachersRef = collection(db, "teachers");
   // Create a query in to find a student document where the Idnumber matches the input
-        const q = query(studentsRef, where("Idnumber", "==", idNumber));
+        const q = query(teachersRef, where("userName", "==", userName));
   // Execute the query and get matching documents
         const querySnapshot = await getDocs(q);
 
@@ -185,14 +210,14 @@
       }
 
   // Get the first matching student document
-        const studentDoc = querySnapshot.docs[0];
+        const teacherDoc = querySnapshot.docs[0];
   // Extract the student data (fields like FirstName, LastName, Password, etc.)
-        const studentData = studentDoc.data();
+        const teacherData = teacherDoc.data();
   // Get a reference to the student document (used for updating password later)
-        const studentDocRef = studentDoc.ref;
+        const teacherDocRef = teacherDoc.ref;
 
   // If the student has no password set yet, prompt them to create one
-        if (!studentData.Password) {
+        if (!teacherData.passWord) {
           const newPassword = prompt("Set your permanent password:");
 
     // If a password was entered
@@ -206,7 +231,7 @@
           }
 
       // Save the new password to the student document in Firestore
-            await setDoc(studentDocRef, { ...studentData, Password: newPassword });
+            await setDoc(teacherDocRef, { ...teacherData, passWord: newPassword });
       // Notify the user and ask them to log in again
             alert("Password set successfully. Please login again.");
           } else {
@@ -221,7 +246,7 @@
         }
 
   // If the entered password doesn't match the stored password, show an error
-        if (studentData.Password !== password) {
+        if (teacherData.passWord !== passWord) {
           alert("Incorrect password.");
           loginBtn.disabled = false;
           loginBtn.textContent = "Login";
@@ -229,9 +254,9 @@
         }
 
   // Save the authenticated student data to a global variable
-        currentStudent = studentData;
+        currentTeacher = teacherData;
   // Store the student data in localStorage for session persistence
-        localStorage.setItem("currentStudent", JSON.stringify(studentData));
+        localStorage.setItem("currentTeacher", JSON.stringify(teacherData));
   // Hide the login form and show the quiz container
         document.getElementById("loginForm").style.display = "none";
         document.getElementById("quizContainer").style.display = "block";
