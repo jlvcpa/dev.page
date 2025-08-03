@@ -145,6 +145,22 @@ td.first-name {
       font-size: 14px;
       cursor: pointer;
     }
+    <style>
+  #loadingSpinner {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 1.2em;
+    background: #fff;
+    padding: 15px 25px;
+    border: 2px solid #ccc;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.2);
+    z-index: 1000;
+  }
+</style>
   </style>
 </head>
 <body>
@@ -216,194 +232,246 @@ td.first-name {
     </table>
   </div> <!-- ✅ closes .attendance-record-panel -->
 </div> <!-- ✅ closes .main-content-container -->
+        
+<!-- 🌀 Loading Spinner Overlay -->
+<div id="loadingSpinner">⏳ Saving attendance records...</div>
+
+
 
   <!-- 🔥 Firebase Configuration & Script -->
-  <script type="module">
-    let db;
-      let setDoc, doc, getDoc, getDocs, collection, query, where;
-      const studentsMap = new Map(); // Key: CN, Value: full student object
-      const studentsById = new Map(); // Key: Idnumber
-      const studentsByEmail = new Map(); // Key: Emai
-    
-    (async () => {
-      const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js");
-      const { getFirestore, doc, setDoc, getDoc, getDocs, collection, query, where } = await import("https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js");
+ <script type="module">
+  // 🔧 Firebase variables
+  let db;
+  let setDoc, doc, getDoc, getDocs, collection, query, where, writeBatch;
 
-      const firebaseConfig = {
-        apiKey: "AIzaSyAgOsKAZWwExUzupxSNytsfOo9BOppF0ng",
-        authDomain: "jlvcpa-quizzes.firebaseapp.com",
-        projectId: "jlvcpa-quizzes",
-        storageBucket: "jlvcpa-quizzes.appspot.com",
-        messagingSenderId: "629158256557",
-        appId: "1:629158256557:web:b3d1a424b32e28cd578b24"
-      };
+  // 🧠 Data maps
+  const studentsMap = new Map();
 
-      const app = initializeApp(firebaseConfig);
-      const db = getFirestore(app);
-      
-      const SectionSelect = document.getElementById("SectionSelect");
-      const SectionsSnapshot = await getDocs(collection(db, "students"));
-      const SectionSet = new Set();
-      SectionsSnapshot.forEach(doc => {
-        const data = doc.data();
-        if (data.Section) SectionSet.add(data.Section);
-      });
+  // 🚀 Initialize Firebase and load sections
+  (async () => {
+    const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js");
+    const firestore = await import("https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js");
 
-          [...SectionSet].forEach(Section => {
-        const option = document.createElement("option");
-        option.value = Section;
-        option.textContent = Section;
-        SectionSelect.appendChild(option);
-      });
+    // 🔗 Assign Firestore functions to outer scope
+    setDoc = firestore.setDoc;
+    doc = firestore.doc;
+    getDoc = firestore.getDoc;
+    getDocs = firestore.getDocs;
+    collection = firestore.collection;
+    query = firestore.query;
+    where = firestore.where;
+    writeBatch = firestore.writeBatch;
 
-SectionSelect.addEventListener("change", async () => {
-  const selectedSection = SectionSelect.value;
-  const studentsTableBody = document.querySelector("#studentsTable tbody");
-  studentsTableBody.innerHTML = "";
-  studentsMap.clear(); // Clear previous data
+    const firebaseConfig = {
+      apiKey: "AIzaSyAgOsKAZWwExUzupxSNytsfOo9BOppF0ng",
+      authDomain: "jlvcpa-quizzes.firebaseapp.com",
+      projectId: "jlvcpa-quizzes",
+      storageBucket: "jlvcpa-quizzes.appspot.com",
+      messagingSenderId: "629158256557",
+      appId: "1:629158256557:web:b3d1a424b32e28cd578b24"
+    };
 
-  const q = query(collection(db, "students"), where("Section", "==", selectedSection));
-  const studentsSnapshot = await getDocs(q);
+    const app = initializeApp(firebaseConfig);
+    db = firestore.getFirestore(app);
 
-  studentsSnapshot.forEach(docSnap => {
-    const student = docSnap.data();
-    studentsMap.set(student.CN, student); // Store full student object
+    await populateSectionDropdown();
+    setupEventListeners();
+  })();
 
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td class="right-align">${student.CN || ""}</td>
-      <td class="left-align last-name">${student.LastName || ""}</td>
-      <td class="left-align first-name">${student.FirstName || ""}</td>
-      <td class="status-display"></td>
-      <td><input type="radio" name="att_${student.CN}" value="P" /></td>
-      <td><input type="radio" name="att_${student.CN}" value="A" /></td>
-      <td><input type="radio" name="att_${student.CN}" value="L" /></td>
-    `;
+  // 📌 Populate section dropdown
+  async function populateSectionDropdown() {
+    const SectionSelect = document.getElementById("SectionSelect");
+    const SectionsSnapshot = await getDocs(collection(db, "students"));
+    const SectionSet = new Set();
 
-    tr.querySelectorAll(`input[name="att_${student.CN}"]`).forEach(radio => {
-      radio.addEventListener("change", () => {
-        const statusCell = tr.querySelector(".status-display");
-        if (radio.value === "P") {
-          statusCell.textContent = "✔";
-          statusCell.className = "status-display status-check";
-        } else if (radio.value === "A") {
-          statusCell.textContent = "A";
-          statusCell.className = "status-display status-absent";
-        } else if (radio.value === "L") {
-          statusCell.textContent = "L";
-          statusCell.className = "status-display status-late";
-        }
-      });
+    SectionsSnapshot.forEach(docSnap => {
+      const data = docSnap.data();
+      if (data.Section) SectionSet.add(data.Section);
     });
 
-    studentsTableBody.appendChild(tr);
-  });
+    [...SectionSet].forEach(section => {
+      const option = document.createElement("option");
+      option.value = section;
+      option.textContent = section;
+      SectionSelect.appendChild(option);
+    });
+  }
 
-  sortTableByCN();
-});
-      
-      function sortTableByCN() {
-  const tbody = document.querySelector("#studentsTable tbody");
-  const rows = Array.from(tbody.querySelectorAll("tr"));
+  // 📋 Load students when section changes
+  async function handleSectionChange() {
+    const selectedSection = document.getElementById("SectionSelect").value;
+    const studentsTableBody = document.querySelector("#studentsTable tbody");
+    studentsTableBody.innerHTML = "";
+    studentsMap.clear();
 
-  rows.sort((a, b) => {
-    const aCN = parseInt(a.children[0].textContent.trim()) || 0;
-    const bCN = parseInt(b.children[0].textContent.trim()) || 0;
-    return aCN - bCN;
-  });
+    const q = query(collection(db, "students"), where("Section", "==", selectedSection));
+    const studentsSnapshot = await getDocs(q);
 
-  tbody.innerHTML = "";
-  rows.forEach(row => tbody.appendChild(row));
-}
+    studentsSnapshot.forEach(docSnap => {
+      const student = docSnap.data();
+      studentsMap.set(student.CN, student);
 
-      document.querySelectorAll(".sortable").forEach(header => {
-        header.addEventListener("click", () => {
-          const table = header.closest("table");
-          const tbody = table.querySelector("tbody");
-          const rows = Array.from(tbody.querySelectorAll("tr"));
-          const index = Array.from(header.parentNode.children).indexOf(header);
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td class="right-align">${student.CN || ""}</td>
+        <td class="left-align last-name">${student.LastName || ""}</td>
+        <td class="left-align first-name">${student.FirstName || ""}</td>
+        <td class="status-display"></td>
+        <td><input type="radio" name="att_${student.CN}" value="P" /></td>
+        <td><input type="radio" name="att_${student.CN}" value="A" /></td>
+        <td><input type="radio" name="att_${student.CN}" value="L" /></td>
+      `;
 
-          rows.sort((a, b) => {
-            const aText = a.children[index].textContent.trim();
-            const bText = b.children[index].textContent.trim();
-            return aText.localeCompare(bText);
-          });
-
-          tbody.innerHTML = "";
-          rows.forEach(row => tbody.appendChild(row));
+      tr.querySelectorAll(`input[name="att_${student.CN}"]`).forEach(radio => {
+        radio.addEventListener("change", () => {
+          const statusCell = tr.querySelector(".status-display");
+          if (radio.value === "P") {
+            statusCell.textContent = "✔";
+            statusCell.className = "status-display status-check";
+          } else if (radio.value === "A") {
+            statusCell.textContent = "A";
+            statusCell.className = "status-display status-absent";
+          } else if (radio.value === "L") {
+            statusCell.textContent = "L";
+            statusCell.className = "status-display status-late";
+          }
         });
       });
 
-      document.getElementById("generateLetter").addEventListener("click", () => {
-        alert("Letter generation logic goes here.");
-      });
-    })();
+      studentsTableBody.appendChild(tr);
+    });
 
-    document.querySelector('.toggle-btn').addEventListener('click', function () {
-  const inputPanel = document.querySelector('.attendance-input-panel');
-  const isCollapsed = inputPanel.style.width === '0px';
-
-  if (isCollapsed) {
-    inputPanel.style.width = '40%';
-    inputPanel.style.padding = '10px';
-    this.textContent = '<<<<<'; // Collapse again
-  } else {
-    inputPanel.style.width = '0px';
-    inputPanel.style.padding = '0';
-    this.textContent = '>>>>>'; // Expand again
-  }
-});
-
-    
-    
-    async function saveAttendanceRecords() {
-  const dateTaken = document.getElementById("attendanceDate").value;
-  const dayType = document.getElementById("dayType").value;
-  const section = document.getElementById("SectionSelect").value;
-
-  if (!dateTaken || !section) {
-    alert("Please select both a date and a section.");
-    return;
+    sortTableByCN();
   }
 
-  const studentsTableBody = document.querySelector("#studentsTable tbody");
-  const rows = studentsTableBody.querySelectorAll("tr");
+  // 🔢 Sort table by CN
+  function sortTableByCN() {
+    const tbody = document.querySelector("#studentsTable tbody");
+    const rows = Array.from(tbody.querySelectorAll("tr"));
 
-  for (const row of rows) {
-    const CN = row.children[0].textContent.trim();
-    const status = row.querySelector(".status-display").textContent.trim();
-    if (!status || !studentsMap.has(CN)) continue;
+    rows.sort((a, b) => {
+      const aCN = parseInt(a.children[0].textContent.trim()) || 0;
+      const bCN = parseInt(b.children[0].textContent.trim()) || 0;
+      return aCN - bCN;
+    });
 
-    const student = studentsMap.get(CN);
-    const docId = `${student.Idnumber}-${dateTaken}`; // Use Idnumber for uniqueness
+    tbody.innerHTML = "";
+    rows.forEach(row => tbody.appendChild(row));
+  }
 
-    const attendanceData = {
-      CN: student.CN,
-      Idnumber: student.Idnumber,
-      Email: student.Email,
-      FirstName: student.FirstName,
-      LastName: student.LastName,
-      Section: student.Section,
-      schoolyear: student.schoolYear,
-      subject: student.subject,
-      terms: student.terms,
-      dateTaken,
-      dayType,
-      status,
-    };
+  // 🌀 Show/hide loading spinner
+  function toggleSpinner(show) {
+    const spinner = document.getElementById("loadingSpinner");
+    spinner.style.display = show ? "block" : "none";
+  }
+
+  // 💾 Save attendance records with batch and error feedback
+  async function saveAttendanceRecords() {
+    const dateTaken = document.getElementById("attendanceDate").value;
+    const dayType = document.getElementById("dayType").value;
+    const section = document.getElementById("SectionSelect").value;
+
+    if (!dateTaken || !section) {
+      alert("Please select both a date and a section.");
+      return;
+    }
+
+    toggleSpinner(true); // 🌀 Show spinner
+    const studentsTableBody = document.querySelector("#studentsTable tbody");
+    const rows = studentsTableBody.querySelectorAll("tr");
+    const batch = writeBatch(db);
+    const failedRows = [];
+
+    for (const row of rows) {
+      const CN = row.children[0].textContent.trim();
+      const status = row.querySelector(".status-display").textContent.trim();
+      if (!status || !studentsMap.has(CN)) continue;
+
+      const student = studentsMap.get(CN);
+      const attendanceRef = doc(db, `students/${student.Idnumber}/attendance/${dateTaken}`);
+
+      const attendanceData = {
+        CN: student.CN,
+        Idnumber: student.Idnumber,
+        Email: student.Email,
+        FirstName: student.FirstName,
+        LastName: student.LastName,
+        Section: student.Section,
+        schoolyear: student.schoolYear,
+        subject: student.subject,
+        terms: student.terms,
+        dateTaken,
+        dayType,
+        status,
+      };
+
+      try {
+        batch.set(attendanceRef, attendanceData);
+      } catch (error) {
+        failedRows.push(row);
+        console.error(`❌ Error preparing ${student.Idnumber}:`, error);
+      }
+    }
 
     try {
-      await setDoc(doc(db, "attendance", docId), attendanceData);
-      console.log(`✅ Saved: ${docId}`);
+      await batch.commit();
+      alert("✅ Attendance records saved successfully.");
     } catch (error) {
-      console.error(`❌ Error saving ${docId}:`, error);
+      alert("❌ Error saving attendance records. Check console for details.");
+      console.error("❌ Batch commit failed:", error);
     }
+
+    // ❌ Highlight failed rows
+    failedRows.forEach(row => {
+      row.style.backgroundColor = "#ffe6e6"; // light red
+      row.title = "Failed to save";
+    });
+
+    toggleSpinner(false); // 🌀 Hide spinner
   }
 
-  alert("Attendance records saved successfully.");
-}
-document.getElementById("saveAttendanceBtn").addEventListener("click", saveAttendanceRecords);
+  // 🧩 Setup UI event listeners
+  function setupEventListeners() {
+    document.getElementById("SectionSelect").addEventListener("change", handleSectionChange);
 
-  </script>
+    document.querySelectorAll(".sortable").forEach(header => {
+      header.addEventListener("click", () => {
+        const table = header.closest("table");
+        const tbody = table.querySelector("tbody");
+        const rows = Array.from(tbody.querySelectorAll("tr"));
+        const index = Array.from(header.parentNode.children).indexOf(header);
+
+        rows.sort((a, b) => {
+          const aText = a.children[index].textContent.trim();
+          const bText = b.children[index].textContent.trim();
+          return aText.localeCompare(bText);
+        });
+
+        tbody.innerHTML = "";
+        rows.forEach(row => tbody.appendChild(row));
+      });
+    });
+
+    document.getElementById("generateLetter").addEventListener("click", () => {
+      alert("Letter generation logic goes here.");
+    });
+
+    document.querySelector(".toggle-btn").addEventListener("click", function () {
+      const inputPanel = document.querySelector(".attendance-input-panel");
+      const isCollapsed = inputPanel.style.width === "0px";
+
+      inputPanel.style.width = isCollapsed ? "40%" : "0px";
+      inputPanel.style.padding = isCollapsed ? "10px" : "0";
+      this.textContent = isCollapsed ? "<<<<<" : ">>>>>";
+    });
+
+    document.getElementById("saveAttendanceBtn").addEventListener("click", saveAttendanceRecords);
+  }
+</script>
+
+<!-- 🌀 Loading Spinner Element -->
+
+
+<div id="loadingSpinner">⏳ Saving attendance records...</div>
 </body>
 </html>
