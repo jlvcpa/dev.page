@@ -403,19 +403,19 @@ window.loadQuizzes = loadQuizzes;
     gap: 1rem;
   }
 
-  .quizcreation-wrapper @media (min-width: 768px) {
-    .main-content {
+  @media (min-width: 768px) {
+    .quizcreation-wrapper .main-content {
       flex-direction: row;
       align-items: flex-start;
     }
 
-    .quiz-creation-panel {
+    .quizcreation-wrapper .quiz-creation-panel {
       width: 70%;
       /*flex: 2;*/
       overflow-y: auto;
     }
 
-    .sidebar-panel {
+    .quizcreation-wrapper .sidebar-panel {
       width: 30%
       /*flex: 1;*/
       margin-left: 1rem;
@@ -426,7 +426,7 @@ window.loadQuizzes = loadQuizzes;
   }
 
   @media (max-width: 767px) {
-    .sidebar-panel {
+    .quizcreation-wrapper .sidebar-panel {
       margin-top: 1rem;
       border-top: 1px solid #ccc;
       padding-top: 1rem;
