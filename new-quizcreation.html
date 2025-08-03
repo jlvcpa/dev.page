@@ -105,6 +105,9 @@ async function generateQuiz() {
   }
 
   const quizData = {
+    schoolyear: "SY 2025–2026", 
+    subject: "FABM 1", 
+    term: "1st Semester", 
     title, section, type, duration, topics, num, instructions, rubricHTML, timestamp, endTime
   };
 
@@ -443,12 +446,6 @@ window.loadQuizzes = loadQuizzes;
   <title>Quiz Creation</title>
 </head>
 <body>
-  <div class="header">
-  <span style="color:#000;">SY 2025–2026</span><br>
-  <span style="color:#000;">1st Semester</span><br>
-  <span style="color:#000;">FABM 1</span>
-</div>
-
 <!-- 🧩 Responsive Layout Container -->
 <div class="main-content">
   <!-- 🎯 Quiz Creation Panel -->
