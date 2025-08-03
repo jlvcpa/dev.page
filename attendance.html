@@ -5,17 +5,29 @@
   <title>Attendance for sectionSelected</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      display: flex;
-      gap: 20px;
-      padding: 20px;
-    }
-    .panel {
-      flex: 1;
-      border: 1px solid #ccc;
-      padding: 10px;
-      overflow-x: auto;
-    }
+  font-family: Arial, sans-serif;
+  display: flex;
+  flex-direction: row;
+  gap: 20px;
+  padding: 20px;
+  height: 100vh;
+  box-sizing: border-box;
+}
+
+#attendance-input {
+  flex: 0 0 25%;
+  border: 1px solid #ccc;
+  padding: 10px;
+  overflow-y: auto;
+}
+
+#attendance-record {
+  flex: 0 0 75%;
+  border: 1px solid #ccc;
+  padding: 10px;
+  overflow-x: auto;
+}
+
     .header {
       font-size: 1.5em;
       margin-bottom: 10px;
