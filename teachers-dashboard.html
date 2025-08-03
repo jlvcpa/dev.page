@@ -184,7 +184,7 @@
     message += `today is ${today}. `;
   }
   message += contextMessage;
-  return `<h2>${message}</h2>`;
+  return `<h3>${message}</h3>`;
 }
     
 async function loadPage(page) {
@@ -205,7 +205,7 @@ async function loadPage(page) {
       break;
 
     default:
-      content.innerHTML = '<h2>Unknown Page</h2>';
+      content.innerHTML = '<h3>Unknown Page</h3>';
       return;
   }
 
