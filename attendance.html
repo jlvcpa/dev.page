@@ -302,6 +302,15 @@ td.first-name {
         alert("Letter generation logic goes here.");
       });
     })();
+    document.querySelectorAll('.toggle-btn').forEach(button => {
+  button.addEventListener('click', () => {
+    const panel = button.nextElementSibling;
+    const isVisible = panel.style.display !== 'none';
+
+    panel.style.display = isVisible ? 'none' : 'block';
+    button.textContent = isVisible ? '► Attendance Input' : '▼ Attendance Input';
+  });
+});
   </script>
 </body>
 </html>
