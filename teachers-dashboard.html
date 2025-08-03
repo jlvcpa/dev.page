@@ -168,7 +168,7 @@
       function generatePageHeader(contextMessage = "Welcome!") {
   const teacherData = JSON.parse(localStorage.getItem("currentTeacher")) || {};
   const today = new Date().toLocaleDateString();
-  const section = localStorage.getItem("selectedSection") || "No section selected";
+  const section = localStorage.getItem("selectedSection"); // || "No section selected";
 
   const firstName = teacherData.firstName || "Teacher";
   const lastName = teacherData.lastName || "";
