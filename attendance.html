@@ -62,19 +62,10 @@
       background-color: #f0f0f0;
     }
     
-td.left-align {
+td.last-name,
+td.first-name {
   text-align: left !important;
-}
-
-td.right-align {
-  text-align: right !important;
-}
-th.left-align {
-  text-align: left !important;
-}
-
-th.right-align {
-  text-align: right !important;
+  white-space: nowrap;
 }
 
     .status-check {
@@ -223,14 +214,14 @@ th.right-align {
           const tr = document.createElement("tr");
 
           tr.innerHTML = `
-            <td class="right-align">${student.CN || ""}</td>
-            <td class="left-align">${student.LastName || ""}</td>
-            <td class="left-align">${student.FirstName || ""}</td>
-            <td class="status-display"></td>
-            <td><input type="radio" name="att_${student.CN}" value="P" /></td>
-            <td><input type="radio" name="att_${student.CN}" value="A" /></td>
-            <td><input type="radio" name="att_${student.CN}" value="L" /></td>
-          `;
+  <td class="right-align">${student.CN || ""}</td>
+  <td class="left-align last-name">${student.LastName || ""}</td>
+  <td class="left-align first-name">${student.FirstName || ""}</td>
+  <td class="status-display"></td>
+  <td><input type="radio" name="att_${student.CN}" value="P" /></td>
+  <td><input type="radio" name="att_${student.CN}" value="A" /></td>
+  <td><input type="radio" name="att_${student.CN}" value="L" /></td>
+`;
 
           tr.querySelectorAll(`input[name="att_${student.CN}"]`).forEach(radio => {
             radio.addEventListener("change", () => {
