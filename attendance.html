@@ -62,13 +62,18 @@
       background-color: #f0f0f0;
     }
     
-th.left-align,
 td.left-align {
   text-align: left !important;
 }
 
-th.right-align,
 td.right-align {
+  text-align: right !important;
+}
+th.left-align {
+  text-align: left !important;
+}
+
+th.right-align {
   text-align: right !important;
 }
 
@@ -218,9 +223,9 @@ td.right-align {
           const tr = document.createElement("tr");
 
           tr.innerHTML = `
-            <td>${student.CN || ""}</td>
-            <td>${student.LastName || ""}</td>
-            <td>${student.FirstName || ""}</td>
+            <td class="right-align">${student.CN || ""}</td>
+            <td class="left-align">${student.LastName || ""}</td>
+            <td class="left-align">${student.FirstName || ""}</td>
             <td class="status-display"></td>
             <td><input type="radio" name="att_${student.CN}" value="P" /></td>
             <td><input type="radio" name="att_${student.CN}" value="A" /></td>
