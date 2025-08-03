@@ -37,16 +37,25 @@
 }
 
 .attendance-input-panel {
-     padding: 10px;
-  flex-grow: 1;
+     width: 40%;
+  transition: width 0.3s ease, padding 0.3s ease;
   background-color: #f0f0f0;
   border-right: 1px solid #ccc;
+  padding: 10px;
+  overflow: hidden;
     }
   
 .attendance-record-panel {
   flex-grow: 1;
   padding: 10px;
+  background-color: #d0e6ff;
   transition: width 0.3s ease;
+}
+.record-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
 }
 
 .collapsible-panel {
@@ -60,12 +69,10 @@
 .toggle-btn {
   background-color: #e0e0e0;
   border: none;
-  padding: 10px;
+  padding: 6px 12px;
   font-weight: bold;
   cursor: pointer;
-  text-align: left;
 }
-
 
 .attendance-input-panel {
   padding: 10px;
@@ -142,8 +149,6 @@ td.first-name {
 </head>
 <body>
   <div class="main-content-container">
-    <div class="attendance-input-wrapper">
-    <button class="toggle-btn">◀ Hide Input Panel</button>
     <div class="attendance-input-panel">
     <h3>Attendance Taking</h3>
       <div class="Section-date-options">
@@ -185,6 +190,8 @@ td.first-name {
 </div>
     <!-- 📊 Panel 2: Attendance Records -->
     <div class="attendance-record-panel">
+      <div class="record-header">
+      <button class="toggle-btn">◀ Hide Input Panel</button>
       <h3>Attendance Record</h3>
       <button class="generateLetter" id="generateLetter">Generate Letter to Parents</button>
 
@@ -315,15 +322,22 @@ td.first-name {
         alert("Letter generation logic goes here.");
       });
     })();
-    document.querySelectorAll('.toggle-btn').forEach(button => {
-  button.addEventListener('click', () => {
-    const panel = button.nextElementSibling;
-    const isVisible = panel.style.display !== 'none';
 
-    panel.style.display = isVisible ? 'none' : 'block';
-    button.textContent = isVisible ? '► Attendance Input' : '▼ Attendance Input';
-  });
+    document.querySelector('.toggle-btn').addEventListener('click', function () {
+  const inputPanel = document.querySelector('.attendance-input-panel');
+  const isCollapsed = inputPanel.style.width === '0px';
+
+  if (isCollapsed) {
+    inputPanel.style.width = '40%';
+    inputPanel.style.padding = '10px';
+    this.textContent = '<<<<<'; // Collapse again
+  } else {
+    inputPanel.style.width = '0px';
+    inputPanel.style.padding = '0';
+    this.textContent = '>>>>>'; // Expand again
+  }
 });
+
   </script>
 </body>
 </html>
