@@ -186,7 +186,7 @@
 
 
       // START OF THE LOADPAGE FUNCTION
-      async function loadPage(page) {
+/*      async function loadPage(page) {
   const content = document.getElementById('content');
 
   switch (page) {
@@ -272,13 +272,65 @@
 
       } catch (error) {
         content.innerHTML = `<p>Error loading page: ${error.message}</p>`;
-      }
+      } */
+      
+async function loadPage(page) {
+  const content = document.getElementById('content');
+
+  let pageFile = '';
+  let headerText = '';
+
+  switch (page) {
+    case 'attendance':
+      pageFile = 'attendance.html';
+      headerText = 'You are inside the attendance page this time!';
+      break;
+
+    case 'quizzes':
+      pageFile = 'new-quizcreation.html';
+      headerText = 'You are inside the quiz creation page this time!';
       break;
 
     default:
       content.innerHTML = '<h2>Unknown Page</h2>';
+      return;
   }
-}
+
+  try {
+    const response = await fetch(pageFile);
+    if (!response.ok) throw new Error(`Failed to load ${pageFile}`);
+
+    const html = await response.text();
+
+    // Parse HTML into a temporary container
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = html;
+
+    // Generate dynamic header
+    const headerHTML = generatePageHeader(headerText);
+
+    // Inject header + content
+    content.innerHTML = headerHTML + tempDiv.innerHTML;
+
+    // Re-execute embedded scripts
+    const scripts = tempDiv.querySelectorAll('script');
+    scripts.forEach(script => {
+      const newScript = document.createElement('script');
+      if (script.src) {
+        newScript.src = script.src;
+        newScript.type = script.type || 'text/javascript';
+      } else {
+        newScript.textContent = script.textContent;
+        newScript.type = script.type || 'text/javascript';
+      }
+      document.body.appendChild(newScript);
+    });
+
+  } catch (error) {
+    content.innerHTML = `<p>Error loading page: ${error.message}</p>`;
+  }
+} 
+      
       window.loadPage = loadPage;
       window.toggleSidebar = toggleSidebar;
 
