@@ -400,6 +400,14 @@ td.first-name {
     spinner.style.display = show ? "block" : "none";
   }
 
+  // Sanitize the object by removing any undefined field
+  // caled up in the try catch error at the end of the saveAttendanceRecords()
+   function removeUndefinedFields(obj) {
+  return Object.fromEntries(
+    Object.entries(obj).filter(([_, value]) => value !== undefined)
+  );
+}
+
   // 💾 Save attendance records with batch and error feedback
   async function saveAttendanceRecords() {
     const dateTaken = document.getElementById("attendanceDate").value;
@@ -441,7 +449,7 @@ td.first-name {
       };
 
       try {
-        batch.set(attendanceRef, attendanceData);
+        batch.set(attendanceRef, removeUndefinedFields(attendanceData));
       } catch (error) {
         failedRows.push(row);
         console.error(`❌ Error preparing ${student.Idnumber}:`, error);
