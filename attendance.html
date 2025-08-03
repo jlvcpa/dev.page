@@ -39,18 +39,23 @@
     */
 
       /* 🧩 Responsive Layout Enhancements */
-  .main-content {
+  .main-content-container {
     display: flex;
-      height: 100vh; /* Optional: makes the container full height */
+    height: 100vh; /* Optional: makes the container full height */
+    width: 100%;   /* Full width */
+  font-family: Arial, sans-serif;
+
   }
     .panel {
   padding: 1rem;
   box-sizing: border-box;
+  overflow-y: auto; /* Scroll if content overflows vertically */
 }
 
 .attendance-input-panel {
       width: 25%;
   background-color: #f0f0f0;
+  border-right: 1px solid #ccc;
     }
   
 .attendance-record-panel {
@@ -116,7 +121,7 @@
   </style>
 </head>
 <body>
-  <div class="main-content">
+  <div class="main-content-container">
    <!--  <div class="attendance-wrapper">
    📌 Panel 1: Daily Attendance Input 
     <div class="panel attendance-input" id="attendance-input"> -->
