@@ -290,7 +290,7 @@ window.loadQuizzes = loadQuizzes;
 
  
 <style>
-  .quizcreation-wrapper {
+  .quizcreation-wrapper  {
       font-family: Arial, sans-serif;
       display: flex;
       gap: 20px;
@@ -299,17 +299,17 @@ window.loadQuizzes = loadQuizzes;
       box-sizing: border-box;
   }
 
-  /*.quizcreation-wrapper h1, h2 {
+  /*h1, h2 {
     text-align: center;
     color: #2c3e50;
   }*/
 
-  .quizcreation-wrapper .header {
+ /* .header {
     text-align: center;
     margin-bottom: 10px;
-  }
+  } */
 
-  .quizcreation-wrapper .form-section {
+  .form-section {
     max-width: 800px;
     margin: 0 auto 30px;
     background: #fff;
@@ -318,50 +318,50 @@ window.loadQuizzes = loadQuizzes;
     box-shadow: 0 2px 5px rgba(0,0,0,0.1);
   }
 
-  .quizcreation-wrapper label {
+  label {
     font-weight: bold;
     display: block;
     margin-top: 15px;
   }
 
-  .quizcreation-wrapper input, select, textarea {
+  input, select, textarea {
     width: 100%;
     padding: 8px;
     margin-top: 5px;
     font-size: 16px;
   }
 
-  .quizcreation-wrapper select {
+  select {
     width: 100%;
     padding: 8px;
     font-size: 16px;
     margin-top: 5px;
   }
 
-  .quizcreation-wrapper #rubricTable {
+  #rubricTable {
     width: 100%;
     border-collapse: collapse;
     margin-top: 10px;
   }
 
-  .quizcreation-wrapper #rubricTable th, #rubricTable td {
+  #rubricTable th, #rubricTable td {
     border: 1px solid #ccc;
     padding: 8px;
   }
 
-  .quizcreation-wrapper #rubricTable thead th {
+  #rubricTable thead th {
     text-align: center;
     vertical-align: middle;
   }
 
-  .quizcreation-wrapper #rubricTable tbody td {
+  #rubricTable tbody td {
     text-align: left;
     vertical-align: top;
     white-space: pre-wrap;
     line-height: 1.4;
   }
 
-  .quizcreation-wrapper button {
+  button {
     margin-top: 20px;
     padding: 10px 20px;
     font-size: 16px;
@@ -372,16 +372,16 @@ window.loadQuizzes = loadQuizzes;
     cursor: pointer;
   }
 
-  .quizcreation-wrapper button:hover {
+  button:hover {
     background-color: #005fa3;
   }
 
-  .quizcreation-wrapper .quiz-list {
+  .quiz-list {
     max-width: 800px;
     margin: 0 auto;
   }
 
-  .quizcreation-wrapper .quiz-item {
+  .quiz-item {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -392,30 +392,30 @@ window.loadQuizzes = loadQuizzes;
     box-shadow: 0 1px 3px rgba(0,0,0,0.1);
   }
 
-  .quizcreation-wrapper .expired {
+  .expired {
     color: #d9534f;
   }
 
   /* 🧩 Responsive Layout Enhancements */
-  .quizcreation-wrapper .main-content {
+  .main-content {
     display: flex;
     flex-direction: column;
     gap: 1rem;
   }
 
   @media (min-width: 768px) {
-    .quizcreation-wrapper .main-content {
+    .main-content {
       flex-direction: row;
       align-items: flex-start;
     }
 
-    .quizcreation-wrapper .quiz-creation-panel {
+    .quiz-creation-panel {
       width: 70%;
       /*flex: 2;*/
       overflow-y: auto;
     }
 
-    .quizcreation-wrapper .sidebar-panel {
+    .sidebar-panel {
       width: 30%
       /*flex: 1;*/
       margin-left: 1rem;
@@ -426,7 +426,7 @@ window.loadQuizzes = loadQuizzes;
   }
 
   @media (max-width: 767px) {
-    .quizcreation-wrapper .sidebar-panel {
+    .sidebar-panel {
       margin-top: 1rem;
       border-top: 1px solid #ccc;
       padding-top: 1rem;
