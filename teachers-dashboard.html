@@ -207,7 +207,7 @@
 
         // Get teacher name from localStorage
     const teacherData = JSON.parse(localStorage.getItem("currentTeacher"));
-    const headerHTML = `<h2>Prof ${teacherData.FirstName} ${teacherData.LastName}, you are inside the quiz creation page!</h2>`;
+    const headerHTML = `<h2>Prof ${teacherData.firstName} ${teacherData.lastName}, you are inside the quiz creation page!</h2>`;
 
     // Inject header + content
     const content = document.getElementById('content');
