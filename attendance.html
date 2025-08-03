@@ -219,6 +219,11 @@ td.first-name {
 
   <!-- 🔥 Firebase Configuration & Script -->
   <script type="module">
+    let db;
+      let setDoc, doc, getDoc, getDocs, collection, query, where;
+      const studentsMap = new Map(); // Key: CN, Value: full student object
+      const studentsById = new Map(); // Key: Idnumber
+      const studentsByEmail = new Map(); // Key: Emai
     
     (async () => {
       const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js");
@@ -349,11 +354,7 @@ SectionSelect.addEventListener("change", async () => {
   }
 });
 
-    let db;
-      let setDoc, doc;
-      const studentsMap = new Map(); // Key: CN, Value: full student object
-      const studentsById = new Map(); // Key: Idnumber
-      const studentsByEmail = new Map(); // Key: Emai
+    
     
     async function saveAttendanceRecords() {
   const dateTaken = document.getElementById("attendanceDate").value;
