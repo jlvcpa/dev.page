@@ -128,17 +128,17 @@
       <!--<div class="header">Attendance Taking</div> -->
     <div class="panel attendance input-panel">
     <h3>Attendance Taking</h3>
+      <div class="section-date-options">
       <!-- Section Dropdown -->
       <label for="sectionSelect">Section:</label>
       <select id="sectionSelect">
         <option value="">-- Select Section --</option>
       </select>
-
-      <!-- Date Picker and Day Type -->
-      <div class="date-options">
-        <label for="attendaceDate">Date:</label>
+        <label for="attendanceDate">Date:</label>
         <input type="date" id="attendanceDate" />
-        
+      </div>
+
+      <!-- Day Type -->
         <label for="dayType">Day Type:</label>
         <select id="dayType">
           <option value="">-- Holiday --</option>
@@ -147,8 +147,7 @@
           <option value="S">Saturday</option>
           <option value="U">Sunday</option>
         </select>
-      </div>
-
+ 
       <!-- Students Attendance Table -->
       <table id="studentsTable">
         <thead>
