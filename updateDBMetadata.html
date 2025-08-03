@@ -424,7 +424,7 @@
 
           await setDoc(newDocRef, data); // Copy all fields
           // Optional: delete old document
-          // await deleteDoc(oldDocRef);
+             await deleteDoc(oldDocRef);
 
           migratedCount++;
           updateProgress(migratedCount, selectedItems.length);
