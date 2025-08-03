@@ -290,10 +290,13 @@ window.loadQuizzes = loadQuizzes;
 
  
 <style>
-  body {
-    font-family: 'Segoe UI', sans-serif;
-    background: #f9f9f9;
-    padding: 20px;
+  .attendance-wrapper {
+      font-family: Arial, sans-serif;
+      display: flex;
+      gap: 20px;
+      padding: 20px;
+      height: calc(100vh - 1in); /* full viewport minus 1 inch */
+      box-sizing: border-box;
   }
 
   h1, h2 {
@@ -301,17 +304,12 @@ window.loadQuizzes = loadQuizzes;
     color: #2c3e50;
   }
 
-  #schoolLogo {
-    max-height: 100px;
-    margin-bottom: 10px;
-  }
-
-  .header {
+  .attendance-wrapper .header {
     text-align: center;
     margin-bottom: 20px;
   }
 
-  .form-section {
+  .attendance-wrapper .form-section {
     max-width: 800px;
     margin: 0 auto 30px;
     background: #fff;
@@ -378,12 +376,12 @@ window.loadQuizzes = loadQuizzes;
     background-color: #005fa3;
   }
 
-  .quiz-list {
+  .attendance-wrapper .quiz-list {
     max-width: 800px;
     margin: 0 auto;
   }
 
-  .quiz-item {
+  .attendance-wrapper .quiz-item {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -394,12 +392,12 @@ window.loadQuizzes = loadQuizzes;
     box-shadow: 0 1px 3px rgba(0,0,0,0.1);
   }
 
-  .expired {
+  .attendance-wrapper .expired {
     color: #d9534f;
   }
 
   /* 🧩 Responsive Layout Enhancements */
-  .main-content {
+  .attendance-wrapper .main-content {
     display: flex;
     flex-direction: column;
     gap: 1rem;
