@@ -391,57 +391,64 @@
   });
 
   // 🆔 Migrate Student Document IDs to Idnumber
-  migrateStudentIdsBtn.addEventListener("click", async () => {
-    const collectionName = document.getElementById("collectionSelect").value;
-    if (collectionName !== "students") {
-      statusDiv.textContent = "❌ This function only works for the 'students' collection.";
-      return;
-    }
+// 🆔 Migrate Student Document IDs to padded Idnumber
+migrateStudentIdsBtn.addEventListener("click", async () => {
+  const collectionName = document.getElementById("collectionSelect").value;
+  if (collectionName !== "students") {
+    statusDiv.textContent = "❌ This function only works for the 'students' collection.";
+    return;
+  }
 
-    const selectedItems = document.querySelectorAll(".doc-item input[type='checkbox']:checked");
-    if (selectedItems.length === 0) {
-      statusDiv.textContent = "❌ Please select student documents to migrate.";
-      return;
-    }
+  const selectedItems = document.querySelectorAll(".doc-item input[type='checkbox']:checked");
+  if (selectedItems.length === 0) {
+    statusDiv.textContent = "❌ Please select student documents to migrate.";
+    return;
+  }
 
-    statusDiv.textContent = "⏳ Migrating student document IDs...";
-    updateProgress(0, selectedItems.length);
+  statusDiv.textContent = "⏳ Migrating student document IDs...";
+  updateProgress(0, selectedItems.length);
 
-    let migratedCount = 0;
+  let migratedCount = 0;
 
-    for (const checkbox of selectedItems) {
-      const docItem = checkbox.closest(".doc-item");
-      const oldDocId = docItem.dataset.docId;
-      const oldDocRef = doc(db, "students", oldDocId);
+  for (const checkbox of selectedItems) {
+    const docItem = checkbox.closest(".doc-item");
+    const oldDocId = docItem.dataset.docId;
+    const oldDocRef = doc(db, "students", oldDocId);
 
-      try {
-        const docSnap = await getDoc(oldDocRef);
-        const data = docSnap.data();
+    try {
+      const docSnap = await getDoc(oldDocRef);
+      const data = docSnap.data();
 
-        if (data?.Idnumber && oldDocId !== data.Idnumber) {
-          const newDocId = data.Idnumber;
-          const newDocRef = doc(db, "students", newDocId);
+      if (data?.Idnumber) {
+        // ✅ Pad Idnumber with leading zero (e.g., "01234")
+        const paddedId = data.Idnumber.toString().padStart(5, '0'); // Adjust length as needed
 
-          await setDoc(newDocRef, data); // Copy all fields
-          // Optional: delete old document
-             await deleteDoc(oldDocRef);
+        // ✅ Create new document with padded ID
+        const newDocRef = doc(db, "students", paddedId);
 
-          migratedCount++;
-          updateProgress(migratedCount, selectedItems.length);
+        await setDoc(newDocRef, {
+          ...data,
+          Idnumber: paddedId // Optional: update field inside document
+        });
 
-          docItem.classList.add("updated");
-          checkbox.disabled = true;
-          checkbox.checked = false;
-        }
-      } catch (err) {
-        console.error(`Error migrating ${oldDocId}:`, err);
+        await deleteDoc(oldDocRef); // Optional: remove old document
+
+        migratedCount++;
+        updateProgress(migratedCount, selectedItems.length);
+
+        docItem.classList.add("updated");
+        checkbox.disabled = true;
+        checkbox.checked = false;
       }
-
-      await new Promise(res => setTimeout(res, 150)); // throttle
+    } catch (err) {
+      console.error(`Error migrating ${oldDocId}:`, err);
     }
 
-    statusDiv.textContent = `✅ Migrated ${migratedCount} student documents to use Idnumber as ID.`;
-  });
+    await new Promise(res => setTimeout(res, 150)); // throttle
+  }
+
+  statusDiv.textContent = `✅ Migrated ${migratedCount} student documents to use padded Idnumber as ID.`;
+});
 })();
 </script>
 </body>
