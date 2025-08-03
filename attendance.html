@@ -105,10 +105,10 @@
   <div class="main-content-container">
     <div class="panel attendance input-panel">
     <h3>Attendance Taking</h3>
-      <div class="section-date-options">
+      <div class="Section-date-options">
       <!-- Section Dropdown -->
-      <label for="sectionSelect">Section:</label>
-      <select id="sectionSelect">
+      <label for="SectionSelect">Section:</label>
+      <select id="SectionSelect">
         <option value="">-- Select Section --</option>
       </select>
         <label for="attendanceDate">Date:</label>
@@ -181,26 +181,26 @@
       const app = initializeApp(firebaseConfig);
       const db = getFirestore(app);
 
-      const sectionSelect = document.getElementById("sectionSelect");
-      const sectionsSnapshot = await getDocs(collection(db, "students"));
-      const sectionSet = new Set();
-      sectionsSnapshot.forEach(doc => {
+      const SectionSelect = document.getElementById("SectionSelect");
+      const SectionsSnapshot = await getDocs(collection(db, "students"));
+      const SectionSet = new Set();
+      SectionsSnapshot.forEach(doc => {
         const data = doc.data();
-        if (data.section) sectionSet.add(data.section);
+        if (data.Section) SectionSet.add(data.Section);
       });
-      [...sectionSet].forEach(section => {
+      [...SectionSet].forEach(Section => {
         const option = document.createElement("option");
-        option.value = section;
-        option.textContent = section;
-        sectionSelect.appendChild(option);
+        option.value = Section;
+        option.textContent = Section;
+        SectionSelect.appendChild(option);
       });
 
-      sectionSelect.addEventListener("change", async () => {
-        const selectedSection = sectionSelect.value;
+      SectionSelect.addEventListener("change", async () => {
+        const selectedSection = SectionSelect.value;
         const studentsTableBody = document.querySelector("#studentsTable tbody");
         studentsTableBody.innerHTML = "";
 
-        const q = query(collection(db, "students"), where("section", "==", selectedSection));
+        const q = query(collection(db, "students"), where("Section", "==", selectedSection));
         const studentsSnapshot = await getDocs(q);
 
         studentsSnapshot.forEach(docSnap => {
