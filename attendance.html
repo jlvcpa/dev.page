@@ -38,11 +38,6 @@
   background-color: #d0e6ff;
 }
 
-/* .header {
-      font-size: 1.5em;
-      margin-bottom: 10px; 
-    } */
-
     .date-options {
       display: flex;
       gap: 10px;
@@ -86,7 +81,18 @@
       font-weight: bold;
       background-color: #eee;
     }
+    .day-type-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
 
+.day-type-row select {
+  flex-grow: 1;
+  padding: 6px;
+  font-size: 14px;
+}
     .generateLetter {
       width: fit-content;
       padding: 6px 12px;
@@ -97,10 +103,6 @@
 </head>
 <body>
   <div class="main-content-container">
-   <!--  <div class="attendance-wrapper">
-   📌 Panel 1: Daily Attendance Input 
-    <div class="panel attendance-input" id="attendance-input"> -->
-      <!--<div class="header">Attendance Taking</div> -->
     <div class="panel attendance input-panel">
     <h3>Attendance Taking</h3>
       <div class="section-date-options">
@@ -140,9 +142,7 @@
       </table>
     </div>
 
-    <!-- 📊 Panel 2: Attendance Records
-    <div class="panel attendance-record" id="attendance-record">  -->
-     <!-- <div class="header">Attendance Records</div> -->
+    <!-- 📊 Panel 2: Attendance Records -->
     <div class="panel attendance-record-panel">
       <h3>Attendance Record</h3>
       <button class="generateLetter" id="generateLetter">Generate Letter to Parents</button>
