@@ -164,29 +164,19 @@
         document.getElementById('sidebar').classList.toggle('collapsed');
       }
 
-    /* async function loadPage(page) {
-  const content = document.getElementById('content');
+      // START OF THE GENERATEPAGEHEADER FUNCTION
+      function generatePageHeader(contextMessage = "Welcome!") {
+  const teacherData = JSON.parse(localStorage.getItem("currentTeacher")) || {};
+  const today = new Date().toLocaleDateString();
+  const section = localStorage.getItem("selectedSection") || "No section selected";
 
-  switch (page) {
-    case 'attendance':
-      content.innerHTML = '<h2>Attendance</h2><p>Attendance tracking tools will appear here.</p>';
-      break;
+  const firstName = teacherData.firstName || "Teacher";
+  const lastName = teacherData.lastName || "";
 
-    case 'quizzes':
-      try {
-        const response = await fetch('new-quizcreation.html');
-        if (!response.ok) throw new Error('Failed to load quiz creation page.');
-        const html = await response.text();
-        content.innerHTML = html;
-      } catch (error) {
-        content.innerHTML = `<p>Error loading page: ${error.message}</p>`;
-      }
-      break;
+  return `<h2>Proffesor ${firstName} ${lastName}, you're viewing ${section} on ${today}. ${contextMessage}</h2>`;
+}
 
-    default:
-      content.innerHTML = '<h2>Unknown Page</h2>';
-        }
-      } */
+      // START OF THE LOADPAGE FUNCTION
       async function loadPage(page) {
   const content = document.getElementById('content');
 
@@ -205,13 +195,19 @@
         const tempDiv = document.createElement('div');
         tempDiv.innerHTML = html;
 
-        // Get teacher name from localStorage
+    /*    // Get teacher name from localStorage
     const teacherData = JSON.parse(localStorage.getItem("currentTeacher"));
-    const headerHTML = `<h2>Prof ${teacherData.firstName} ${teacherData.lastName}, you are inside the quiz creation page!</h2>`;
+    const headerHTML = `<h2>Prof ${teacherData.firstName} ${teacherData.lastName}, you are inside the quiz creation page!</h2>`; */
+        / Generate dynamic header
+    const headerHTML = generatePageHeader("You are inside the quiz creation page!");
 
     // Inject header + content
     const content = document.getElementById('content');
-    /*content.innerHTML = headerHTML + tempDiv.innerHTML;*/
+    content.innerHTML = headerHTML + tempDiv.innerHTML;
+
+    /* // Inject header + content
+    const content = document.getElementById('content');
+    content.innerHTML = headerHTML + tempDiv.innerHTML; */
 
         // Extract and re-execute scripts
         const scripts = tempDiv.querySelectorAll('script');
@@ -227,9 +223,9 @@
           document.body.appendChild(newScript);
         });
 
-        // Inject the rest of the HTML
+       /* // Inject the rest of the HTML
         content.innerHTML = tempDiv.innerHTML;
-        content.innerHTML = headerHTML + tempDiv.innerHTML;
+        content.innerHTML = headerHTML + tempDiv.innerHTML; */
 
       } catch (error) {
         content.innerHTML = `<p>Error loading page: ${error.message}</p>`;
