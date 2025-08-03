@@ -149,67 +149,71 @@ td.first-name {
 </head>
 <body>
   <div class="main-content-container">
-    <div class="attendance-input-panel">
+  <!-- 🟦 Panel 1: Attendance Input -->
+  <div class="attendance-input-panel">
     <h3>Attendance Taking</h3>
-      <div class="Section-date-options">
+
+    <div class="Section-date-options">
       <!-- Section Dropdown -->
       <label for="SectionSelect">Section:</label>
       <select id="SectionSelect">
         <option value="">-- Select Section --</option>
       </select>
-        <label for="attendanceDate">Date:</label>
-        <input type="date" id="attendanceDate" />
-      </div>
 
-      <!-- Day Type -->
-        <label for="dayType">Day Type:</label>
-        <select id="dayType">
-          <option value="">-- Holiday --</option>
-          <option value="H">Holiday</option>
-          <option value="A">Alternative Learning Day</option>
-          <option value="S">Saturday</option>
-          <option value="U">Sunday</option>
-        </select>
- 
-      <!-- Students Attendance Table -->
-      <table id="studentsTable">
-  <thead>
-    <tr>
-      <th class="sortable right-align">CN</th>
-      <th class="sortable left-align">Last Name</th>
-      <th class="sortable left-align">First Name</th>
-      <th>Status</th>
-      <th>P</th>
-      <th>A</th>
-      <th>L</th>
-    </tr>
-  </thead>
-  <tbody></tbody>
-</table>
+      <label for="attendanceDate">Date:</label>
+      <input type="date" id="attendanceDate" />
     </div>
-</div>
-    <!-- 📊 Panel 2: Attendance Records -->
-    <div class="attendance-record-panel">
-      <div class="record-header">
-      <button class="toggle-btn">◀ Hide Input Panel</button>
+
+    <!-- Day Type -->
+    <label for="dayType">Day Type:</label>
+    <select id="dayType">
+      <option value="">-- Holiday --</option>
+      <option value="H">Holiday</option>
+      <option value="A">Alternative Learning Day</option>
+      <option value="S">Saturday</option>
+      <option value="U">Sunday</option>
+    </select>
+
+    <!-- Students Attendance Table -->
+    <table id="studentsTable">
+      <thead>
+        <tr>
+          <th class="sortable right-align">CN</th>
+          <th class="sortable left-align">Last Name</th>
+          <th class="sortable left-align">First Name</th>
+          <th>Status</th>
+          <th>P</th>
+          <th>A</th>
+          <th>L</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div> <!-- ✅ closes .attendance-input-panel -->
+
+  <!-- 📊 Panel 2: Attendance Records -->
+  <div class="attendance-record-panel">
+    <div class="record-header">
+      <button class="toggle-btn"><<<<<</button>
       <h3>Attendance Record</h3>
       <button class="generateLetter" id="generateLetter">Generate Letter to Parents</button>
+    </div> <!-- ✅ closes .record-header -->
 
-      <table id="recordTable">
-        <thead>
-          <tr>
-            <th><input type="checkbox" id="selectAll" /></th>
-            <th>Overview</th>
-          </tr>
-          <tr id="dateHeaderRow">
-            <th></th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-    </div>
-  </div>
+    <table id="recordTable">
+      <thead>
+        <tr>
+          <th><input type="checkbox" id="selectAll" /></th>
+          <th>Overview</th>
+        </tr>
+        <tr id="dateHeaderRow">
+          <th></th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div> <!-- ✅ closes .attendance-record-panel -->
+</div> <!-- ✅ closes .main-content-container -->
 
   <!-- 🔥 Firebase Configuration & Script -->
   <script type="module">
