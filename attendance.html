@@ -189,7 +189,8 @@ td.first-name {
       </thead>
       <tbody></tbody>
     </table>
-  </div> <!-- ✅ closes .attendance-input-panel -->
+    <button id="saveAttendanceBtn">Save Attendance</button>
+ </div> <!-- ✅ closes .attendance-input-panel -->
 
   <!-- 📊 Panel 2: Attendance Records -->
   <div class="attendance-record-panel">
@@ -232,6 +233,11 @@ td.first-name {
 
       const app = initializeApp(firebaseConfig);
       const db = getFirestore(app);
+      const studentsMap = new Map(); // Key: CN, Value: full student object
+      const studentsById = new Map(); // Key: Idnumber
+      const studentsByEmail = new Map(); // Key: Emai
+
+
 
       const SectionSelect = document.getElementById("SectionSelect");
       const SectionsSnapshot = await getDocs(collection(db, "students"));
@@ -247,48 +253,51 @@ td.first-name {
         SectionSelect.appendChild(option);
       });
 
-      SectionSelect.addEventListener("change", async () => {
-        const selectedSection = SectionSelect.value;
-        const studentsTableBody = document.querySelector("#studentsTable tbody");
-        studentsTableBody.innerHTML = "";
+SectionSelect.addEventListener("change", async () => {
+  const selectedSection = SectionSelect.value;
+  const studentsTableBody = document.querySelector("#studentsTable tbody");
+  studentsTableBody.innerHTML = "";
+  studentsMap.clear(); // Clear previous data
 
-        const q = query(collection(db, "students"), where("Section", "==", selectedSection));
-        const studentsSnapshot = await getDocs(q);
+  const q = query(collection(db, "students"), where("Section", "==", selectedSection));
+  const studentsSnapshot = await getDocs(q);
 
-        studentsSnapshot.forEach(docSnap => {
-          const student = docSnap.data();
-          const tr = document.createElement("tr");
+  studentsSnapshot.forEach(docSnap => {
+    const student = docSnap.data();
+    studentsMap.set(student.CN, student); // Store full student object
 
-          tr.innerHTML = `
-  <td class="right-align">${student.CN || ""}</td>
-  <td class="left-align last-name">${student.LastName || ""}</td>
-  <td class="left-align first-name">${student.FirstName || ""}</td>
-  <td class="status-display"></td>
-  <td><input type="radio" name="att_${student.CN}" value="P" /></td>
-  <td><input type="radio" name="att_${student.CN}" value="A" /></td>
-  <td><input type="radio" name="att_${student.CN}" value="L" /></td>
-`;
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td class="right-align">${student.CN || ""}</td>
+      <td class="left-align last-name">${student.LastName || ""}</td>
+      <td class="left-align first-name">${student.FirstName || ""}</td>
+      <td class="status-display"></td>
+      <td><input type="radio" name="att_${student.CN}" value="P" /></td>
+      <td><input type="radio" name="att_${student.CN}" value="A" /></td>
+      <td><input type="radio" name="att_${student.CN}" value="L" /></td>
+    `;
 
-          tr.querySelectorAll(`input[name="att_${student.CN}"]`).forEach(radio => {
-            radio.addEventListener("change", () => {
-              const statusCell = tr.querySelector(".status-display");
-              if (radio.value === "P") {
-                statusCell.textContent = "✔";
-                statusCell.className = "status-display status-check";
-              } else if (radio.value === "A") {
-                statusCell.textContent = "A";
-                statusCell.className = "status-display status-absent";
-              } else if (radio.value === "L") {
-                statusCell.textContent = "L";
-                statusCell.className = "status-display status-late";
-              }
-            });
-          });
-
-          studentsTableBody.appendChild(tr);
-        });
-        sortTableByCN(); // ✅ Sort after all rows are added
+    tr.querySelectorAll(`input[name="att_${student.CN}"]`).forEach(radio => {
+      radio.addEventListener("change", () => {
+        const statusCell = tr.querySelector(".status-display");
+        if (radio.value === "P") {
+          statusCell.textContent = "✔";
+          statusCell.className = "status-display status-check";
+        } else if (radio.value === "A") {
+          statusCell.textContent = "A";
+          statusCell.className = "status-display status-absent";
+        } else if (radio.value === "L") {
+          statusCell.textContent = "L";
+          statusCell.className = "status-display status-late";
+        }
       });
+    });
+
+    studentsTableBody.appendChild(tr);
+  });
+
+  sortTableByCN();
+});
       
       function sortTableByCN() {
   const tbody = document.querySelector("#studentsTable tbody");
@@ -341,6 +350,53 @@ td.first-name {
     this.textContent = '>>>>>'; // Expand again
   }
 });
+    async function saveAttendanceRecords() {
+  const dateTaken = document.getElementById("attendanceDate").value;
+  const dayType = document.getElementById("dayType").value;
+  const section = document.getElementById("SectionSelect").value;
+
+  if (!dateTaken || !section) {
+    alert("Please select both a date and a section.");
+    return;
+  }
+
+  const studentsTableBody = document.querySelector("#studentsTable tbody");
+  const rows = studentsTableBody.querySelectorAll("tr");
+
+  for (const row of rows) {
+    const CN = row.children[0].textContent.trim();
+    const status = row.querySelector(".status-display").textContent.trim();
+    if (!status || !studentsMap.has(CN)) continue;
+
+    const student = studentsMap.get(CN);
+    const docId = `${student.Idnumber}-${dateTaken}`; // Use Idnumber for uniqueness
+
+    const attendanceData = {
+      CN: student.CN,
+      Idnumber: student.Idnumber,
+      Email: student.Email,
+      FirstName: student.FirstName,
+      LastName: student.LastName,
+      Section: student.Section,
+      schoolyear: student.schoolyear,
+      subject: student.subject,
+      terms: student.terms,
+      dateTaken,
+      dayType,
+      status,
+    };
+
+    try {
+      await setDoc(doc(db, "attendance", docId), attendanceData);
+      console.log(`✅ Saved: ${docId}`);
+    } catch (error) {
+      console.error(`❌ Error saving ${docId}:`, error);
+    }
+  }
+
+  alert("Attendance records saved successfully.");
+}
+document.getElementById("saveAttendanceBtn").addEventListener("click", saveAttendanceRecords);
 
   </script>
 </body>
