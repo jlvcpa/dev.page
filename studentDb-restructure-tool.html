@@ -1,7 +1,15 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Student ID Migration Tool</title>
+  <title>Student ID Migration & Cleanup Tool</title>
+  <style>
+    body { font-family: sans-serif; padding: 2rem; }
+    textarea { width: 100%; height: 200px; margin-top: 1rem; }
+    button { margin-top: 1rem; padding: 0.5rem 1rem; }
+    ul { list-style: none; padding: 0; }
+    li { padding: 4px; cursor: pointer; }
+    li.selected { background-color: #d0ebff; }
+  </style>
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
     import {
@@ -23,65 +31,114 @@
       appId: "YOUR_APP_ID"
     };
 
-    // ✅ Initialize Firebase with long polling to avoid transport errors
     const app = initializeApp(firebaseConfig);
     const db = initializeFirestore(app, {
       experimentalForceLongPolling: true,
       useFetchStreams: false
     });
 
-    async function migrateStudents(deleteOld = false) {
-      const resultEl = document.getElementById("result");
-      resultEl.innerText = "⏳ Migrating students...";
+    let studentsData = [];
+    let mismatchedDocs = [];
 
-      try {
-        const studentsSnapshot = await getDocs(collection(db, "students"));
-        let migrated = 0, skipped = 0;
+    async function fetchStudents() {
+      const snapshot = await getDocs(collection(db, "students"));
+      studentsData = [];
+      mismatchedDocs = [];
 
-        for (const docSnap of studentsSnapshot.docs) {
-          const data = docSnap.data();
-          const idnumber = data.Idnumber;
+      for (const docSnap of snapshot.docs) {
+        const data = docSnap.data();
+        const docId = docSnap.id;
+        const idnumber = data.Idnumber;
 
-          if (!idnumber) {
-            console.warn(`⚠️ Skipping student with missing Idnumber: ${docSnap.id}`);
-            skipped++;
-            continue;
-          }
+        const student = {
+          docId,
+          ...data
+        };
 
-          const newRef = doc(db, "students", idnumber);
-          await setDoc(newRef, data);
-          migrated++;
+        studentsData.push(student);
 
-          if (deleteOld) {
-            await deleteDoc(docSnap.ref);
-          }
+        if (docId !== idnumber && idnumber) {
+          mismatchedDocs.push(student);
         }
+      }
 
-        resultEl.innerText =
-          `✅ Migration complete.\nMigrated: ${migrated}\nSkipped (missing Idnumber): ${skipped}`;
-      } catch (error) {
-        console.error("❌ Migration failed:", error);
-        resultEl.innerText = `❌ Migration failed: ${error.message}`;
+      displayMismatched();
+    }
+
+    function displayMismatched() {
+      const list = document.getElementById("mismatchedList");
+      list.innerHTML = "";
+
+      mismatchedDocs.forEach((student, index) => {
+        const li = document.createElement("li");
+        li.textContent = `${student.FirstName} ${student.LastName} (${student.docId})`;
+        li.dataset.index = index;
+        li.onclick = handleSelect;
+        list.appendChild(li);
+      });
+    }
+
+    let lastSelectedIndex = null;
+
+    function handleSelect(e) {
+      const index = parseInt(e.target.dataset.index);
+      const items = document.querySelectorAll("#mismatchedList li");
+
+      if (e.shiftKey && lastSelectedIndex !== null) {
+        const [start, end] = [lastSelectedIndex, index].sort((a, b) => a - b);
+        for (let i = start; i <= end; i++) {
+          items[i].classList.add("selected");
+        }
+      } else {
+        e.target.classList.toggle("selected");
+        lastSelectedIndex = index;
       }
     }
 
-    window.runMigration = () => {
-      const deleteOld = document.getElementById("deleteOld").checked;
-      migrateStudents(deleteOld);
-    };
+    async function migrateStudents() {
+      let migrated = 0;
+
+      for (const student of studentsData) {
+        const { Idnumber, ...rest } = student;
+        if (!Idnumber) continue;
+
+        const newRef = doc(db, "students", Idnumber);
+        await setDoc(newRef, rest);
+        migrated++;
+      }
+
+      alert(`✅ Migrated ${migrated} students using Idnumber as document ID.`);
+    }
+
+    async function deleteSelected() {
+      const selectedItems = document.querySelectorAll("#mismatchedList li.selected");
+      let deleted = 0;
+
+      for (const item of selectedItems) {
+        const index = parseInt(item.dataset.index);
+        const student = mismatchedDocs[index];
+        await deleteDoc(doc(db, "students", student.docId));
+        deleted++;
+      }
+
+      alert(`🗑️ Deleted ${deleted} mismatched student documents.`);
+      await fetchStudents(); // Refresh list
+    }
+
+    window.runFetch = fetchStudents;
+    window.runMigration = migrateStudents;
+    window.runDelete = deleteSelected;
   </script>
 </head>
-<body style="font-family: sans-serif; padding: 2rem;">
-  <h2>🧩 Student ID Migration Utility</h2>
-  <p>This tool copies each student document to a new one using their <strong>Idnumber</strong> as the document ID.</p>
+<body>
+  <h2>🧩 Student ID Migration & Cleanup Tool</h2>
+  <p>This tool migrates student documents using their <strong>Idnumber</strong> as the document ID and helps clean up mismatched records.</p>
 
-  <label>
-    <input type="checkbox" id="deleteOld" />
-    Delete old documents after migration
-  </label>
-  <br><br>
-  <button onclick="runMigration()" style="padding: 0.5rem 1rem;">Run Migration</button>
+  <button onclick="runFetch()">🔍 Fetch Students</button>
+  <button onclick="runMigration()">📥 Migrate to Idnumber</button>
+  <button onclick="runDelete()">🗑️ Delete Selected</button>
 
-  <pre id="result" style="margin-top: 20px; background: #f4f4f4; padding: 1rem; border-radius: 5px;"></pre>
+  <h3>Mismatched Documents (Doc ID ≠ Idnumber)</h3>
+  <ul id="mismatchedList"></ul>
 </body>
 </html>
