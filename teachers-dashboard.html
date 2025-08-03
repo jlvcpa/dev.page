@@ -198,16 +198,12 @@
     /*    // Get teacher name from localStorage
     const teacherData = JSON.parse(localStorage.getItem("currentTeacher"));
     const headerHTML = `<h2>Prof ${teacherData.firstName} ${teacherData.lastName}, you are inside the quiz creation page!</h2>`; */
-        / Generate dynamic header
+        // Generate dynamic header
     const headerHTML = generatePageHeader("You are inside the quiz creation page!");
 
-    // Inject header + content
+   // Inject header + content
     const content = document.getElementById('content');
     content.innerHTML = headerHTML + tempDiv.innerHTML;
-
-    /* // Inject header + content
-    const content = document.getElementById('content');
-    content.innerHTML = headerHTML + tempDiv.innerHTML; */
 
         // Extract and re-execute scripts
         const scripts = tempDiv.querySelectorAll('script');
@@ -223,9 +219,9 @@
           document.body.appendChild(newScript);
         });
 
-       /* // Inject the rest of the HTML
+       // Inject the rest of the HTML
         content.innerHTML = tempDiv.innerHTML;
-        content.innerHTML = headerHTML + tempDiv.innerHTML; */
+        content.innerHTML = headerHTML + tempDiv.innerHTML;
 
       } catch (error) {
         content.innerHTML = `<p>Error loading page: ${error.message}</p>`;
