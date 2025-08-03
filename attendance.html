@@ -61,6 +61,14 @@
       cursor: pointer;
       background-color: #f0f0f0;
     }
+    
+.right-align {
+  text-align: right;
+}
+
+.left-align {
+  text-align: left;
+}
 
     .status-check {
       color: green;
@@ -129,13 +137,14 @@
       <table id="studentsTable">
         <thead>
           <tr>
-            <th class="sortable">CN</th>
-            <th class="sortable">Last Name</th>
-            <th class="sortable">First Name</th>
-            <th>Status</th>
-            <th>P</th>
-            <th>A</th>
-            <th>L</th>
+           <th class="sortable right-align">CN</th>
+      <th class="sortable left-align">Last Name</th>
+      <th class="sortable left-align">First Name</th>
+      <th>Status</th>
+      <th>P</th>
+      <th>A</th>
+      <th>L</th>
+
           </tr>
         </thead>
         <tbody></tbody>
@@ -235,7 +244,22 @@
 
           studentsTableBody.appendChild(tr);
         });
+        sortTableByCN(); // ✅ Sort after all rows are added
       });
+      
+      function sortTableByCN() {
+  const tbody = document.querySelector("#studentsTable tbody");
+  const rows = Array.from(tbody.querySelectorAll("tr"));
+
+  rows.sort((a, b) => {
+    const aCN = parseInt(a.children[0].textContent.trim()) || 0;
+    const bCN = parseInt(b.children[0].textContent.trim()) || 0;
+    return aCN - bCN;
+  });
+
+  tbody.innerHTML = "";
+  rows.forEach(row => tbody.appendChild(row));
+}
 
       document.querySelectorAll(".sortable").forEach(header => {
         header.addEventListener("click", () => {
