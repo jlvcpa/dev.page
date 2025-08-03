@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Student ID Migration Tool</title>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import {
+      getFirestore,
+      collection,
+      getDocs,
+      doc,
+      setDoc,
+      deleteDoc
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+    // 🔐 Replace with your Firebase config
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_AUTH_DOMAIN",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_STORAGE_BUCKET",
+      messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+      appId: "YOUR_APP_ID"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    async function migrateStudents(deleteOld = false) {
+      const studentsSnapshot = await getDocs(collection(db, "students"));
+      let migrated = 0, skipped = 0;
+
+      for (const docSnap of studentsSnapshot.docs) {
+        const data = docSnap.data();
+        const idnumber = data.Idnumber;
+
+        if (!idnumber) {
+          console.warn(`⚠️ Skipping student with missing Idnumber: ${docSnap.id}`);
+          skipped++;
+          continue;
+        }
+
+        const newRef = doc(db, "students", idnumber);
+        await setDoc(newRef, data);
+        migrated++;
+
+        if (deleteOld) {
+          await deleteDoc(docSnap.ref);
+        }
+      }
+
+      document.getElementById("result").innerText =
+        `✅ Migration complete. Migrated: ${migrated}, Skipped: ${skipped}`;
+    }
+
+    window.runMigration = () => {
+      const deleteOld = document.getElementById("deleteOld").checked;
+      migrateStudents(deleteOld);
+    };
+  </script>
+</head>
+<body>
+  <h2>🧩 Student ID Migration Utility</h2>
+  <p>This tool will copy each student document to a new one using their <strong>Idnumber</strong> as the document ID.</p>
+
+  <label>
+    <input type="checkbox" id="deleteOld" />
+    Delete old documents after migration
+  </label>
+  <br><br>
+  <button onclick="runMigration()">Run Migration</button>
+
+  <p id="result" style="margin-top: 20px; font-weight: bold;"></p>
+</body>
+</html>
