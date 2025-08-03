@@ -173,8 +173,17 @@
   const firstName = teacherData.firstName || "Teacher";
   const lastName = teacherData.lastName || "";
 
-  return `<h2>ProfeSsor ${firstName} ${lastName}, you're viewing ${section} on ${today}. ${contextMessage}</h2>`;
+    // Build message conditionally
+  let message = `Prof ${firstName} ${lastName}, `;
+  if (section) {
+    message += `you're viewing ${section} on ${today}. `;
+  } else {
+    message += `today is ${today}. `;
+  }
+  message += contextMessage;
+  return `<h2>${message}</h2>`;
 }
+
 
       // START OF THE LOADPAGE FUNCTION
       async function loadPage(page) {
@@ -199,7 +208,7 @@
     const teacherData = JSON.parse(localStorage.getItem("currentTeacher"));
     const headerHTML = `<h2>Prof ${teacherData.firstName} ${teacherData.lastName}, you are inside the quiz creation page!</h2>`; */
         // Generate dynamic header
-    const headerHTML = generatePageHeader("You are inside the quiz creation page!");
+    const headerHTML = generatePageHeader("You are inside the quiz creation page this time!");
 
    // Inject header + content
     const content = document.getElementById('content');
