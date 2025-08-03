@@ -115,6 +115,7 @@
   
    <h2>Update the Students Email</h2>
   <button id="fixStudentEmailsBtn">✉️ Fix Student Emails</button>
+  <button id="migrateStudentIdsBtn">🆔 Migrate Student IDs to Idnumber</button>
 
   <div id="fieldsContainer">
 
@@ -144,264 +145,304 @@
 
   <div id="status"></div>
 
- <script type="module">
-  (async () => {
-    const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js");
-    const {
-      getFirestore,
-      doc,
-      setDoc,
-      getDocs,
-      collection,
-      getDoc,
-      updateDoc
-    } = await import("https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js");
+<script type="module">
+(async () => {
+  const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js");
+  const {
+    getFirestore,
+    doc,
+    setDoc,
+    getDocs,
+    collection,
+    getDoc,
+    updateDoc,
+    deleteDoc
+  } = await import("https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js");
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyAgOsKAZWwExUzupxSNytsfOo9BOppF0ng",
-      authDomain: "jlvcpa-quizzes.firebaseapp.com",
-      projectId: "jlvcpa-quizzes",
-      storageBucket: "jlvcpa-quizzes.appspot.com",
-      messagingSenderId: "629158256557",
-      appId: "1:629158256557:web:b3d1a424b32e28cd578b24"
-    };
+  // 🔧 Firebase Config
+  const firebaseConfig = {
+    apiKey: "AIzaSyAgOsKAZWwExUzupxSNytsfOo9BOppF0ng",
+    authDomain: "jlvcpa-quizzes.firebaseapp.com",
+    projectId: "jlvcpa-quizzes",
+    storageBucket: "jlvcpa-quizzes.appspot.com",
+    messagingSenderId: "629158256557",
+    appId: "1:629158256557:web:b3d1a424b32e28cd578b24"
+  };
 
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
 
-    const addFieldBtn = document.getElementById("addField");
-    const loadDocsBtn = document.getElementById("loadDocsBtn");
-    const updateSelectedBtn = document.getElementById("updateSelectedBtn");
-    const fixStudentEmailsBtn = document.getElementById("fixStudentEmailsBtn");
-    const statusDiv = document.getElementById("status");
-    const progressBar = document.getElementById("progress-bar");
-    const progressText = document.getElementById("progress-text");
-    const documentList = document.getElementById("documentList");
-    const docFilterInput = document.getElementById("docFilterInput");
+  // 🔗 DOM Elements
+  const addFieldBtn = document.getElementById("addField");
+  const loadDocsBtn = document.getElementById("loadDocsBtn");
+  const updateSelectedBtn = document.getElementById("updateSelectedBtn");
+  const fixStudentEmailsBtn = document.getElementById("fixStudentEmailsBtn");
+  const migrateStudentIdsBtn = document.getElementById("migrateStudentIdsBtn");
+  const statusDiv = document.getElementById("status");
+  const progressBar = document.getElementById("progress-bar");
+  const progressText = document.getElementById("progress-text");
+  const documentList = document.getElementById("documentList");
+  const docFilterInput = document.getElementById("docFilterInput");
 
-    let allDocItems = [];
+  let allDocItems = [];
 
-    addFieldBtn.addEventListener("click", () => {
-      const div = document.createElement("div");
-      div.className = "field-pair";
-      div.innerHTML = `
-        <input type="text" placeholder="Field Name" class="field-name">
-        <input type="text" placeholder="Field Value" class="field-value">
-      `;
-      document.getElementById("fieldsContainer").appendChild(div);
-    });
+  // ➕ Add Field Pair
+  addFieldBtn.addEventListener("click", () => {
+    const div = document.createElement("div");
+    div.className = "field-pair";
+    div.innerHTML = `
+      <input type="text" placeholder="Field Name" class="field-name">
+      <input type="text" placeholder="Field Value" class="field-value">
+    `;
+    document.getElementById("fieldsContainer").appendChild(div);
+  });
 
-    function getUpdateData() {
-      const fieldNames = document.querySelectorAll(".field-name");
-      const fieldValues = document.querySelectorAll(".field-value");
-      const updateData = {};
+  // 🧠 Collect Field Data
+  function getUpdateData() {
+    const fieldNames = document.querySelectorAll(".field-name");
+    const fieldValues = document.querySelectorAll(".field-value");
+    const updateData = {};
 
-      for (let i = 0; i < fieldNames.length; i++) {
-        const name = fieldNames[i].value.trim();
-        const value = fieldValues[i].value.trim();
-        if (name) updateData[name] = value;
-      }
-
-      return updateData;
+    for (let i = 0; i < fieldNames.length; i++) {
+      const name = fieldNames[i].value.trim();
+      const value = fieldValues[i].value.trim();
+      if (name) updateData[name] = value;
     }
 
-    docFilterInput.addEventListener("input", () => {
-      const filterText = docFilterInput.value.toLowerCase();
-      documentList.innerHTML = "";
+    return updateData;
+  }
 
-      allDocItems.forEach(item => {
-        const docId = item.dataset.docId.toLowerCase();
-        if (docId.includes(filterText)) {
-          documentList.appendChild(item);
-        }
+  // 🔍 Filter Documents
+  docFilterInput.addEventListener("input", () => {
+    const filterText = docFilterInput.value.toLowerCase();
+    documentList.innerHTML = "";
+
+    allDocItems.forEach(item => {
+      const docId = item.dataset.docId.toLowerCase();
+      if (docId.includes(filterText)) {
+        documentList.appendChild(item);
+      }
+    });
+  });
+
+  // 📊 Progress Bar
+  function updateProgress(current, total) {
+    const percent = Math.round((current / total) * 100);
+    progressBar.style.width = `${percent}%`;
+    progressText.textContent = `Progress: ${percent}%`;
+  }
+
+  // 📄 Load Documents
+  loadDocsBtn.addEventListener("click", async () => {
+    const collectionName = document.getElementById("collectionSelect").value;
+    if (!collectionName) {
+      statusDiv.textContent = "❌ Please select a collection.";
+      return;
+    }
+
+    statusDiv.textContent = "⏳ Loading documents...";
+    documentList.innerHTML = "";
+    allDocItems = [];
+
+    try {
+      const querySnapshot = await getDocs(collection(db, collectionName));
+      querySnapshot.forEach(docSnap => {
+        const data = docSnap.data();
+        const div = document.createElement("div");
+        div.className = "doc-item";
+        div.dataset.docId = docSnap.id;
+
+        const lastName = data.LastName || data.lastName || "(no last name)";
+        const email = data.Email || data.email || "(no email)";
+
+        div.innerHTML = `
+          <input type="checkbox">
+          <span style="width: 150px; display: inline-block;">${docSnap.id}</span>
+          <span style="width: 150px; display: inline-block;">${lastName}</span>
+          <span style="width: 250px; display: inline-block;">${email}</span>
+        `;
+
+        documentList.appendChild(div);
+        allDocItems.push(div);
       });
-    });
 
-    function updateProgress(current, total) {
-      const percent = Math.round((current / total) * 100);
-      progressBar.style.width = `${percent}%`;
-      progressText.textContent = `Progress: ${percent}%`;
+      statusDiv.textContent = `📄 Loaded ${querySnapshot.size} documents from "${collectionName}".`;
+    } catch (err) {
+      console.error("Error loading documents:", err);
+      statusDiv.textContent = `❌ Error: ${err.message}`;
+    }
+  });
+
+  // ✅ Multi-select with Shift
+  let lastClickedItem = null;
+  documentList.addEventListener("click", (e) => {
+    const item = e.target.closest(".doc-item");
+    if (!item) return;
+
+    const checkbox = item.querySelector("input[type='checkbox']");
+    const allItems = Array.from(document.querySelectorAll(".doc-item"));
+    const clickedIndex = allItems.indexOf(item);
+
+    if (e.shiftKey && lastClickedItem) {
+      const lastIndex = allItems.indexOf(lastClickedItem);
+      const [start, end] = [Math.min(clickedIndex, lastIndex), Math.max(clickedIndex, lastIndex)];
+
+      for (let i = start; i <= end; i++) {
+        const cb = allItems[i].querySelector("input[type='checkbox']");
+        if (cb && !cb.disabled) cb.checked = true;
+      }
+    } else {
+      if (checkbox && !checkbox.disabled) {
+        checkbox.checked = !checkbox.checked;
+      }
     }
 
-    loadDocsBtn.addEventListener("click", async () => {
-      const collectionName = document.getElementById("collectionSelect").value;
-      if (!collectionName) {
-        statusDiv.textContent = "❌ Please select a collection.";
-        return;
-      }
+    lastClickedItem = item;
+  });
 
-      statusDiv.textContent = "⏳ Loading documents...";
-      documentList.innerHTML = "";
-      allDocItems = [];
+  // 🔄 Update Selected Documents
+  updateSelectedBtn.addEventListener("click", async () => {
+    const collectionName = document.getElementById("collectionSelect").value;
+    const updateData = getUpdateData();
+    const selectedItems = document.querySelectorAll(".doc-item input[type='checkbox']:checked");
+
+    if (!collectionName || Object.keys(updateData).length === 0 || selectedItems.length === 0) {
+      statusDiv.textContent = "❌ Please select a collection, provide fields, and choose documents.";
+      return;
+    }
+
+    statusDiv.textContent = "⏳ Updating selected documents...";
+    updateProgress(0, selectedItems.length);
+
+    let updatedCount = 0;
+
+    for (const checkbox of selectedItems) {
+      const docItem = checkbox.closest(".doc-item");
+      const docId = docItem.dataset.docId;
+      const docRef = doc(db, collectionName, docId);
 
       try {
-        const querySnapshot = await getDocs(collection(db, collectionName));
-        querySnapshot.forEach(docSnap => {
-          const data = docSnap.data();
-          const div = document.createElement("div");
-          div.className = "doc-item";
-          div.dataset.docId = docSnap.id;
+        await setDoc(docRef, updateData, { merge: true });
+        updatedCount++;
+        updateProgress(updatedCount, selectedItems.length);
 
-          const lastName = data.LastName || data.lastName || "(no last name)";
-          const email = data.Email || data.email || "(no email)";
-
-          div.innerHTML = `
-            <input type="checkbox">
-            <span style="width: 150px; display: inline-block;">${docSnap.id}</span>
-            <span style="width: 150px; display: inline-block;">${lastName}</span>
-            <span style="width: 250px; display: inline-block;">${email}</span>
-          `;
-
-          documentList.appendChild(div);
-          allDocItems.push(div);
-        });
-
-        statusDiv.textContent = `📄 Loaded ${querySnapshot.size} documents from "${collectionName}".`;
+        docItem.classList.add("updated");
+        checkbox.disabled = true;
+        checkbox.checked = false;
       } catch (err) {
-        console.error("Error loading documents:", err);
-        statusDiv.textContent = `❌ Error: ${err.message}`;
-      }
-    });
-
-    let lastClickedItem = null;
-
-    documentList.addEventListener("click", (e) => {
-      const item = e.target.closest(".doc-item");
-      if (!item) return;
-
-      const checkbox = item.querySelector("input[type='checkbox']");
-      const allItems = Array.from(document.querySelectorAll(".doc-item"));
-      const clickedIndex = allItems.indexOf(item);
-
-      if (e.shiftKey && lastClickedItem) {
-        const lastIndex = allItems.indexOf(lastClickedItem);
-        const [start, end] = [Math.min(clickedIndex, lastIndex), Math.max(clickedIndex, lastIndex)];
-
-        for (let i = start; i <= end; i++) {
-          const cb = allItems[i].querySelector("input[type='checkbox']");
-          if (cb && !cb.disabled) cb.checked = true;
-        }
-      } else {
-        if (checkbox && !checkbox.disabled) {
-          checkbox.checked = !checkbox.checked;
-        }
+        console.error(`Error updating ${docId}:`, err);
       }
 
-      lastClickedItem = item;
-    });
+      await new Promise(res => setTimeout(res, 150)); // throttle
+    }
 
-    updateSelectedBtn.addEventListener("click", async () => {
-      const collectionName = document.getElementById("collectionSelect").value;
-      const updateData = getUpdateData();
-      const selectedItems = document.querySelectorAll(".doc-item input[type='checkbox']:checked");
+    statusDiv.textContent = `✅ Updated ${updatedCount} documents.`;
+  });
 
-      if (!collectionName || Object.keys(updateData).length === 0 || selectedItems.length === 0) {
-        statusDiv.textContent = "❌ Please select a collection, provide fields, and choose documents.";
-        return;
-      }
+  // ✉️ Fix Student Emails
+  fixStudentEmailsBtn.addEventListener("click", async () => {
+    const collectionName = document.getElementById("collectionSelect").value;
+    if (collectionName !== "students") {
+      statusDiv.textContent = "❌ This function only works for the 'students' collection.";
+      return;
+    }
 
-      statusDiv.textContent = "⏳ Updating selected documents...";
-      progressBar.style.width = "0%";
-      progressText.textContent = "Progress: 0%";
+    const selectedItems = document.querySelectorAll(".doc-item input[type='checkbox']:checked");
+    if (selectedItems.length === 0) {
+      statusDiv.textContent = "❌ Please select student documents to fix.";
+      return;
+    }
 
-      let updatedCount = 0;
-      const total = selectedItems.length;
+    statusDiv.textContent = "⏳ Fixing student emails...";
+    updateProgress(0, selectedItems.length);
 
-      for (const checkbox of selectedItems) {
-        const docItem = checkbox.closest(".doc-item");
-        const docId = docItem.dataset.docId;
-        const docRef = doc(db, collectionName, docId);
+    let updatedCount = 0;
 
-        try {
-          await setDoc(docRef, updateData, { merge: true });
+    for (const checkbox of selectedItems) {
+      const docItem = checkbox.closest(".doc-item");
+      const docId = docItem.dataset.docId;
+      const docRef = doc(db, collectionName, docId);
+
+      try {
+        const docSnap = await getDoc(docRef);
+        const data = docSnap.data();
+
+        if (data?.Idnumber) {
+          const correctedId = "0" + data.Idnumber;
+          const correctedEmail = `${correctedId}@shs-adc.online`;
+
+          await updateDoc(docRef, { Email: correctedEmail });
+
           updatedCount++;
-          updateProgress(updatedCount, total);
+          updateProgress(updatedCount, selectedItems.length);
 
           docItem.classList.add("updated");
           checkbox.disabled = true;
           checkbox.checked = false;
-          documentList.appendChild(docItem);
-
-          allDocItems = allDocItems.filter(item => item.dataset.docId !== docId);
-          allDocItems.push(docItem);
-
-          await new Promise(res => setTimeout(res, 150));
-        } catch (err) {
-          console.error(`Error updating ${docId}:`, err);
         }
+      } catch (err) {
+        console.error(`Error fixing email for ${docId}:`, err);
       }
 
-      statusDiv.textContent = `✅ Updated ${updatedCount} documents.`;
-    });
+      await new Promise(res => setTimeout(res, 150)); // throttle
+    }
 
-    fixStudentEmailsBtn.addEventListener("click", async () => {
-      const collectionName = document.getElementById("collectionSelect").value;
-      if (collectionName !== "students") {
-        statusDiv.textContent = "❌ This function only works for the 'students' collection.";
-        return;
-      }
-
-      
-  // 🔍 Diagnostic: Fetch and log all students
-  const snapshot = await getDocs(collection(db, "students"));
-  console.log("Total students fetched:", snapshot.size);
-  snapshot.forEach(doc => {
-    const data = doc.data();
-    console.log("Student:", data.name, "Email:", data.email);
+       statusDiv.textContent = `✅ Fixed emails for ${updatedCount} students.`;
   });
 
-  const selectedItems = document.querySelectorAll(".doc-item input[type='checkbox']:checked");
-  if (selectedItems.length === 0) {
-    statusDiv.textContent = "❌ Please select student documents to fix.";
-    return;
-  }
+  // 🆔 Migrate Student Document IDs to Idnumber
+  migrateStudentIdsBtn.addEventListener("click", async () => {
+    const collectionName = document.getElementById("collectionSelect").value;
+    if (collectionName !== "students") {
+      statusDiv.textContent = "❌ This function only works for the 'students' collection.";
+      return;
+    }
 
+    const selectedItems = document.querySelectorAll(".doc-item input[type='checkbox']:checked");
+    if (selectedItems.length === 0) {
+      statusDiv.textContent = "❌ Please select student documents to migrate.";
+      return;
+    }
 
-      statusDiv.textContent = "⏳ Fixing student emails...";
-      progressBar.style.width = "0%";
-      progressText.textContent = "Progress: 0%";
+    statusDiv.textContent = "⏳ Migrating student document IDs...";
+    updateProgress(0, selectedItems.length);
 
-      let updatedCount = 0;
-      const total = selectedItems.length;
+    let migratedCount = 0;
 
-      for (const checkbox of selectedItems) {
-        const docItem = checkbox.closest(".doc-item");
-        const docId = docItem.dataset.docId;
-        const docRef = doc(db, collectionName, docId);
+    for (const checkbox of selectedItems) {
+      const docItem = checkbox.closest(".doc-item");
+      const oldDocId = docItem.dataset.docId;
+      const oldDocRef = doc(db, "students", oldDocId);
 
-        try {
-          const docSnap = await getDoc(docRef);
-          const data = docSnap.data();
+      try {
+        const docSnap = await getDoc(oldDocRef);
+        const data = docSnap.data();
 
-          if (data && data.Idnumber) {
-            const correctedId = "0" + data.Idnumber;
-            const correctedEmail = `${correctedId}@shs-adc.online`;
+        if (data?.Idnumber && oldDocId !== data.Idnumber) {
+          const newDocId = data.Idnumber;
+          const newDocRef = doc(db, "students", newDocId);
 
-            await updateDoc(docRef, {
-              Email: correctedEmail
-            });
+          await setDoc(newDocRef, data); // Copy all fields
+          // Optional: delete old document
+          // await deleteDoc(oldDocRef);
 
-            updatedCount++;
-            updateProgress(updatedCount, total);
+          migratedCount++;
+          updateProgress(migratedCount, selectedItems.length);
 
-            docItem.classList.add("updated");
-            checkbox.disabled = true;
-            checkbox.checked = false;
-            documentList.appendChild(docItem);
-
-            allDocItems = allDocItems.filter(item => item.dataset.docId !== docId);
-            allDocItems.push(docItem);
-
-                        await new Promise(res => setTimeout(res, 150)); // throttle
-          }
-        } catch (err) {
-          console.error(`Error fixing email for ${docId}:`, err);
+          docItem.classList.add("updated");
+          checkbox.disabled = true;
+          checkbox.checked = false;
         }
+      } catch (err) {
+        console.error(`Error migrating ${oldDocId}:`, err);
       }
 
-      statusDiv.textContent = `✅ Fixed emails for ${updatedCount} students.`;
-    });
-  })();
+      await new Promise(res => setTimeout(res, 150)); // throttle
+    }
+
+    statusDiv.textContent = `✅ Migrated ${migratedCount} student documents to use Idnumber as ID.`;
+  });
+})();
 </script>
 </body>
 </html>
