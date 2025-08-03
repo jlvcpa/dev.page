@@ -5,7 +5,7 @@
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
     import {
-      getFirestore,
+      initializeFirestore,
       collection,
       getDocs,
       doc,
@@ -23,34 +23,46 @@
       appId: "YOUR_APP_ID"
     };
 
+    // ✅ Initialize Firebase with long polling to avoid transport errors
     const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
+    const db = initializeFirestore(app, {
+      experimentalForceLongPolling: true,
+      useFetchStreams: false
+    });
 
     async function migrateStudents(deleteOld = false) {
-      const studentsSnapshot = await getDocs(collection(db, "students"));
-      let migrated = 0, skipped = 0;
+      const resultEl = document.getElementById("result");
+      resultEl.innerText = "⏳ Migrating students...";
 
-      for (const docSnap of studentsSnapshot.docs) {
-        const data = docSnap.data();
-        const idnumber = data.Idnumber;
+      try {
+        const studentsSnapshot = await getDocs(collection(db, "students"));
+        let migrated = 0, skipped = 0;
 
-        if (!idnumber) {
-          console.warn(`⚠️ Skipping student with missing Idnumber: ${docSnap.id}`);
-          skipped++;
-          continue;
+        for (const docSnap of studentsSnapshot.docs) {
+          const data = docSnap.data();
+          const idnumber = data.Idnumber;
+
+          if (!idnumber) {
+            console.warn(`⚠️ Skipping student with missing Idnumber: ${docSnap.id}`);
+            skipped++;
+            continue;
+          }
+
+          const newRef = doc(db, "students", idnumber);
+          await setDoc(newRef, data);
+          migrated++;
+
+          if (deleteOld) {
+            await deleteDoc(docSnap.ref);
+          }
         }
 
-        const newRef = doc(db, "students", idnumber);
-        await setDoc(newRef, data);
-        migrated++;
-
-        if (deleteOld) {
-          await deleteDoc(docSnap.ref);
-        }
+        resultEl.innerText =
+          `✅ Migration complete.\nMigrated: ${migrated}\nSkipped (missing Idnumber): ${skipped}`;
+      } catch (error) {
+        console.error("❌ Migration failed:", error);
+        resultEl.innerText = `❌ Migration failed: ${error.message}`;
       }
-
-      document.getElementById("result").innerText =
-        `✅ Migration complete. Migrated: ${migrated}, Skipped: ${skipped}`;
     }
 
     window.runMigration = () => {
@@ -59,17 +71,17 @@
     };
   </script>
 </head>
-<body>
+<body style="font-family: sans-serif; padding: 2rem;">
   <h2>🧩 Student ID Migration Utility</h2>
-  <p>This tool will copy each student document to a new one using their <strong>Idnumber</strong> as the document ID.</p>
+  <p>This tool copies each student document to a new one using their <strong>Idnumber</strong> as the document ID.</p>
 
   <label>
     <input type="checkbox" id="deleteOld" />
     Delete old documents after migration
   </label>
   <br><br>
-  <button onclick="runMigration()">Run Migration</button>
+  <button onclick="runMigration()" style="padding: 0.5rem 1rem;">Run Migration</button>
 
-  <p id="result" style="margin-top: 20px; font-weight: bold;"></p>
+  <pre id="result" style="margin-top: 20px; background: #f4f4f4; padding: 1rem; border-radius: 5px;"></pre>
 </body>
 </html>
