@@ -4,11 +4,11 @@
   <title>Student ID Migration & Cleanup Tool</title>
   <style>
     body { font-family: sans-serif; padding: 2rem; }
-    textarea { width: 100%; height: 200px; margin-top: 1rem; }
     button { margin-top: 1rem; padding: 0.5rem 1rem; }
     ul { list-style: none; padding: 0; }
     li { padding: 4px; cursor: pointer; }
     li.selected { background-color: #d0ebff; }
+    #status { margin-top: 1rem; font-weight: bold; color: #333; }
   </style>
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
@@ -31,6 +31,7 @@
       appId: "YOUR_APP_ID"
     };
 
+    // ✅ Enable long polling to avoid transport errors
     const app = initializeApp(firebaseConfig);
     const db = initializeFirestore(app, {
       experimentalForceLongPolling: true,
@@ -41,28 +42,35 @@
     let mismatchedDocs = [];
 
     async function fetchStudents() {
-      const snapshot = await getDocs(collection(db, "students"));
-      studentsData = [];
-      mismatchedDocs = [];
+      const status = document.getElementById("status");
+      status.textContent = "⏳ Fetching students...";
 
-      for (const docSnap of snapshot.docs) {
-        const data = docSnap.data();
-        const docId = docSnap.id;
-        const idnumber = data.Idnumber;
+      try {
+        const snapshot = await getDocs(collection(db, "students"));
+        console.log("✅ Fetched", snapshot.size, "students");
 
-        const student = {
-          docId,
-          ...data
-        };
+        studentsData = [];
+        mismatchedDocs = [];
 
-        studentsData.push(student);
+        for (const docSnap of snapshot.docs) {
+          const data = docSnap.data();
+          const docId = docSnap.id;
+          const idnumber = data.Idnumber;
 
-        if (docId !== idnumber && idnumber) {
-          mismatchedDocs.push(student);
+          const student = { docId, ...data };
+          studentsData.push(student);
+
+          if (docId !== idnumber && idnumber) {
+            mismatchedDocs.push(student);
+          }
         }
-      }
 
-      displayMismatched();
+        displayMismatched();
+        status.textContent = `✅ Loaded ${studentsData.length} students. ${mismatchedDocs.length} mismatched.`;
+      } catch (error) {
+        console.error("❌ Failed to fetch students:", error);
+        status.textContent = `❌ Fetch failed: ${error.message}. Try refreshing or checking your network.`;
+      }
     }
 
     function displayMismatched() {
@@ -96,33 +104,58 @@
     }
 
     async function migrateStudents() {
+      const status = document.getElementById("status");
+      status.textContent = "⏳ Migrating students...";
+
       let migrated = 0;
 
-      for (const student of studentsData) {
-        const { Idnumber, ...rest } = student;
-        if (!Idnumber) continue;
+      try {
+        for (const student of studentsData) {
+          const { Idnumber, ...rest } = student;
+          if (!Idnumber) continue;
 
-        const newRef = doc(db, "students", Idnumber);
-        await setDoc(newRef, rest);
-        migrated++;
+          const newRef = doc(db, "students", Idnumber);
+          await setDoc(newRef, rest);
+          migrated++;
+        }
+
+        status.textContent = `✅ Migrated ${migrated} students using Idnumber as document ID.`;
+      } catch (error) {
+        console.error("❌ Migration failed:", error);
+        status.textContent = `❌ Migration failed: ${error.message}`;
       }
-
-      alert(`✅ Migrated ${migrated} students using Idnumber as document ID.`);
     }
 
     async function deleteSelected() {
       const selectedItems = document.querySelectorAll("#mismatchedList li.selected");
-      let deleted = 0;
-
-      for (const item of selectedItems) {
-        const index = parseInt(item.dataset.index);
-        const student = mismatchedDocs[index];
-        await deleteDoc(doc(db, "students", student.docId));
-        deleted++;
+      if (selectedItems.length === 0) {
+        alert("⚠️ No students selected for deletion.");
+        return;
       }
 
-      alert(`🗑️ Deleted ${deleted} mismatched student documents.`);
-      await fetchStudents(); // Refresh list
+      if (!confirm(`Are you sure you want to delete ${selectedItems.length} selected student documents?`)) {
+        return;
+      }
+
+      const status = document.getElementById("status");
+      status.textContent = "⏳ Deleting selected documents...";
+
+      let deleted = 0;
+
+      try {
+        for (const item of selectedItems) {
+          const index = parseInt(item.dataset.index);
+          const student = mismatchedDocs[index];
+          await deleteDoc(doc(db, "students", student.docId));
+          deleted++;
+        }
+
+        status.textContent = `🗑️ Deleted ${deleted} mismatched student documents.`;
+        await fetchStudents(); // Refresh list
+      } catch (error) {
+        console.error("❌ Deletion failed:", error);
+        status.textContent = `❌ Deletion failed: ${error.message}`;
+      }
     }
 
     window.runFetch = fetchStudents;
@@ -137,6 +170,8 @@
   <button onclick="runFetch()">🔍 Fetch Students</button>
   <button onclick="runMigration()">📥 Migrate to Idnumber</button>
   <button onclick="runDelete()">🗑️ Delete Selected</button>
+
+  <div id="status"></div>
 
   <h3>Mismatched Documents (Doc ID ≠ Idnumber)</h3>
   <ul id="mismatchedList"></ul>
