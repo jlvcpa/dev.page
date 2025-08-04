@@ -330,7 +330,7 @@ td.first-name {
             <td><input type="radio" name="att_${student.Idnumber}" value="L" /></td>
           `;
 
-          tr.querySelectorAll(`input[name="att_${student.Idnumber}"]`).forEach(radio => {
+    /*      tr.querySelectorAll(`input[name="att_${student.Idnumber}"]`).forEach(radio => {
             radio.addEventListener("change", () => {
               const statusCell = tr.querySelector(".status-display");
               if (radio.value === "P") {
@@ -346,9 +346,34 @@ td.first-name {
             });
           });
 
-          studentsTableBody.appendChild(tr);
+          studentsTableBody.appendChild(tr); */
+          
+          tr.querySelectorAll(`input[name="att_${student.Idnumber}"]`).forEach(radio => {
+  radio.addEventListener("change", () => {
+    if (isNoClassDay) return;
+    if (radio.value === "P") {
+      statusCell.textContent = "✔";
+      statusCell.className = "status-display status-check";
+    } else if (radio.value === "A") {
+      statusCell.textContent = "A";
+      statusCell.className = "status-display status-absent";
+    } else if (radio.value === "L") {
+      statusCell.textContent = "L";
+      statusCell.className = "status-display status-late";
+    }
+  });
+});
+
+// 🚫 Disable radio buttons on no-class days
+if (isNoClassDay) {
+  tr.querySelectorAll(`input[name="att_${student.Idnumber}"]`).forEach(radio => {
+    radio.disabled = true;
+  });
+}
+
+studentsTableBody.appendChild(tr);
         }
-      });
+      }); 
 
       sortTableByCN();
     });
