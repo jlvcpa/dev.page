@@ -49,7 +49,7 @@
       background-color: #e8f0fe;
       border: 1px solid #007acc;
       padding: 8px;
-      flex-grow: 1;
+      flex-grow: 3;
     }
 
     .studentList {
@@ -72,19 +72,19 @@
   <div class="panel group-panel">
     <div class="header">Group 1</div>
     <div class="groupMembers" id="group1Members">[Group 1 members]</div>
-    <div class="gameRecords" id="group1Records">[Game Records]</div>
+    <div class="gameRecords" id="group1Records">[Game Records]</div> <!-- shall be hidden before the game starts  -->
   </div>
 
   <div class="panel group-panel">
     <div class="header">Group 2</div>
     <div class="groupMembers" id="group2Members">[Group 2 members]</div>
-    <div class="gameRecords" id="group2Records">[Game Records]</div>
+    <div class="gameRecords" id="group2Records">[Game Records]</div> <!-- shall be hidden before the game starts  -->
   </div>
 
   <div class="panel group-panel">
     <div class="header">Group 3</div>
     <div class="groupMembers" id="group3Members">[Group 3 members]</div>
-    <div class="gameRecords" id="group3Records">[Game Records]</div>
+    <div class="gameRecords" id="group3Records">[Game Records]</div> <!-- shall be hidden before the game starts  -->
   </div>
 
   <div class="panel student-panel">
@@ -97,11 +97,25 @@
     <button onclick="createGroups()">Create Groups</button>
   </div>
 
-  <script>
+   <script type="module">
     // 🔥 Firebase logic goes here
-    // Example: Load students from Firestore and populate #studentList
-    // Then randomly assign them to group1Members, group2Members, group3Members
+     (async () => {
+    // 🔧 Firebase setup
+    const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js");
+    const { getFirestore, doc, setDoc, getDoc, getDocs, collection } = await import("https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js");
 
+    const firebaseConfig = {
+      apiKey: "AIzaSyAgOsKAZWwExUzupxSNytsfOo9BOppF0ng",
+      authDomain: "jlvcpa-quizzes.firebaseapp.com",
+      projectId: "jlvcpa-quizzes",
+      storageBucket: "jlvcpa-quizzes.appspot.com",
+      messagingSenderId: "629158256557",
+      appId: "1:629158256557:web:b3d1a424b32e28cd578b24"
+    };
+
+    // Example: Load students from Firestore and populate #studentList
+    
+    // Then randomly assign them to group1Members, group2Members, group3Members
     function createGroups() {
       // Placeholder logic for random assignment
       // Replace with actual Firebase data
