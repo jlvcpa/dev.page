@@ -386,7 +386,7 @@ td.first-name {
     });
 
     // 📨 Save attendance records
-    async function saveAttendanceRecords() {
+    /* async function saveAttendanceRecords() {
       const dateTaken = document.getElementById("attendanceDate").value;
       const dayType = document.getElementById("dayType").value;
       const Section = SectionSelect.value;
@@ -430,8 +430,50 @@ td.first-name {
       }
 
       alert("Attendance records saved successfully.");
-    }
+    } */
+function getDayType(dateStr) {
+  const holidays = {
+    "2025-08-21": "HOL",
+    "2025-11-30": "HOL",
+    // Add more holidays here
+  };
 
+  if (holidays[dateStr]) return holidays[dateStr];
+
+  const dateObj = new Date(dateStr);
+  const day = dateObj.getDay();
+
+  if (day === 0) return "SUN";
+  if (day === 6) return "SAT";
+
+  return null; // Regular class day
+}
+
+async function saveAttendanceRecord(students, date, section) {
+  const docId = `${section}_${date}`;
+  const attendanceCollection = collection(db, "attendance");
+
+  const dayType = getDayType(date);
+  const isNoClassDay = ["HOL", "ILD", "SAT", "SUN"].includes(dayType);
+
+  const attendanceData = {
+    date,
+    section,
+    ...(dayType && { dayType }), // Only include if it's a no-class day
+    students: students.map(student => ({
+      idNumber: student.idNumber,
+      name: student.name,
+      status: isNoClassDay ? dayType : student.status,
+    })),
+  };
+
+  try {
+    await setDoc(doc(attendanceCollection, docId), attendanceData);
+    console.log("Attendance saved successfully.");
+  } catch (error) {
+    console.error("Error saving attendance:", error);
+  }
+}
     document.getElementById("saveAttendanceBtn").addEventListener("click", saveAttendanceRecords);
 
     // 🧩 Toggle panel
