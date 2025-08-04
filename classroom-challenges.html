@@ -72,7 +72,7 @@
   </style>
 </head>
 <body>
-
+<div class="panel activity-panel">
   <div class="panel group-panel">
     <div class="header">Group 1</div>
     <div class="groupMembers" id="group1Members">[Group 1 members]</div>
@@ -90,6 +90,11 @@
     <div class="groupMembers" id="group3Members">[Group 3 members]</div>
     <div class="gameRecords" id="group3Records">[Game Records] class="hidden"</div> <!-- shall be hidden before the game starts  -->
   </div>
+    <div class="panel allQuestions-panel">
+    <div class="header">All Questions</div>
+    <div class="allQuestionsList" id="allQuestionsList">[All Questions for students discussion before the game starts will load here]</div>
+  </div>
+</div>
 
   <div class="panel student-panel">
     <div class="header">Student List</div>
@@ -99,11 +104,6 @@
     </select>
     <div class="studentList" id="studentList">[Students will load here]</div>
     <button onclick="createGroups()">Create Groups</button>
-  </div>
-  
-  <div class="panel allQuestions-panel">
-    <div class="header">All Questions</div>
-    <div class="allQuestionsList" id="allQuestionsList">[All Questions for students discussion before the game starts will load here]</div>
   </div>
   
    <script type="module">
