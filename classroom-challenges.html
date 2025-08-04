@@ -109,6 +109,13 @@ button {
   cursor: pointer;
 }
 
+.question-item {
+  margin-bottom: 10px;
+  padding: 8px;
+  background: #f9f9f9;
+  border-radius: 6px;
+}
+
 .student.inactive {
   background-color: #f0f0f0;
   color: #999;
@@ -411,6 +418,24 @@ async function loadSavedGroupAndQuestions(attendanceDocID) {
   }
 });
 
+  // Render Questions to Panel
+function renderQuestionsToPanel(questions) {
+  const container = document.getElementById("allQuestionsList");
+  container.innerHTML = ""; // Clear previous content
+
+  questions.forEach((q, index) => {
+    const div = document.createElement("div");
+    div.className = "question-item";
+    div.innerHTML = `
+      <strong>Q${index + 1}:</strong> ${q.questionText || "[No question text]"}<br>
+      <em>Subject:</em> ${q.subject || "N/A"} |
+      <em>Grade:</em> ${q.gradeLevel || "N/A"} |
+      <em>Difficulty:</em> ${q.difficulty || "N/A"}
+      <hr>
+    `;
+    container.appendChild(div);
+  });
+} // End of render questions to panel
 
   // 🚀 Initialize
   loadRecentAttendanceRecords();
