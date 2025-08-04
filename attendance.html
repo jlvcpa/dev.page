@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Attendance Record</title>
+  <style>
+.attendance-input-wrapper {
+  display: flex;
+  flex-direction: column;
+  width: 40%;
+  transition: width 0.3s ease;
+  background-color: #f0f0f0;
+  border-right: 1px solid #ccc;
+  overflow: hidden;
+}
+
+      /* 🧩 Responsive Layout Enhancements */
+  .main-content-container {
+    display: flex;
+    height: 100vh; /* Optional: makes the container full height */
+    width: 100%;   /* Full width */
+  font-family: Arial, sans-serif;
+
+  }
+    .panel {
+  padding: 1rem;
+  box-sizing: border-box;
+  overflow-y: auto; /* Scroll if content overflows vertically */
+}
+
+.attendance-input-panel {
+     width: 40%;
+  transition: width 0.3s ease, padding 0.3s ease;
+  background-color: #f0f0f0;
+  border-right: 1px solid #ccc;
+  padding: 10px;
+  overflow: auto; /* Enables both horizontal and vertical scrollbars */
+    }
+  
+.attendance-record-panel {
+  flex-grow: 1;
+  padding: 10px;
+  background-color: #d0e6ff;
+  transition: width 0.3s ease;
+  overflow: auto; /* Enables both horizontal and vertical scrollbars */
+}
+.record-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.collapsible-panel {
+  width: 40%;
+  border-right: 1px solid #ccc;
+  background-color: #f0f0f0;
+  display: flex;
+  flex-direction: column;
+}
+
+.toggle-btn {
+  background-color: #e0e0e0;
+  border: none;
+  padding: 6px 12px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.attendance-input-panel {
+  padding: 10px;
+  display: block; /* default visible */
+}
+    .date-options {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+
+    th,
+    td {
+      padding: 6px;
+      border: 1px solid #ddd;
+      text-align: center;
+    }
+
+    th.sortable:hover {
+      cursor: pointer;
+      background-color: #f0f0f0;
+    }
+    
+td.last-name,
+td.first-name {
+  text-align: left !important;
+  white-space: nowrap;
+}
+
+    .status-check {
+      color: green;
+      font-weight: bold;
+    }
+
+    .status-absent {
+      color: red;
+      font-weight: bold;
+    }
+
+    .status-late {
+      color: gray;
+      font-weight: bold;
+    }
+
+    .month-group {
+      font-weight: bold;
+      background-color: #eee;
+    }
+    .day-type-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.day-type-row select {
+  flex-grow: 1;
+  padding: 6px;
+  font-size: 14px;
+}
+    .generateLetter {
+      width: fit-content;
+      padding: 6px 12px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+  #loadingSpinner {
+  display: none;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: #ffffff;
+  padding: 20px 30px;
+  border-radius: 10px;
+  box-shadow: 0 0 15px rgba(0,0,0,0.2);
+  text-align: center;
+  font-family: sans-serif;
+  z-index: 1000;
+}
+
+.dot-loader {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 10px;
+}
+
+.dot-loader span {
+  width: 10px;
+  height: 10px;
+  margin: 0 5px;
+  background-color: #0078D4;
+  border-radius: 50%;
+  animation: bounce 0.6s infinite alternate;
+}
+
+.dot-loader span:nth-child(2) {
+  animation-delay: 0.2s;
+}
+.dot-loader span:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes bounce {
+  0% {
+    transform: translateY(0);
+    opacity: 0.6;
+  }
+  100% {
+    transform: translateY(-10px);
+    opacity: 1;
+  }
+}
+  </style>
+</head>
+<body>
+  <div class="main-content-container">
+  <!-- 🟦 Panel 1: Attendance Input -->
+  <div class="attendance-input-panel">
+    <h3>Attendance Taking</h3>
+
+    <div class="Section-date-options">
+      <!-- Section Dropdown -->
+      <label for="SectionSelect">Section:</label>
+      <select id="SectionSelect">
+        <option value="">-- Select Section --</option>
+      </select>
+
+      <label for="attendanceDate">Date:</label>
+      <input type="date" id="attendanceDate" />
+    </div>
+
+    <!-- Day Type -->
+    <label for="dayType">Day Type:</label>
+    <select id="dayType">
+      <option value="">-- No Type Selected --</option>
+      <option value="H">Working Day</option>
+      <option value="H">Holiday</option>
+      <option value="A">Alternative Learning Day</option>
+      <option value="S">Saturday</option>
+      <option value="U">Sunday</option>
+    </select>
+     <button id="saveAttendanceBtn">Save Attendance</button>
+
+    <!-- Students Attendance Table -->
+    <table id="studentsTable">
+      <thead>
+        <tr>
+          <th class="sortable right-align">CN</th>
+          <th class="sortable left-align">Last Name</th>
+          <th class="sortable left-align">First Name</th>
+          <th>Status</th>
+          <th>P</th>
+          <th>A</th>
+          <th>L</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+    </div> <!-- ✅ closes .attendance-input-panel -->
+
+  <!-- 📊 Panel 2: Attendance Records -->
+  <div class="attendance-record-panel">
+    <div class="record-header">
+      <button class="toggle-btn"><<<<<</button>
+      <h3>Attendance Record</h3>
+      <button class="generateLetter" id="generateLetter">Generate Letter to Parents</button>
+    </div> <!-- ✅ closes .record-header -->
+
+    <table id="recordTable">
+      <thead>
+        <tr>
+          <th><input type="checkbox" id="selectAll" /></th>
+          <th>Overview</th>
+        </tr>
+        <tr id="dateHeaderRow">
+          <th></th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div> <!-- ✅ closes .attendance-record-panel -->
+        <!-- 🌀 Loading Spinner Overlay -->
+<div id="loadingSpinner">
+  <span class="dot-loader">
+    <span></span><span></span><span></span>
+  </span>
+  <div>Saving attendance records...</div>
+</div>
+        
+</div> <!-- ✅ closes .main-content-container -->
+<script type="module">
+  (async () => {
+    // 🔧 Firebase setup
+    const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js");
+    const { getFirestore, doc, setDoc, getDoc, getDocs, collection } = await import("https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js");
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAgOsKAZWwExUzupxSNytsfOo9BOppF0ng",
+      authDomain: "jlvcpa-quizzes.firebaseapp.com",
+      projectId: "jlvcpa-quizzes",
+      storageBucket: "jlvcpa-quizzes.appspot.com",
+      messagingSenderId: "629158256557",
+      appId: "1:629158256557:web:b3d1a424b32e28cd578b24"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const studentsMap = new Map();
+
+    const SectionSelect = document.getElementById("SectionSelect");
+    const studentsTableBody = document.querySelector("#studentsTable tbody");
+    const spinner = document.getElementById("loadingSpinner");
+
+    // 🔄 Populate Section dropdown
+    const allStudentsSnapshot = await getDocs(collection(db, "students"));
+    const SectionSet = new Set();
+
+    allStudentsSnapshot.forEach(docSnap => {
+      const data = docSnap.data();
+      if (data.Section) SectionSet.add(data.Section);
+    });
+
+    [...SectionSet].forEach(Section => {
+      const option = document.createElement("option");
+      option.value = Section;
+      option.textContent = Section;
+      SectionSelect.appendChild(option);
+    });
+
+    // 🔄 Load students by Section
+    SectionSelect.addEventListener("change", async () => {
+      const selectedSection = SectionSelect.value;
+      studentsTableBody.innerHTML = "";
+      studentsMap.clear();
+
+      const allStudentsSnapshot = await getDocs(collection(db, "students"));
+
+      allStudentsSnapshot.forEach(docSnap => {
+        const student = docSnap.data();
+        if (student.Section === selectedSection) {
+          studentsMap.set(student.Idnumber, student);
+
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td class="right-align">${student.CN || ""}</td>
+            <td class="left-align last-name">${student.LastName || ""}</td>
+            <td class="left-align first-name">${student.FirstName || ""}</td>
+            <td class="status-display"></td>
+            <td><input type="radio" name="att_${student.Idnumber}" value="P" /></td>
+            <td><input type="radio" name="att_${student.Idnumber}" value="A" /></td>
+            <td><input type="radio" name="att_${student.Idnumber}" value="L" /></td>
+          `;
+
+          tr.querySelectorAll(`input[name="att_${student.Idnumber}"]`).forEach(radio => {
+            radio.addEventListener("change", () => {
+              const statusCell = tr.querySelector(".status-display");
+              if (radio.value === "P") {
+                statusCell.textContent = "✔";
+                statusCell.className = "status-display status-check";
+              } else if (radio.value === "A") {
+                statusCell.textContent = "A";
+                statusCell.className = "status-display status-absent";
+              } else if (radio.value === "L") {
+                statusCell.textContent = "L";
+                statusCell.className = "status-display status-late";
+              }
+            });
+          });
+
+          studentsTableBody.appendChild(tr);
+        }
+      });
+
+      sortTableByCN();
+    });
+
+    // 🔢 Sort table by CN
+    function sortTableByCN() {
+      const rows = Array.from(studentsTableBody.querySelectorAll("tr"));
+      rows.sort((a, b) => {
+        const aCN = parseInt(a.children[0].textContent.trim()) || 0;
+        const bCN = parseInt(b.children[0].textContent.trim()) || 0;
+        return aCN - bCN;
+      });
+      studentsTableBody.innerHTML = "";
+      rows.forEach(row => studentsTableBody.appendChild(row));
+    }
+
+    // 🔤 Column sorting
+    document.querySelectorAll(".sortable").forEach(header => {
+      header.addEventListener("click", () => {
+        const table = header.closest("table");
+        const tbody = table.querySelector("tbody");
+        const rows = Array.from(tbody.querySelectorAll("tr"));
+        const index = Array.from(header.parentNode.children).indexOf(header);
+
+        rows.sort((a, b) => {
+          const aText = a.children[index].textContent.trim();
+          const bText = b.children[index].textContent.trim();
+          return aText.localeCompare(bText);
+        });
+
+        tbody.innerHTML = "";
+        rows.forEach(row => tbody.appendChild(row));
+      });
+    });
+
+    // 📅 Day type utility
+    function getDayType(dateStr) {
+      const holidays = {
+        "2025-08-21": "HOL",
+        "2025-11-30": "HOL",
+        // Add more holidays here
+      };
+
+      if (holidays[dateStr]) return holidays[dateStr];
+
+      const dateObj = new Date(dateStr);
+      const day = dateObj.getDay();
+
+      if (day === 0) return "SUN";
+      if (day === 6) return "SAT";
+
+      return null;
+    }
+
+    // 🧼 Normalize metadata
+    function normalizeMetadata(student) {
+      return {
+        schoolYear: student.schoolYear?.replace(/–/g, "-").trim(),
+        term: student.term?.trim(),
+        subject: student.subject?.trim(),
+      };
+    }
+
+    // 📨 Save attendance record
+    async function saveAttendanceRecord(students, date, section, schoolYear, term, subject) {
+      const docId = `${section}_${date}`;
+      const attendanceCollection = collection(db, "attendance");
+
+      const dayType = getDayType(date);
+      const isNoClassDay = ["HOL", "ILD", "SAT", "SUN"].includes(dayType);
+
+      const attendanceData = {
+        schoolYear,
+        term,
+        subject,
+        date,
+        section,
+        ...(dayType && { dayType }),
+        students: students.map(student => ({
+          idNumber: student.idNumber,
+          name: student.name,
+          status: isNoClassDay ? dayType : student.status,
+        })),
+      };
+
+      try {
+        await setDoc(doc(attendanceCollection, docId), attendanceData);
+        console.log("Attendance saved successfully.");
+      } catch (error) {
+        console.error("Error saving attendance:", error);
+      }
+    }
+
+    // 🖱️ Save button handler
+    document.getElementById("saveAttendanceBtn").addEventListener("click", async () => {
+      const dateTaken = document.getElementById("attendanceDate").value;
+      const section = SectionSelect.value;
+
+      if (!dateTaken || !section) {
+        alert("Please select both a date and a Section.");
+        return;
+      }
+
+      const students = [];
+      const rows = studentsTableBody.querySelectorAll("tr");
+
+      for (const row of rows) {
+        const idNumber = row.querySelector("input[type='radio']").name.replace("att_", "");
+        const status = row.querySelector(".status-display").textContent.trim();
+        if (!status || !studentsMap.has(idNumber)) continue;
+
+        const student = studentsMap.get(idNumber);
+        students.push({
+          idNumber: student.Idnumber,
+          name: `${student.FirstName} ${student.LastName}`,
+          status,
+        });
+      }
+
+      // 🧠 Extract and normalize metadata
+      const firstStudent = studentsMap.values().next().value;
+      const { schoolYear, term, subject } = normalizeMetadata(firstStudent);
+
+      // 🛡️ Validate consistency
+      const metadataSet = new Set();
+      studentsMap.forEach(student => {
+        const meta = normalizeMetadata(student);
+        metadataSet.add(`${meta.schoolYear}_${meta.term}_${meta.subject}`);
+      });
+
+      if (metadataSet.size > 1) {
+        alert("Inconsistent metadata across students in this section.");
+        return;
+      }
+
+      spinner.style.display = "block";
+
+      try {
+        await saveAttendanceRecord(students, dateTaken, section, schoolYear, term, subject);
+        alert("Attendance records saved successfully.");
+      } catch (error) {
+        alert("Error saving attendance.");
+        console.error(error);
+      } finally {
+        spinner.style.display = "none";
+      }
+    });
+
+    // 🧩 Toggle panel
+    document.querySelector('.toggle-btn').addEventListener('click', function () {
+      const inputPanel = document.querySelector('.attendance-input-panel');
+      const isCollapsed = inputPanel.style.width === '0px';
+
+      if (isCollapsed) {
+        inputPanel.style.width = '40%';
+        inputPanel.style.padding = '10px';
+        this.textContent = '<<<<<';
+      } else {
+        inputPanel.style.width = '0px
+        inputPanel.style.width = '0px';
+        inputPanel.style.padding = '0px';
+        this.textContent = '>>>>>';
+      }
+    });
+  })();
+</script>
+          
+
+<div id="loadingSpinner">
+  <div class="dot-loader">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+  Saving attendance records...
+</div>
+        
+</body>
+</html>
