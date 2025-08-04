@@ -274,28 +274,10 @@ td.first-name {
 
 
   <!-- 🔥 Firebase Configuration & Script -->
- <script type="module">
-  // 🔧 Firebase variables
-  let db;
-  let setDoc, doc, getDoc, getDocs, collection, query, where, writeBatch;
-
-  // 🧠 Data maps
-  const studentsMap = new Map();
-
-  // 🚀 Initialize Firebase and load sections
+<script type="module">
   (async () => {
     const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js");
-    const firestore = await import("https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js");
-
-    // 🔗 Assign Firestore functions to outer scope
-    setDoc = firestore.setDoc;
-    doc = firestore.doc;
-    getDoc = firestore.getDoc;
-    getDocs = firestore.getDocs;
-    collection = firestore.collection;
-    query = firestore.query;
-    where = firestore.where;
-    writeBatch = firestore.writeBatch;
+    const { getFirestore, doc, setDoc, getDoc, getDocs, collection } = await import("https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js");
 
     const firebaseConfig = {
       apiKey: "AIzaSyAgOsKAZWwExUzupxSNytsfOo9BOppF0ng",
@@ -307,19 +289,17 @@ td.first-name {
     };
 
     const app = initializeApp(firebaseConfig);
-    db = firestore.getFirestore(app);
+    const db = getFirestore(app);
+    const studentsMap = new Map(); // Key: Idnumber, Value: full student object
 
-    await populateSectionDropdown();
-    setupEventListeners();
-  })();
-
-  // 📌 Populate section dropdown
-  async function populateSectionDropdown() {
     const SectionSelect = document.getElementById("SectionSelect");
-    const SectionsSnapshot = await getDocs(collection(db, "students"));
+    const studentsTableBody = document.querySelector("#studentsTable tbody");
+
+    // 🔄 Populate Section dropdown
+    const allStudentsSnapshot = await getDocs(collection(db, "students"));
     const SectionSet = new Set();
 
-    SectionsSnapshot.forEach(docSnap => {
+    allStudentsSnapshot.forEach(docSnap => {
       const data = docSnap.data();
       if (data.Section) SectionSet.add(data.Section);
     });
@@ -330,153 +310,77 @@ td.first-name {
       option.textContent = section;
       SectionSelect.appendChild(option);
     });
-  }
 
-  // 📋 Load students when section changes
-  async function handleSectionChange() {
-    const selectedSection = document.getElementById("SectionSelect").value;
-    const studentsTableBody = document.querySelector("#studentsTable tbody");
-    studentsTableBody.innerHTML = "";
-    studentsMap.clear();
+    // 🔄 Load students by Section using document ID
+    SectionSelect.addEventListener("change", async () => {
+      const selectedSection = SectionSelect.value;
+      studentsTableBody.innerHTML = "";
+      studentsMap.clear();
 
-    const q = query(collection(db, "students"), where("Section", "==", selectedSection));
-    const studentsSnapshot = await getDocs(q);
+      const allStudentsSnapshot = await getDocs(collection(db, "students"));
+      const studentsInSection = [];
 
-    studentsSnapshot.forEach(docSnap => {
-      const student = docSnap.data();
-      studentsMap.set(student.CN, student);
-
-      const tr = document.createElement("tr");
-      tr.innerHTML = `
-        <td class="right-align">${student.CN || ""}</td>
-        <td class="left-align last-name">${student.LastName || ""}</td>
-        <td class="left-align first-name">${student.FirstName || ""}</td>
-        <td class="status-display"></td>
-        <td><input type="radio" name="att_${student.CN}" value="P" /></td>
-        <td><input type="radio" name="att_${student.CN}" value="A" /></td>
-        <td><input type="radio" name="att_${student.CN}" value="L" /></td>
-      `;
-
-      tr.querySelectorAll(`input[name="att_${student.CN}"]`).forEach(radio => {
-        radio.addEventListener("change", () => {
-          const statusCell = tr.querySelector(".status-display");
-          if (radio.value === "P") {
-            statusCell.textContent = "✔";
-            statusCell.className = "status-display status-check";
-          } else if (radio.value === "A") {
-            statusCell.textContent = "A";
-            statusCell.className = "status-display status-absent";
-          } else if (radio.value === "L") {
-            statusCell.textContent = "L";
-            statusCell.className = "status-display status-late";
-          }
-        });
+      allStudentsSnapshot.forEach(docSnap => {
+        const student = docSnap.data();
+        if (student.Section === selectedSection) {
+          studentsInSection.push(student.Idnumber);
+        }
       });
 
-      studentsTableBody.appendChild(tr);
-    });
+      for (const id of studentsInSection) {
+        const docRef = doc(db, "students", id);
+        const docSnap = await getDoc(docRef);
+        if (!docSnap.exists()) continue;
 
-    sortTableByCN();
-  }
+        const student = docSnap.data();
+        studentsMap.set(student.Idnumber, student); // ✅ Use Idnumber as key
 
-  // 🔢 Sort table by CN
-  function sortTableByCN() {
-    const tbody = document.querySelector("#studentsTable tbody");
-    const rows = Array.from(tbody.querySelectorAll("tr"));
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td class="right-align">${student.CN || ""}</td>
+          <td class="left-align last-name">${student.LastName || ""}</td>
+          <td class="left-align first-name">${student.FirstName || ""}</td>
+          <td class="status-display"></td>
+          <td><input type="radio" name="att_${student.Idnumber}" value="P" /></td>
+          <td><input type="radio" name="att_${student.Idnumber}" value="A" /></td>
+          <td><input type="radio" name="att_${student.Idnumber}" value="L" /></td>
+        `;
 
-    rows.sort((a, b) => {
-      const aCN = parseInt(a.children[0].textContent.trim()) || 0;
-      const bCN = parseInt(b.children[0].textContent.trim()) || 0;
-      return aCN - bCN;
-    });
+        tr.querySelectorAll(`input[name="att_${student.Idnumber}"]`).forEach(radio => {
+          radio.addEventListener("change", () => {
+            const statusCell = tr.querySelector(".status-display");
+            if (radio.value === "P") {
+              statusCell.textContent = "✔";
+              statusCell.className = "status-display status-check";
+            } else if (radio.value === "A") {
+              statusCell.textContent = "A";
+              statusCell.className = "status-display status-absent";
+            } else if (radio.value === "L") {
+              statusCell.textContent = "L";
+              statusCell.className = "status-display status-late";
+            }
+          });
+        });
 
-    tbody.innerHTML = "";
-    rows.forEach(row => tbody.appendChild(row));
-  }
-
-  // 🌀 Show/hide loading spinner
-  function toggleSpinner(show) {
-    const spinner = document.getElementById("loadingSpinner");
-    spinner.style.display = show ? "block" : "none";
-  }
-
-  // Sanitize the object by removing any undefined field
-  // caled up in the try catch error at the end of the saveAttendanceRecords()
-   function removeUndefinedFields(obj) {
-  return Object.fromEntries(
-    Object.entries(obj).filter(([_, value]) => value !== undefined)
-  );
-}
-
-  // 💾 Save attendance records with batch and error feedback
-  async function saveAttendanceRecords() {
-    const dateTaken = document.getElementById("attendanceDate").value;
-    const dayType = document.getElementById("dayType").value;
-    const section = document.getElementById("SectionSelect").value;
-
-    if (!dateTaken || !section) {
-      alert("Please select both a date and a section.");
-      return;
-    }
-
-    toggleSpinner(true); // 🌀 Show spinner
-    const studentsTableBody = document.querySelector("#studentsTable tbody");
-    const rows = studentsTableBody.querySelectorAll("tr");
-    const batch = writeBatch(db);
-    const failedRows = [];
-
-    for (const row of rows) {
-      const CN = row.children[0].textContent.trim();
-      const status = row.querySelector(".status-display").textContent.trim();
-      if (!status || !studentsMap.has(CN)) continue;
-
-      const student = studentsMap.get(CN);
-      const attendanceRef = doc(db, `students/${student.Idnumber}/attendance/${dateTaken}`);
-
-      const attendanceData = {
-        CN: student.CN,
-        Idnumber: student.Idnumber,
-        Email: student.Email,
-        FirstName: student.FirstName,
-        LastName: student.LastName,
-        Section: student.Section,
-        schoolyear: student.schoolYear,
-        subject: student.subject,
-        terms: student.terms,
-        dateTaken,
-        dayType,
-        status,
-      };
-
-      try {
-        batch.set(attendanceRef, removeUndefinedFields(attendanceData));
-      } catch (error) {
-        failedRows.push(row);
-        console.error(`❌ Error preparing ${student.Idnumber}:`, error);
+        studentsTableBody.appendChild(tr);
       }
-    }
 
-    try {
-      await batch.commit();
-      alert("✅ Attendance records saved successfully.");
-    } catch (error) {
-      alert("❌ Error saving attendance records. Check console for details.");
-      console.error("❌ Batch commit failed:", error);
-    }
-
-    // ❌ Highlight failed rows
-    failedRows.forEach(row => {
-      row.style.backgroundColor = "#ffe6e6"; // light red
-      row.title = "Failed to save";
+      sortTableByCN();
     });
 
-    toggleSpinner(false); // 🌀 Hide spinner
-  }
+    // 🔢 Sort table by CN
+    function sortTableByCN() {
+      const rows = Array.from(studentsTableBody.querySelectorAll("tr"));
+      rows.sort((a, b) => {
+        const aCN = parseInt(a.children[0].textContent.trim()) || 0;
+        const bCN = parseInt(b.children[0].textContent.trim()) || 0;
+        return aCN - bCN;
+      });
+      studentsTableBody.innerHTML = "";
+      rows.forEach(row => studentsTableBody.appendChild(row));
+    }
 
-  // 🧩 Setup UI event listeners
-  function setupEventListeners() {
-    document.getElementById("SectionSelect").addEventListener("change", handleSectionChange);
-
+    // 🔤 Column sorting
     document.querySelectorAll(".sortable").forEach(header => {
       header.addEventListener("click", () => {
         const table = header.closest("table");
@@ -495,23 +399,77 @@ td.first-name {
       });
     });
 
+    // 📨 Save attendance records
+    async function saveAttendanceRecords() {
+      const dateTaken = document.getElementById("attendanceDate").value;
+      const dayType = document.getElementById("dayType").value;
+      const section = SectionSelect.value;
+
+      if (!dateTaken || !section) {
+        alert("Please select both a date and a section.");
+        return;
+      }
+
+      const rows = studentsTableBody.querySelectorAll("tr");
+
+      for (const row of rows) {
+        const Idnumber = row.querySelector("input[type='radio']").name.replace("att_", "");
+        const status = row.querySelector(".status-display").textContent.trim();
+        if (!status || !studentsMap.has(Idnumber)) continue;
+
+        const student = studentsMap.get(Idnumber);
+        const docId = `${student.Idnumber}-${dateTaken}`;
+
+        const attendanceData = {
+          CN: student.CN,
+          Idnumber: student.Idnumber,
+          Email: student.Email,
+          FirstName: student.FirstName,
+          LastName: student.LastName,
+          Section: student.Section,
+          schoolyear: student.schoolyear,
+          subject: student.subject,
+          terms: student.terms,
+          dateTaken,
+          dayType,
+          status,
+        };
+
+        try {
+          await setDoc(doc(db, "attendance", docId), attendanceData);
+          console.log(`✅ Saved: ${docId}`);
+        } catch (error) {
+          console.error(`❌ Error saving ${docId}:`, error);
+        }
+      }
+
+      alert("Attendance records saved successfully.");
+    }
+
+    document.getElementById("saveAttendanceBtn").addEventListener("click", saveAttendanceRecords);
+
+    // 🧩 Toggle panel
+    document.querySelector('.toggle-btn').addEventListener('click', function () {
+      const inputPanel = document.querySelector('.attendance-input-panel');
+      const isCollapsed = inputPanel.style.width === '0px';
+
+      if (isCollapsed) {
+        inputPanel.style.width = '40%';
+        inputPanel.style.padding = '10px';
+        this.textContent = '<<<<<';
+      } else {
+        inputPanel.style.width = '0px';
+        inputPanel.style.padding = '0';
+        this.textContent = '>>>>>';
+      }
+    });
+
+    // 📝 Placeholder for letter generation
     document.getElementById("generateLetter").addEventListener("click", () => {
       alert("Letter generation logic goes here.");
     });
-
-    document.querySelector(".toggle-btn").addEventListener("click", function () {
-      const inputPanel = document.querySelector(".attendance-input-panel");
-      const isCollapsed = inputPanel.style.width === "0px";
-
-      inputPanel.style.width = isCollapsed ? "40%" : "0px";
-      inputPanel.style.padding = isCollapsed ? "10px" : "0";
-      this.textContent = isCollapsed ? "<<<<<" : ">>>>>";
-    });
-
-    document.getElementById("saveAttendanceBtn").addEventListener("click", saveAttendanceRecords);
-  }
+  })();
 </script>
-
 <!-- 🌀 Loading Spinner Element -->
 
 
