@@ -409,37 +409,37 @@ td.first-name {
     }
 
     // 📨 Save attendance record
-    async function saveAttendanceRecord(students, date, section, schoolYear, term, subject) {
-      // 🔍 Log the incoming students array
-      console.log("Calling saveAttendanceRecord with students:", students);
+  document.getElementById("saveAttendanceBtn").addEventListener("click", async () => {
+  const dateTaken = document.getElementById("attendanceDate").value;
+  const section = SectionSelect.value;
 
-      const docId = `${section}_${date}`;
-      const attendanceCollection = collection(db, "attendance");
+  if (!dateTaken || !section) {
+    alert("Please select both a date and a Section.");
+    return;
+  }
 
-      const dayType = getDayType(date);
-      const isNoClassDay = ["HOL", "ILD", "SAT", "SUN"].includes(dayType);
+  const dayType = getDayType(dateTaken);
+  const isNoClassDay = ["HOL", "ILD", "SAT", "SUN"].includes(dayType);
 
-      const attendanceData = {
-        schoolYear,
-        term,
-        subject,
-        date,
-        section,
-        ...(dayType && { dayType }),
-        students: students.map(student => ({
-          idNumber: student.idNumber,
-          name: student.name,
-          status: isNoClassDay ? dayType : student.status,
-        })),
-      };
+  const students = [];
+  const rows = studentsTableBody.querySelectorAll("tr");
 
-      try {
-        await setDoc(doc(attendanceCollection, docId), attendanceData);
-        console.log("Attendance saved successfully.");
-      } catch (error) {
-        console.error("Error saving attendance:", error);
-      }
-    }
+  for (const row of rows) {
+    const idNumber = row.querySelector("input[type='radio']").name.replace("att_", "");
+    const status = row.querySelector(".status-display").textContent.trim();
+    if (!studentsMap.has(idNumber)) continue;
+
+    const student = studentsMap.get(idNumber);
+    students.push({
+      idNumber: student.Idnumber,
+      name: `${student.FirstName} ${student.LastName}`,
+      status: isNoClassDay ? dayType : status,
+    });
+  }
+
+  // ✅ Now pass the students array
+  await saveAttendanceRecord(students, dateTaken, section, schoolYear, term, subject);
+});
 
     // 🖱️ Save button handler
     document.getElementById("saveAttendanceBtn").addEventListener("click", async () => {
