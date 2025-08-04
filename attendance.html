@@ -441,6 +441,38 @@ td.first-name {
   await saveAttendanceRecord(students, dateTaken, section, schoolYear, term, subject);
 });
 
+    async function saveAttendanceRecord(students, date, section, schoolYear, term, subject) {
+  // 🔍 Log the incoming students array
+  console.log("Calling saveAttendanceRecord with students:", students);
+
+  const docId = `${section}_${date}`;
+  const attendanceCollection = collection(db, "attendance");
+
+  const dayType = getDayType(date);
+  const isNoClassDay = ["HOL", "ILD", "SAT", "SUN"].includes(dayType);
+
+  const attendanceData = {
+    schoolYear,
+    term,
+    subject,
+    date,
+    section,
+    ...(dayType && { dayType }),
+    students: students.map(student => ({
+      idNumber: student.idNumber,
+      name: student.name,
+      status: isNoClassDay ? dayType : student.status,
+    })),
+  };
+
+  try {
+    await setDoc(doc(attendanceCollection, docId), attendanceData);
+    console.log("Attendance saved successfully.");
+  } catch (error) {
+    console.error("Error saving attendance:", error);
+  }
+}
+    
     // 🖱️ Save button handler
     document.getElementById("saveAttendanceBtn").addEventListener("click", async () => {
       const dateTaken = document.getElementById("attendanceDate").value;
