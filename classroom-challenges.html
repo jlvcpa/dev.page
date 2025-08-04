@@ -147,9 +147,9 @@ button {
       </div>
       
       <div class="panel gameButtons-panel">
-        
-        <button onclick="generateQuiz()">Generate Quiz</button>
-        <button onclick="showQuestions()">Show Questions</button>
+        <button onclick="generateQuestions()">Generate Questions</button>
+        <button onclick="saveGenerateQuiz()">Save Generated Questions</button>
+        <button onclick="showGeneratedQuestions()">Show Generated Questions</button>
         <button onclick="StartGame()">Start Game</button>
       </div>
       
@@ -178,7 +178,7 @@ button {
 <script type="module">
 (async () => {
   const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js");
-  const { getFirestore, collection, getDocs, doc, getDoc } = await import("https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js");
+  const { getFirestore, collection, getDocs, doc, getDoc, setDoc } = await import("https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js");
 
   const firebaseConfig = {
     apiKey: "AIzaSyAgOsKAZWwExUzupxSNytsfOo9BOppF0ng",
