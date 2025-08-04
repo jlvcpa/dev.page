@@ -261,6 +261,72 @@ button {
     document.getElementById("group3Members").innerHTML = groups[2].map(s => s.textContent).join("<br>");
   };
 
+  // ✅ Save groups to Firestore
+window.saveGroups = async function () {
+  const attendanceDocID = selectAttendance.value;
+  if (!attendanceDocID) {
+    alert("Please select an attendance record.");
+    return;
+  }
+
+  const groupRefs = ["Group1", "Group2", "Group3"].map(
+    g => doc(db, "groupings", `${attendanceDocID}-${g}`)
+  );
+
+  const existing = await Promise.all(groupRefs.map(ref => getDoc(ref)));
+  const alreadySaved = existing.every(docSnap => docSnap.exists());
+
+  if (alreadySaved) {
+    alert("Groups already saved. Click 'Show Groups' to view them.");
+    return;
+  }
+
+  const group1 = document.getElementById("group1Members").innerHTML.split("<br>").filter(Boolean);
+  const group2 = document.getElementById("group2Members").innerHTML.split("<br>").filter(Boolean);
+  const group3 = document.getElementById("group3Members").innerHTML.split("<br>").filter(Boolean);
+
+  await setDoc(doc(db, "groupings", `${attendanceDocID}-Group1`), {
+    group: "Group1",
+    members: group1,
+    attendanceRef: attendanceDocID
+  });
+  await setDoc(doc(db, "groupings", `${attendanceDocID}-Group2`), {
+    group: "Group2",
+    members: group2,
+    attendanceRef: attendanceDocID
+  });
+  await setDoc(doc(db, "groupings", `${attendanceDocID}-Group3`), {
+    group: "Group3",
+    members: group3,
+    attendanceRef: attendanceDocID
+  });
+
+  alert("✅ Groups saved successfully.");
+};
+
+// ✅ Show saved groups from Firestore
+window.showGroups = async function () {
+  const attendanceDocID = selectAttendance.value;
+  if (!attendanceDocID) {
+    alert("Please select an attendance record.");
+    return;
+  }
+
+  const groupIDs = ["Group1", "Group2", "Group3"].map(g => `${attendanceDocID}-${g}`);
+  const groupData = await Promise.all(groupIDs.map(id => getDoc(doc(db, "groupings", id))));
+
+  groupData.forEach((docSnap, i) => {
+    const groupNum = i + 1;
+    const container = document.getElementById(`group${groupNum}Members`);
+    if (docSnap.exists()) {
+      const data = docSnap.data();
+      container.innerHTML = data.members.join("<br>");
+    } else {
+      container.innerHTML = "[No saved group found]";
+    }
+  });
+};
+  
   // 🧠 Event listener for dropdown
   selectAttendance.addEventListener("change", e => {
     if (e.target.value) {
