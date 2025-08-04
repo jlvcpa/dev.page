@@ -12,7 +12,7 @@
   <div id="login-panel">
     <h2>Student Login</h2>
     <input type="text" id="idNumber" placeholder="ID Number"><br>
-    <input type="password" id="password" placeholder="Password"><br>
+    <input type="passWord" id="passWord" placeholder="passWord"><br>
     <button id="loginBtn">Login</button>
     <p id="loginMessage" style="color:red;"></p>
   </div>
@@ -57,14 +57,14 @@
 
     document.getElementById("loginBtn").addEventListener("click", async () => {
       const id = document.getElementById("idNumber").value;
-      const pw = document.getElementById("password").value;
+      const pw = document.getElementById("passWord").value;
 
       const studentsRef = collection(db, "students");
-      const q = query(studentsRef, where("idNumber", "==", id), where("password", "==", pw));
+      const q = query(studentsRef, where("idNumber", "==", id), where("passWord", "==", pw));
       const snapshot = await getDocs(q);
 
       if (snapshot.empty) {
-        document.getElementById("loginMessage").textContent = "Invalid ID or Password";
+        document.getElementById("loginMessage").textContent = "Invalid ID or passWord";
         return;
       }
 
