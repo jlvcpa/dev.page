@@ -301,70 +301,74 @@ td.first-name {
       option.textContent = Section;
       SectionSelect.appendChild(option);
     });
+// ✅ Trigger section reload when dayType changes
+document.getElementById("dayType").addEventListener("change", () => {
+  SectionSelect.dispatchEvent(new Event("change"));
+});
+
 
     // 🔄 Load students by Section
     SectionSelect.addEventListener("change", async () => {
-      const selectedSection = SectionSelect.value;
-      const selectedDate = document.getElementById("attendanceDate").value;
-      const dayType = getDayType(selectedDate);
-      const isNoClassDay = ["HOL", "ILD", "SAT", "SUN"].includes(dayType);
+  const selectedSection = SectionSelect.value;
+  const selectedDayType = document.getElementById("dayType").value;
+  const isNoClassDay = selectedDayType !== "";
 
-      studentsTableBody.innerHTML = "";
-      studentsMap.clear();
+  studentsTableBody.innerHTML = "";
+  studentsMap.clear();
 
-      const allStudentsSnapshot = await getDocs(collection(db, "students"));
+  const allStudentsSnapshot = await getDocs(collection(db, "students"));
 
-      allStudentsSnapshot.forEach(docSnap => {
-        const student = docSnap.data();
-        if (student.Section === selectedSection) {
-          studentsMap.set(student.Idnumber, student);
+  allStudentsSnapshot.forEach(docSnap => {
+    const student = docSnap.data();
+    if (student.Section === selectedSection) {
+      studentsMap.set(student.Idnumber, student);
 
-          const tr = document.createElement("tr");
-          tr.innerHTML = `
-            <td class="right-align">${student.CN || ""}</td>
-            <td class="left-align last-name">${student.LastName || ""}</td>
-            <td class="left-align first-name">${student.FirstName || ""}</td>
-            <td class="status-display"></td>
-            <td><input type="radio" name="att_${student.Idnumber}" value="P" /></td>
-            <td><input type="radio" name="att_${student.Idnumber}" value="A" /></td>
-            <td><input type="radio" name="att_${student.Idnumber}" value="L" /></td>
-          `;
-          
-const statusCell = tr.querySelector(".status-display");
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td class="right-align">${student.CN || ""}</td>
+        <td class="left-align last-name">${student.LastName || ""}</td>
+        <td class="left-align first-name">${student.FirstName || ""}</td>
+        <td class="status-display"></td>
+        <td><input type="radio" name="att_${student.Idnumber}" value="P" /></td>
+        <td><input type="radio" name="att_${student.Idnumber}" value="A" /></td>
+        <td><input type="radio" name="att_${student.Idnumber}" value="L" /></td>
+      `;
 
-if (isNoClassDay) {
-  // ✅ Set status cell content and style
-  statusCell.textContent = dayType;
-  statusCell.className = `status-display status-${dayType.toLowerCase()}`;
+      const statusCell = tr.querySelector(".status-display");
 
-  // ✅ Disable radio buttons
-  tr.querySelectorAll(`input[name="att_${student.Idnumber}"]`).forEach(radio => {
-    radio.disabled = true;
-  });
-} else {
-  // ✅ Enable radio logic for interactive days
-  tr.querySelectorAll(`input[name="att_${student.Idnumber}"]`).forEach(radio => {
-    radio.addEventListener("change", () => {
-      if (radio.value === "P") {
-        statusCell.textContent = "✔";
-        statusCell.className = "status-display status-check";
-      } else if (radio.value === "A") {
-        statusCell.textContent = "A";
-        statusCell.className = "status-display status-absent";
-      } else if (radio.value === "L") {
-        statusCell.textContent = "L";
-        statusCell.className = "status-display status-late";
+      if (isNoClassDay) {
+        // ✅ Assign dayType as status
+        statusCell.textContent = selectedDayType;
+        statusCell.className = `status-display status-${selectedDayType.toLowerCase()}`;
+
+        // ✅ Disable all radio buttons
+        tr.querySelectorAll(`input[name="att_${student.Idnumber}"]`).forEach(radio => {
+          radio.disabled = true;
+        });
+      } else {
+        // ✅ Enable radio logic
+        tr.querySelectorAll(`input[name="att_${student.Idnumber}"]`).forEach(radio => {
+          radio.addEventListener("change", () => {
+            if (radio.value === "P") {
+              statusCell.textContent = "✔";
+              statusCell.className = "status-display status-check";
+            } else if (radio.value === "A") {
+              statusCell.textContent = "A";
+              statusCell.className = "status-display status-absent";
+            } else if (radio.value === "L") {
+              statusCell.textContent = "L";
+              statusCell.className = "status-display status-late";
+            }
+          });
+        });
       }
-    });
+
+      studentsTableBody.appendChild(tr);
+    }
   });
-}
 
-studentsTableBody.appendChild(tr);
-        }
-      }); 
-
-      sortTableByCN();
-    });
+  sortTableByCN();
+});
 
     // 🔢 Sort table by CN
     function sortTableByCN() {
@@ -459,14 +463,13 @@ studentsTableBody.appendChild(tr);
     document.getElementById("saveAttendanceBtn").addEventListener("click", async () => {
       const dateTaken = document.getElementById("attendanceDate").value;
       const section = SectionSelect.value;
+      const selectedDayType = document.getElementById("dayType").value;
+      const isNoClassDay = selectedDayType !== "";
 
       if (!dateTaken || !section) {
         alert("Please select both a date and a Section.");
         return;
       }
-
-      const dayType = getDayType(dateTaken);
-      const isNoClassDay = ["HOL", "ILD", "SAT", "SUN"].includes(dayType);
 
       const students = [];
       const rows = studentsTableBody.querySelectorAll("tr");
@@ -480,7 +483,7 @@ studentsTableBody.appendChild(tr);
         students.push({
           idNumber: student.Idnumber,
           name: `${student.FirstName} ${student.LastName}`,
-          status: isNoClassDay ? dayType : status,
+          status: isNoClassDay ? selectedDayType : status,
         });
       }
 
