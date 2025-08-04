@@ -493,10 +493,33 @@ async function saveAttendanceRecord(students, date, section) {
     });
 
     // 📝 Placeholder for letter generation
-    document.getElementById("generateLetter").addEventListener("click", () => {
-      alert("Letter generation logic goes here.");
+   document.getElementById("saveAttendanceBtn").addEventListener("click", () => {
+  const dateTaken = document.getElementById("attendanceDate").value;
+  const section = SectionSelect.value;
+
+  if (!dateTaken || !section) {
+    alert("Please select both a date and a Section.");
+    return;
+  }
+
+  const students = [];
+  const rows = studentsTableBody.querySelectorAll("tr");
+
+  for (const row of rows) {
+    const idNumber = row.querySelector("input[type='radio']").name.replace("att_", "");
+    const status = row.querySelector(".status-display").textContent.trim();
+    if (!status || !studentsMap.has(idNumber)) continue;
+
+    const student = studentsMap.get(idNumber);
+    students.push({
+      idNumber: student.Idnumber,
+      name: `${student.FirstName} ${student.LastName}`,
+      status,
     });
-  })();
+  }
+
+  saveAttendanceRecord(students, dateTaken, section);
+});
 </script><!-- 🌀 Loading Spinner Element -->
 
 <div id="loadingSpinner">⏳ Saving attendance records...</div>
