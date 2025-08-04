@@ -12,7 +12,7 @@
   <div id="login-panel">
     <h2>Student Login</h2>
     <input type="text" id="Idnumber" placeholder="ID Number"><br>
-    <input type="passWord" id="passWord" placeholder="passWord"><br>
+    <input type="password" id="passWord" placeholder="Password"><br>
     <button id="loginBtn">Login</button>
     <p id="loginMessage" style="color:red;"></p>
   </div>
@@ -41,7 +41,7 @@
     const attendanceRecordId = urlParams.get("attendanceRecord");
 
     const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js");
-    const { getFirestore, collection, query, where, getDocs } = await import("https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js");
+    const { getFirestore, collection, doc, getDoc, getDocs, query, where } = await import("https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js");
 
     const firebaseConfig = {
       apiKey: "AIzaSyAgOsKAZWwExUzupxSNytsfOo9BOppF0ng",
@@ -56,61 +56,83 @@
     const db = getFirestore(app);
 
     document.getElementById("loginBtn").addEventListener("click", async () => {
-      const id = document.getElementById("Idnumber").value;
-      const pw = document.getElementById("passWord").value;
+      const id = document.getElementById("Idnumber").value.trim();
+      const pw = document.getElementById("passWord").value.trim();
 
       const studentsRef = collection(db, "students");
       const q = query(studentsRef, where("Idnumber", "==", id), where("passWord", "==", pw));
       const snapshot = await getDocs(q);
 
       if (snapshot.empty) {
-        document.getElementById("loginMessage").textContent = "Invalid ID or passWord";
+        document.getElementById("loginMessage").textContent = "Invalid ID or password.";
         return;
       }
 
       const student = snapshot.docs[0].data();
+      const fullName = student.fullName;
+
       document.getElementById("login-panel").style.display = "none";
-      loadGroup(student.Idnumber);
-      loadQuestions();
+
+      await loadGroup(fullName);
+      await loadQuestions();
     });
 
-    async function loadGroup(studentId) {
-      const groupRef = collection(db, "groupings");
-      const groupQuery = query(groupRef,
-        where("attendanceRecordId", "==", attendanceRecordId),
-        where("studentId", "==", studentId));
-      const groupSnap = await getDocs(groupQuery);
+    async function loadGroup(fullName) {
+      const groupNames = ["Group1", "Group2", "Group3"];
+      let foundGroup = null;
 
-      if (!groupSnap.empty) {
-        const group = groupSnap.docs[0].data();
-        document.getElementById("group-info").textContent = `Group Name: ${group.groupName}`;
+      for (const group of groupNames) {
+        const docID = `${attendanceRecordId}-${group}`;
+        const groupDoc = await getDoc(doc(db, "groupings", docID));
+
+        if (groupDoc.exists()) {
+          const data = groupDoc.data();
+          if (data.members.includes(fullName)) {
+            foundGroup = group;
+            break;
+          }
+        }
+      }
+
+      if (foundGroup) {
+        document.getElementById("group-info").textContent = `Group Name: ${foundGroup}`;
         document.getElementById("group-panel").style.display = "block";
         document.getElementById("questions-panel").style.display = "block";
+      } else {
+        document.getElementById("group-info").textContent = "Group not found.";
+        document.getElementById("group-panel").style.display = "block";
       }
     }
 
     async function loadQuestions() {
-      const questionsRef = collection(db, "questions");
-      const questionsQuery = query(questionsRef, where("attendanceRecordId", "==", attendanceRecordId));
-      const questionsSnap = await getDocs(questionsQuery);
+      const docID = `${attendanceRecordId}_groupQB`;
+      const qbDoc = await getDoc(doc(db, "groupingsQuestionBank", docID));
 
       const questionsList = document.getElementById("questions-list");
-      questionsSnap.forEach(doc => {
-        const question = doc.data();
+      questionsList.innerHTML = "";
+
+      if (qbDoc.exists()) {
+        const data = qbDoc.data();
+        const questions = data.questions || [];
+
+        questions.forEach((q, index) => {
+          const li = document.createElement("li");
+          li.textContent = `Q${index + 1}: ${q.question || "[No question text]"}`;
+          questionsList.appendChild(li);
+        });
+      } else {
         const li = document.createElement("li");
-        li.textContent = question.text;
+        li.textContent = "No questions found for this attendance record.";
         questionsList.appendChild(li);
-      });
+      }
     }
 
-    // Manual trigger from teacher (or use Firestore listener later)
     function startGame() {
       document.getElementById("questions-panel").style.display = "none";
       document.getElementById("gameRecord-panel").style.display = "block";
       document.getElementById("game-info").textContent = "Game has started! You'll see your performance here.";
     }
 
-    // Expose for external script or button trigger
     window.startGame = startGame;
   </script>
 </body>
