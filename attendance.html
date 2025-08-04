@@ -281,7 +281,7 @@ td.first-name {
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
-    const studentsMap = new Map(); // Key: Idnumber, Value: full student object
+    const studentsMap = new Map();
 
     const SectionSelect = document.getElementById("SectionSelect");
     const studentsTableBody = document.querySelector("#studentsTable tbody");
@@ -401,7 +401,7 @@ td.first-name {
     }
 
     // 📨 Save attendance record
-    async function saveAttendanceRecord(students, date, section) {
+    async function saveAttendanceRecord(students, date, section, schoolYear, term, subject) {
       const docId = `${section}_${date}`;
       const attendanceCollection = collection(db, "attendance");
 
@@ -409,6 +409,9 @@ td.first-name {
       const isNoClassDay = ["HOL", "ILD", "SAT", "SUN"].includes(dayType);
 
       const attendanceData = {
+        schoolYear,
+        term,
+        subject,
         date,
         section,
         ...(dayType && { dayType }),
@@ -453,10 +456,27 @@ td.first-name {
         });
       }
 
+      // 🧠 Extract shared metadata
+      const firstStudent = studentsMap.values().next().value;
+      const schoolYear = firstStudent?.SchoolYear || "Unknown";
+      const term = firstStudent?.Term || "Unknown";
+      const subject = firstStudent?.Subject || "Unknown";
+
+      // 🛡️ Validate consistency
+      const metadataSet = new Set();
+      studentsMap.forEach(student => {
+        metadataSet.add(`${student.SchoolYear}_${student.Term}_${student.Subject}`);
+      });
+
+      if (metadataSet.size > 1) {
+        alert("Inconsistent metadata across students in this section.");
+        return;
+      }
+
       spinner.style.display = "block";
 
       try {
-        await saveAttendanceRecord(students, dateTaken, section);
+        await saveAttendanceRecord(students, dateTaken, section, schoolYear, term, subject);
         alert("Attendance records saved successfully.");
       } catch (error) {
         alert("Error saving attendance.");
