@@ -305,6 +305,10 @@ td.first-name {
     // 🔄 Load students by Section
     SectionSelect.addEventListener("change", async () => {
       const selectedSection = SectionSelect.value;
+      const selectedDate = document.getElementById("attendanceDate").value;
+      const dayType = getDayType(selectedDate);
+      const isNoClassDay = ["HOL", "ILD", "SAT", "SUN"].includes(dayType);
+
       studentsTableBody.innerHTML = "";
       studentsMap.clear();
 
