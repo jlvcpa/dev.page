@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Student Game View</title>
+  <style>
+    .panel { display: none; margin-top: 1rem; padding: 10px; border: 1px solid #ccc; }
+  </style>
+</head>
+<body>
+  <!-- LOGIN PANEL -->
+  <div id="login-panel">
+    <h2>Student Login</h2>
+    <input type="text" id="idNumber" placeholder="ID Number"><br>
+    <input type="password" id="password" placeholder="Password"><br>
+    <button id="loginBtn">Login</button>
+    <p id="loginMessage" style="color:red;"></p>
+  </div>
+
+  <!-- GROUP INFO PANEL -->
+  <div id="group-panel" class="panel">
+    <h3>Your Group</h3>
+    <div id="group-info"></div>
+  </div>
+
+  <!-- QUESTIONS LIST PANEL -->
+  <div id="questions-panel" class="panel">
+    <h3>Challenge Questions</h3>
+    <ul id="questions-list"></ul>
+  </div>
+
+  <!-- GAME RECORDS PANEL -->
+  <div id="gameRecord-panel" class="panel">
+    <h3>Game Records</h3>
+    <div id="game-info"></div>
+  </div>
+
+  <!-- FIREBASE MODULE + APP LOGIC -->
+  <script type="module">
+    const urlParams = new URLSearchParams(window.location.search);
+    const attendanceRecordId = urlParams.get("attendanceRecord");
+
+    const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js");
+    const { getFirestore, collection, query, where, getDocs } = await import("https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js");
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAgOsKAZWwExUzupxSNytsfOo9BOppF0ng",
+      authDomain: "jlvcpa-quizzes.firebaseapp.com",
+      projectId: "jlvcpa-quizzes",
+      storageBucket: "jlvcpa-quizzes.appspot.com",
+      messagingSenderId: "629158256557",
+      appId: "1:629158256557:web:b3d1a424b32e28cd578b24"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    document.getElementById("loginBtn").addEventListener("click", async () => {
+      const id = document.getElementById("idNumber").value;
+      const pw = document.getElementById("password").value;
+
+      const studentsRef = collection(db, "students");
+      const q = query(studentsRef, where("idNumber", "==", id), where("password", "==", pw));
+      const snapshot = await getDocs(q);
+
+      if (snapshot.empty) {
+        document.getElementById("loginMessage").textContent = "Invalid ID or Password";
+        return;
+      }
+
+      const student = snapshot.docs[0].data();
+      document.getElementById("login-panel").style.display = "none";
+      loadGroup(student.idNumber);
+      loadQuestions();
+    });
+
+    async function loadGroup(studentId) {
+      const groupRef = collection(db, "groupings");
+      const groupQuery = query(groupRef,
+        where("attendanceRecordId", "==", attendanceRecordId),
+        where("studentId", "==", studentId));
+      const groupSnap = await getDocs(groupQuery);
+
+      if (!groupSnap.empty) {
+        const group = groupSnap.docs[0].data();
+        document.getElementById("group-info").textContent = `Group Name: ${group.groupName}`;
+        document.getElementById("group-panel").style.display = "block";
+        document.getElementById("questions-panel").style.display = "block";
+      }
+    }
+
+    async function loadQuestions() {
+      const questionsRef = collection(db, "questions");
+      const questionsQuery = query(questionsRef, where("attendanceRecordId", "==", attendanceRecordId));
+      const questionsSnap = await getDocs(questionsQuery);
+
+      const questionsList = document.getElementById("questions-list");
+      questionsSnap.forEach(doc => {
+        const question = doc.data();
+        const li = document.createElement("li");
+        li.textContent = question.text;
+        questionsList.appendChild(li);
+      });
+    }
+
+    // Manual trigger from teacher (or use Firestore listener later)
+    function startGame() {
+      document.getElementById("questions-panel").style.display = "none";
+      document.getElementById("gameRecord-panel").style.display = "block";
+      document.getElementById("game-info").textContent = "Game has started! You'll see your performance here.";
+    }
+
+    // Expose for external script or button trigger
+    window.startGame = startGame;
+  </script>
+</body>
+</html>
