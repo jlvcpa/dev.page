@@ -297,10 +297,10 @@ td.first-name {
       if (data.Section) SectionSet.add(data.Section);
     });
 
-    [...SectionSet].forEach(section => {
+    [...SectionSet].forEach(Section => {
       const option = document.createElement("option");
-      option.value = section;
-      option.textContent = section;
+      option.value = Section;
+      option.textContent = Section;
       SectionSelect.appendChild(option);
     });
 
@@ -396,10 +396,10 @@ td.first-name {
     async function saveAttendanceRecords() {
       const dateTaken = document.getElementById("attendanceDate").value;
       const dayType = document.getElementById("dayType").value;
-      const section = SectionSelect.value;
+      const Section = SectionSelect.value;
 
-      if (!dateTaken || !section) {
-        alert("Please select both a date and a section.");
+      if (!dateTaken || !Section) {
+        alert("Please select both a date and a Section.");
         return;
       }
 
