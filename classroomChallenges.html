@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Constructed Response Quiz Generator</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      padding: 20px;
+      background: #f4f4f4;
+      max-width: 1000px;
+      margin: auto;
+    }
+    h2 {
+      color: #007acc;
+      text-align: center;
+    }
+    select, button {
+      padding: 10px;
+      margin: 10px 0;
+      font-size: 16px;
+    }
+    .panel {
+      background: #fff;
+      border: 1px solid #ccc;
+      padding: 15px;
+      margin-top: 20px;
+      border-radius: 5px;
+    }
+    .header {
+      font-weight: bold;
+      margin-bottom: 10px;
+      font-size: 18px;
+      color: #007acc;
+    }
+    .question-item {
+      margin-bottom: 10px;
+      padding: 5px;
+      border-bottom: 1px dashed #ccc;
+    }
+    .student {
+      margin: 5px 0;
+    }
+    .active { color: green; }
+    .inactive { color: gray; }
+  </style>
+</head>
+<body>
+  <h2>Constructed Response Quiz Generator</h2>
+
+  <label for="selectAttendanceRecord">Select Attendance Record:</label>
+  <select id="selectAttendanceRecord">
+    <option value="">-- Choose Section --</option>
+  </select>
+
+  <div id="studentList" class="panel">
+    <div class="header">Student List</div>
+  </div>
+
+  <button onclick="createGroups()">Create Groups</button>
+
+  <div class="panel">
+    <div class="header">Group 1</div>
+    <div id="group1Members"></div>
+  </div>
+  <div class="panel">
+    <div class="header">Group 2</div>
+    <div id="group2Members"></div>
+  </div>
+  <div class="panel">
+    <div class="header">Group 3</div>
+    <div id="group3Members"></div>
+  </div>
+
+  <button onclick="generateQuiz()">Generate Quiz</button>
+
+  <div class="panel allQuestions-panel">
+    <div class="header">All Questions</div>
+    <div class="allQuestionsList" id="allQuestionsList">
+      [All Questions for students discussion before the game starts will load here]
+    </div>
+  </div>
+
+  <script type="module">
+    (async () => {
+      const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js");
+      const { getFirestore, collection, getDocs, doc, getDoc, setDoc } = await import("https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js");
+
+      const firebaseConfig = {
+        apiKey: "AIzaSyAgOsKAZWwExUzupxSNytsfOo9BOppF0ng",
+        authDomain: "jlvcpa-quizzes.firebaseapp.com",
+        projectId: "jlvcpa-quizzes",
+        storageBucket: "jlvcpa-quizzes.appspot.com",
+        messagingSenderId: "629158256557",
+        appId: "1:629158256557:web:b3d1a424b32e28cd578b24"
+      };
+
+      const app = initializeApp(firebaseConfig);
+      const db = getFirestore(app);
+
+      const selectAttendance = document.getElementById("selectAttendanceRecord");
+      const studentList = document.getElementById("studentList");
+
+      let questionBank = [];
+
+      async function loadQuestionBank() {
+        const snapshot = await getDocs(collection(db, "questionBank"));
+        questionBank = [];
+        snapshot.forEach(doc => {
+          questionBank.push(doc.data());
+        });
+      }
+
+      async function loadRecentAttendanceRecords() {
+        const snapshot = await getDocs(collection(db, "attendance"));
+        const records = [];
+
+        snapshot.forEach(doc => {
+          const [section, date] = doc.id.split("_");
+          records.push({ id: doc.id, section, date });
+        });
+
+        records.sort((a, b) => new Date(b.date) - new Date(a.date));
+        const recent = records.slice(0, 3);
+
+        recent.forEach(record => {
+          const option = document.createElement("option");
+          option.value = record.id;
+          option.textContent = `${record.section} - ${record.date}`;
+          selectAttendance.appendChild(option);
+        });
+      }
+
+      async function loadStudents(docId) {
+        studentList.innerHTML = "";
+        const attendanceDoc = await getDoc(doc(db, "attendance", docId));
+        if (!attendanceDoc.exists()) return;
+
+        const data = attendanceDoc.data();
+        const students = data.students || [];
+
+        students.forEach(student => {
+          const { fullName, status } = student;
+          const div = document.createElement("div");
+          div.className = `student ${status === "A" ? "inactive" : "active"}`;
+          div.textContent = `${fullName} - ${status}`;
+          div.dataset.fullName = fullName;
+          div.dataset.status = status;
+          studentList.appendChild(div);
+        });
+      }
+
+      window.createGroups = function () {
+        const activeStudents = Array.from(document.querySelectorAll(".student.active"));
+        const shuffled = activeStudents.sort(() => Math.random() - 0.5);
+        const groups = [[], [], []];
+
+        shuffled.forEach((student, i) => {
+          groups[i % 3].push(student);
+          student.classList.add("inactive");
+          student.classList.remove("active");
+        });
+
+        document.getElementById("group1Members").innerHTML = groups[0].map(s => s.textContent).join("<br>");
+        document.getElementById("group2Members").innerHTML = groups[1].map(s => s.textContent).join("<br>");
+        document.getElementById("group3Members").innerHTML = groups[2].map(s => s.textContent).join("<br>");
+      };
+
+      selectAttendance.addEventListener("change", e => {
+        if (e.target.value) {
+          loadStudents(e.target.value);
+        }
+      });
+
+      function getRandomQuestions(bank, count = 20) {
+        const constructed = bank.filter(q => q.testType === "Constructed-Response");
+        return constructed.sort(() => Math.random() - 0.5).slice(0, count);
+      }
+
+      function renderQuestionsToPanel(questions) {
+        const container = document.getElementById("allQuestionsList");
+        container.innerHTML = "";
+        questions.forEach((q, i) => {
+          const div = document.createElement("div");
+          div.className = "question-item";
+          div.innerHTML = `<strong>Q${i + 1}:</strong> ${q.question}`;
+          container.appendChild(div);
+        });
+      }
+
+      async function saveQuiz(section, questions) {
+        const date = new Date().toISOString().split("T")[0];
+        const docID = `${section}_${date}`;
+        const quizData = {
+          instructions: "Answer each question based on your understanding of transaction analysis.",
+          section,
+          date,
+          topic: "Transaction Analysis",
+          type: "Constructed-Response",
+          questions
+        };
+        await setDoc(doc(db, "quizzes", docID), quizData);
+        console.log(`✅ Quiz saved to quizzes/${docID}`);
+      }
+
+      window.generateQuiz = async function () {
+        const selected = selectAttendance.value;
+        if (!selected) {
+          alert("Please select a section.");
+          return;
+        }
+
+        const [section] = selected.split("_");
+        await loadQuestionBank();
+        const selectedQuestions = getRandomQuestions(questionBank, 20);
+        renderQuestionsToPanel(selectedQuestions);
+        await saveQuiz(section, selectedQuestions);
+      };
+
+      loadQuestionBank();
+      loadRecentAttendanceRecords();
+    })();
+  </script>
+</body>
+</html>
