@@ -482,7 +482,9 @@ document.getElementById("dayType").addEventListener("change", () => {
         const student = studentsMap.get(idNumber);
         students.push({
           idNumber: student.Idnumber,
-          name: `${student.FirstName} ${student.LastName}`,
+          lastName: student.LastName,
+          firstName: student.FirstName,
+          name: `${student.LastName} ${student.FirstName}`,
           status: isNoClassDay ? selectedDayType : status,
         });
       }
