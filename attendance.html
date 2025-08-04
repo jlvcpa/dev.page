@@ -458,14 +458,14 @@ td.first-name {
 
       // 🧠 Extract shared metadata
       const firstStudent = studentsMap.values().next().value;
-      const schoolYear = firstStudent?.SchoolYear || "Unknown";
-      const term = firstStudent?.Term || "Unknown";
-      const subject = firstStudent?.Subject || "Unknown";
+      const schoolYear = firstStudent?.schoolYear || "Unknown";
+      const term = firstStudent?.term || "Unknown";
+      const subject = firstStudent?.subject || "Unknown";
 
       // 🛡️ Validate consistency
       const metadataSet = new Set();
       studentsMap.forEach(student => {
-        metadataSet.add(`${student.SchoolYear}_${student.Term}_${student.Subject}`);
+        metadataSet.add(`${student.schoolYear}_${student.term}_${student.subject}`);
       });
 
       if (metadataSet.size > 1) {
