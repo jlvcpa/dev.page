@@ -174,10 +174,8 @@ button {
       <select id="selectAttendanceRecord">
         <option value="">-- Select Attendance Record --</option>
       </select>
-      <button onclick="generateStudentLink()">Generate Student Link</button>
-      <p id="generatedLinkDisplay"></p>
-
-
+      <button id="generateLinkBtn">Generate Game View Link</button>
+       <a id="gameViewLink" href="#" target="_blank" style="display:none;">Open Game View</a>
       <div class="studentList" id="studentList">[Students will load here]</div>
       <button onclick="createGroups()">Create Groups</button>
     </div>
@@ -462,27 +460,20 @@ function renderQuestionsToPanel(questions) {
 })();
 </script>
   <script type="module">
-  async function generateStudentLink() {
-    const select = document.getElementById("selectAttendanceRecord");
-    const selectedDocId = select.value;
+ document.getElementById("generateLinkBtn").addEventListener("click", () => {
+  // 🔧 Replace with your actual quiz ID or group name logic
+  const quizId = "quiz123"; // You can fetch this from Firestore or metadata
+  const groupName = "GroupA"; // Optional
 
-    if (!selectedDocId) {
-      document.getElementById("generatedLinkDisplay").textContent = "Please select an attendance record.";
-      return;
-    }
+  // 🧠 Construct the relative link with query parameters
+  const link = `studentsGameView.html?quiz=${encodeURIComponent(quizId)}&group=${encodeURIComponent(groupName)}`;
 
-    const link = `studentsGameView.html?attendanceRecord=${encodeURIComponent(selectedDocId)}`;
-
-    try {
-      await navigator.clipboard.writeText(link);
-      document.getElementById("generatedLinkDisplay").innerHTML = `
-        ✅ Link copied to clipboard!<br>
-        <a href="${link}" target="_blank">${link}</a>
-      `;
-    } catch (err) {
-      document.getElementById("generatedLinkDisplay").textContent = "Failed to copy link. Here's the URL: " + link;
-    }
-  }
+  // 🎯 Update the anchor element
+  const anchor = document.getElementById("gameViewLink");
+  anchor.href = link;
+  anchor.style.display = "inline-block"; // Make it visible
+  anchor.textContent = "Open Game View for " + groupName;
+});
 </script>
 
 </body>
