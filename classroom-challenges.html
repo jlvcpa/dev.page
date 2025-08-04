@@ -426,13 +426,7 @@ function renderQuestionsToPanel(questions) {
   questions.forEach((q, index) => {
     const div = document.createElement("div");
     div.className = "question-item";
-    div.innerHTML = `
-      <strong>Q${index + 1}:</strong> ${q.questionText || "[No question text]"}<br>
-      <em>Subject:</em> ${q.subject || "N/A"} |
-      <em>Grade:</em> ${q.gradeLevel || "N/A"} |
-      <em>Difficulty:</em> ${q.difficulty || "N/A"}
-      <hr>
-    `;
+    div.innerHTML = `<strong>Q${index + 1}:</strong> ${q.question || "[No question text]"}<hr>`;
     container.appendChild(div);
   });
 } // End of render questions to panel
