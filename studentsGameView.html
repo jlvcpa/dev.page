@@ -11,7 +11,7 @@
   <!-- LOGIN PANEL -->
   <div id="login-panel">
     <h2>Student Login</h2>
-    <input type="text" id="idNumber" placeholder="ID Number"><br>
+    <input type="text" id="Idnumber" placeholder="ID Number"><br>
     <input type="passWord" id="passWord" placeholder="passWord"><br>
     <button id="loginBtn">Login</button>
     <p id="loginMessage" style="color:red;"></p>
@@ -56,11 +56,11 @@
     const db = getFirestore(app);
 
     document.getElementById("loginBtn").addEventListener("click", async () => {
-      const id = document.getElementById("idNumber").value;
+      const id = document.getElementById("Idnumber").value;
       const pw = document.getElementById("passWord").value;
 
       const studentsRef = collection(db, "students");
-      const q = query(studentsRef, where("idNumber", "==", id), where("passWord", "==", pw));
+      const q = query(studentsRef, where("Idnumber", "==", id), where("passWord", "==", pw));
       const snapshot = await getDocs(q);
 
       if (snapshot.empty) {
@@ -70,7 +70,7 @@
 
       const student = snapshot.docs[0].data();
       document.getElementById("login-panel").style.display = "none";
-      loadGroup(student.idNumber);
+      loadGroup(student.Idnumber);
       loadQuestions();
     });
 
