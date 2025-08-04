@@ -410,6 +410,9 @@ td.first-name {
 
     // 📨 Save attendance record
     async function saveAttendanceRecord(students, date, section, schoolYear, term, subject) {
+      // 🔍 Log the incoming students array
+      console.log("Calling saveAttendanceRecord with students:", students);
+
       const docId = `${section}_${date}`;
       const attendanceCollection = collection(db, "attendance");
 
