@@ -176,9 +176,13 @@ td.first-name {
 }
 
 @keyframes bounce {
-  to {
-    transform: translateY(-10px);
+  0% {
+    transform: translateY(0);
     opacity: 0.6;
+  }
+  100% {
+    transform: translateY(-10px);
+    opacity: 1;
   }
 }
   </style>
@@ -262,6 +266,7 @@ td.first-name {
 </div> <!-- ✅ closes .main-content-container -->
 <script type="module">
   (async () => {
+    // 🔧 Firebase setup
     const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js");
     const { getFirestore, doc, setDoc, getDoc, getDocs, collection } = await import("https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js");
 
@@ -280,6 +285,7 @@ td.first-name {
 
     const SectionSelect = document.getElementById("SectionSelect");
     const studentsTableBody = document.querySelector("#studentsTable tbody");
+    const spinner = document.getElementById("loadingSpinner");
 
     // 🔄 Populate Section dropdown
     const allStudentsSnapshot = await getDocs(collection(db, "students"));
@@ -297,59 +303,49 @@ td.first-name {
       SectionSelect.appendChild(option);
     });
 
-    // 🔄 Load students by Section using document ID
+    // 🔄 Load students by Section
     SectionSelect.addEventListener("change", async () => {
       const selectedSection = SectionSelect.value;
       studentsTableBody.innerHTML = "";
       studentsMap.clear();
 
       const allStudentsSnapshot = await getDocs(collection(db, "students"));
-      const studentsInSection = [];
 
       allStudentsSnapshot.forEach(docSnap => {
         const student = docSnap.data();
         if (student.Section === selectedSection) {
-          studentsInSection.push(student.Idnumber);
+          studentsMap.set(student.Idnumber, student);
+
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td class="right-align">${student.CN || ""}</td>
+            <td class="left-align last-name">${student.LastName || ""}</td>
+            <td class="left-align first-name">${student.FirstName || ""}</td>
+            <td class="status-display"></td>
+            <td><input type="radio" name="att_${student.Idnumber}" value="P" /></td>
+            <td><input type="radio" name="att_${student.Idnumber}" value="A" /></td>
+            <td><input type="radio" name="att_${student.Idnumber}" value="L" /></td>
+          `;
+
+          tr.querySelectorAll(`input[name="att_${student.Idnumber}"]`).forEach(radio => {
+            radio.addEventListener("change", () => {
+              const statusCell = tr.querySelector(".status-display");
+              if (radio.value === "P") {
+                statusCell.textContent = "✔";
+                statusCell.className = "status-display status-check";
+              } else if (radio.value === "A") {
+                statusCell.textContent = "A";
+                statusCell.className = "status-display status-absent";
+              } else if (radio.value === "L") {
+                statusCell.textContent = "L";
+                statusCell.className = "status-display status-late";
+              }
+            });
+          });
+
+          studentsTableBody.appendChild(tr);
         }
       });
-
-      for (const id of studentsInSection) {
-        const docRef = doc(db, "students", id);
-        const docSnap = await getDoc(docRef);
-        if (!docSnap.exists()) continue;
-
-        const student = docSnap.data();
-        studentsMap.set(student.Idnumber, student); // ✅ Use Idnumber as key
-
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-          <td class="right-align">${student.CN || ""}</td>
-          <td class="left-align last-name">${student.LastName || ""}</td>
-          <td class="left-align first-name">${student.FirstName || ""}</td>
-          <td class="status-display"></td>
-          <td><input type="radio" name="att_${student.Idnumber}" value="P" /></td>
-          <td><input type="radio" name="att_${student.Idnumber}" value="A" /></td>
-          <td><input type="radio" name="att_${student.Idnumber}" value="L" /></td>
-        `;
-
-        tr.querySelectorAll(`input[name="att_${student.Idnumber}"]`).forEach(radio => {
-          radio.addEventListener("change", () => {
-            const statusCell = tr.querySelector(".status-display");
-            if (radio.value === "P") {
-              statusCell.textContent = "✔";
-              statusCell.className = "status-display status-check";
-            } else if (radio.value === "A") {
-              statusCell.textContent = "A";
-              statusCell.className = "status-display status-absent";
-            } else if (radio.value === "L") {
-              statusCell.textContent = "L";
-              statusCell.className = "status-display status-late";
-            }
-          });
-        });
-
-        studentsTableBody.appendChild(tr);
-      }
 
       sortTableByCN();
     });
@@ -385,96 +381,90 @@ td.first-name {
       });
     });
 
-    // 📨 Save attendance records
-    /* async function saveAttendanceRecords() {
-      const dateTaken = document.getElementById("attendanceDate").value;
-      const dayType = document.getElementById("dayType").value;
-      const Section = SectionSelect.value;
+    // 📅 Day type utility
+    function getDayType(dateStr) {
+      const holidays = {
+        "2025-08-21": "HOL",
+        "2025-11-30": "HOL",
+        // Add more holidays here
+      };
 
-      if (!dateTaken || !Section) {
+      if (holidays[dateStr]) return holidays[dateStr];
+
+      const dateObj = new Date(dateStr);
+      const day = dateObj.getDay();
+
+      if (day === 0) return "SUN";
+      if (day === 6) return "SAT";
+
+      return null;
+    }
+
+    // 📨 Save attendance record
+    async function saveAttendanceRecord(students, date, section) {
+      const docId = `${section}_${date}`;
+      const attendanceCollection = collection(db, "attendance");
+
+      const dayType = getDayType(date);
+      const isNoClassDay = ["HOL", "ILD", "SAT", "SUN"].includes(dayType);
+
+      const attendanceData = {
+        date,
+        section,
+        ...(dayType && { dayType }),
+        students: students.map(student => ({
+          idNumber: student.idNumber,
+          name: student.name,
+          status: isNoClassDay ? dayType : student.status,
+        })),
+      };
+
+      try {
+        await setDoc(doc(attendanceCollection, docId), attendanceData);
+        console.log("Attendance saved successfully.");
+      } catch (error) {
+        console.error("Error saving attendance:", error);
+      }
+    }
+
+    // 🖱️ Save button handler
+    document.getElementById("saveAttendanceBtn").addEventListener("click", async () => {
+      const dateTaken = document.getElementById("attendanceDate").value;
+      const section = SectionSelect.value;
+
+      if (!dateTaken || !section) {
         alert("Please select both a date and a Section.");
         return;
       }
 
+      const students = [];
       const rows = studentsTableBody.querySelectorAll("tr");
 
       for (const row of rows) {
-        const Idnumber = row.querySelector("input[type='radio']").name.replace("att_", "");
+        const idNumber = row.querySelector("input[type='radio']").name.replace("att_", "");
         const status = row.querySelector(".status-display").textContent.trim();
-        if (!status || !studentsMap.has(Idnumber)) continue;
+        if (!status || !studentsMap.has(idNumber)) continue;
 
-        const student = studentsMap.get(Idnumber);
-        const docId = `${student.Idnumber}-${dateTaken}`;
-
-        const attendanceData = {
-          CN: student.CN,
-          Idnumber: student.Idnumber,
-          Email: student.Email,
-          FirstName: student.FirstName,
-          LastName: student.LastName,
-          Section: student.Section,
-          schoolyear: student.schoolYear,
-          subject: student.subject,
-          term: student.term,
-          dateTaken,
-          dayType,
+        const student = studentsMap.get(idNumber);
+        students.push({
+          idNumber: student.Idnumber,
+          name: `${student.FirstName} ${student.LastName}`,
           status,
-        };
-
-        try {
-          await setDoc(doc(db, "attendance", docId), attendanceData);
-          console.log(`✅ Saved: ${docId}`);
-        } catch (error) {
-          console.error(`❌ Error saving ${docId}:`, error);
-        }
+        });
       }
 
-      alert("Attendance records saved successfully.");
-    } */
-function getDayType(dateStr) {
-  const holidays = {
-    "2025-08-21": "HOL",
-    "2025-11-30": "HOL",
-    // Add more holidays here
-  };
+      spinner.style.display = "block";
 
-  if (holidays[dateStr]) return holidays[dateStr];
-
-  const dateObj = new Date(dateStr);
-  const day = dateObj.getDay();
-
-  if (day === 0) return "SUN";
-  if (day === 6) return "SAT";
-
-  return null; // Regular class day
-}
-
-async function saveAttendanceRecord(students, date, section) {
-  const docId = `${section}_${date}`;
-  const attendanceCollection = collection(db, "attendance");
-
-  const dayType = getDayType(date);
-  const isNoClassDay = ["HOL", "ILD", "SAT", "SUN"].includes(dayType);
-
-  const attendanceData = {
-    date,
-    section,
-    ...(dayType && { dayType }), // Only include if it's a no-class day
-    students: students.map(student => ({
-      idNumber: student.idNumber,
-      name: student.name,
-      status: isNoClassDay ? dayType : student.status,
-    })),
-  };
-
-  try {
-    await setDoc(doc(attendanceCollection, docId), attendanceData);
-    console.log("Attendance saved successfully.");
-  } catch (error) {
-    console.error("Error saving attendance:", error);
-  }
-}
-    document.getElementById("saveAttendanceBtn").addEventListener("click", saveAttendanceRecords);
+      try {
+        await saveAttendanceRecord(students, dateTaken, section);
+        alert("Attendance records saved successfully.");
+      } catch (error) {
+        alert("Error saving attendance.");
+        console.error(error);
+      } finally {
+        spinner.style.display = "none";
+      }
+    });
 
     // 🧩 Toggle panel
     document.querySelector('.toggle-btn').addEventListener('click', function () {
@@ -493,35 +483,15 @@ async function saveAttendanceRecord(students, date, section) {
     });
 
     // 📝 Placeholder for letter generation
-   document.getElementById("saveAttendanceBtn").addEventListener("click", () => {
-  const dateTaken = document.getElementById("attendanceDate").value;
-  const section = SectionSelect.value;
-
-  if (!dateTaken || !section) {
-    alert("Please select both a date and a Section.");
-    return;
-  }
-
-  const students = [];
-  const rows = studentsTableBody.querySelectorAll("tr");
-
-  for (const row of rows) {
-    const idNumber = row.querySelector("input[type='radio']").name.replace("att_", "");
-    const status = row.querySelector(".status-display").textContent.trim();
-    if (!status || !studentsMap.has(idNumber)) continue;
-
-    const student = studentsMap.get(idNumber);
-    students.push({
-      idNumber: student.Idnumber,
-      name: `${student.FirstName} ${student.LastName}`,
-      status,
+    document.getElementById("generateLetter").addEventListener("click", () => {
+      alert("Letter generation logic goes here.");
     });
-  }
+  })();
+</script>
 
-  saveAttendanceRecord(students, dateTaken, section);
-});
-</script><!-- 🌀 Loading Spinner Element -->
-
-<div id="loadingSpinner">⏳ Saving attendance records...</div>
+<div id="loadingSpinner" style="display: none;">
+  <div class="loader"></div>
+</div>
+        
 </body>
 </html>
