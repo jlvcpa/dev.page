@@ -446,7 +446,7 @@ document.getElementById("dayType").addEventListener("change", () => {
         ...(dayType && { dayType }),
         students: students.map(student => ({
           idNumber: student.idNumber,
-          name: student.name,
+          fullName: student.fullName,
           status: isNoClassDay ? dayType : student.status,
         })),
       };
@@ -484,7 +484,7 @@ document.getElementById("dayType").addEventListener("change", () => {
           idNumber: student.Idnumber,
           lastName: student.LastName,
           firstName: student.FirstName,
-          name: `${student.LastName} ${student.FirstName}`,
+          fullName: `${student.LastName}, ${student.FirstName}`,
           status: isNoClassDay ? selectedDayType : status,
         });
       }
