@@ -5,106 +5,139 @@
   <title>Group Assignment</title>
   <style>
     body {
-      margin: 0;
-      font-family: 'Segoe UI', sans-serif;
-      display: flex;
-      height: 100vh;
-    }
+      body {
+  margin: 0;
+  font-family: 'Segoe UI', sans-serif;
+  height: 100vh;
+}
 
-    .panel {
-      border-right: 1px solid #ccc;
-      padding: 10px;
-      box-sizing: border-box;
-      display: flex;
-      flex-direction: column;
-    }
+.main-container {
+  display: flex;
+  height: 100vh;
+}
 
-    .group-panel {
-      width: 28%;
-    }
+.left-column {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 10px;
+  box-sizing: border-box;
+}
 
-    .student-panel {
-      width: 16%;
-      border-right: none;
-    }
+.group-row {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 10px;
+}
 
-    .header {
-      font-weight: bold;
-      font-size: 18px;
-      margin-bottom: 10px;
-      color: #007acc;
-    }
+.group-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #ccc;
+  padding: 10px;
+  box-sizing: border-box;
+}
 
-    .groupMembers {
-      flex: 1;
-      background-color: #f9f9f9;
-      border: 1px solid #ccc;
-      padding: 8px;
-      margin-bottom: 10px;
-      overflow-y: auto;
-    }
+.allQuestions-panel {
+  flex: 1;
+  border: 1px solid #ccc;
+  padding: 10px;
+  box-sizing: border-box;
+  overflow-y: auto;
+}
 
-    .gameRecords {
-      height: 100px;
-      background-color: #e8f0fe;
-      border: 1px solid #007acc;
-      padding: 8px;
-      flex-grow: 3;
-    }
+.student-panel {
+  width: 16%;
+  border-left: 1px solid #ccc;
+  padding: 10px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+}
 
-    .studentList {
-      flex: 1;
-      background-color: #fff;
-      border: 1px solid #ccc;
-      padding: 8px;
-      overflow-y: auto;
-    }
-    
-    .hidden {
-      display: none;
-    }
+.header {
+  font-weight: bold;
+  font-size: 18px;
+  margin-bottom: 10px;
+  color: #007acc;
+}
 
-    button {
-      margin-top: 10px;
-      padding: 6px 12px;
-      font-size: 14px;
-    }
+.groupMembers {
+  flex: 1;
+  background-color: #f9f9f9;
+  border: 1px solid #ccc;
+  padding: 8px;
+  margin-bottom: 10px;
+  overflow-y: auto;
+}
+
+.gameRecords {
+  height: 100px;
+  background-color: #e8f0fe;
+  border: 1px solid #007acc;
+  padding: 8px;
+}
+
+.studentList {
+  flex: 1;
+  background-color: #fff;
+  border: 1px solid #ccc;
+  padding: 8px;
+  overflow-y: auto;
+}
+
+.hidden {
+  display: none;
+}
+
+button {
+  margin-top: 10px;
+  padding: 6px 12px;
+  font-size: 14px;
+}
   </style>
 </head>
 <body>
-<div class="panel activity-panel">
-  <div class="panel group-panel">
-    <div class="header">Group 1</div>
-    <div class="groupMembers" id="group1Members">[Group 1 members]</div>
-    <div class="gameRecords" hidden" id="group1Records">[Game Records]</div> <!-- shall be hidden before the game starts  -->
-  </div>
+<body>
+  <div class="main-container">
+    <div class="left-column">
+      <div class="group-row">
+        <div class="panel group-panel">
+          <div class="header">Group 1</div>
+          <div class="groupMembers" id="group1Members">[Group 1 members]</div>
+          <div class="gameRecords hidden" id="group1Records">[Game Records]</div>
+        </div>
+        <div class="panel group-panel">
+          <div class="header">Group 2</div>
+          <div class="groupMembers" id="group2Members">[Group 2 members]</div>
+          <div class="gameRecords hidden" id="group2Records">[Game Records]</div>
+        </div>
+        <div class="panel group-panel">
+          <div class="header">Group 3</div>
+          <div class="groupMembers" id="group3Members">[Group 3 members]</div>
+          <div class="gameRecords hidden" id="group3Records">[Game Records]</div>
+        </div>
+      </div>
+      <div class="panel allQuestions-panel">
+        <div class="header">All Questions</div>
+        <div class="allQuestionsList" id="allQuestionsList">
+          [All Questions for students discussion before the game starts will load here]
+        </div>
+      </div>
+    </div>
 
-  <div class="panel group-panel">
-    <div class="header">Group 2</div>
-    <div class="groupMembers" id="group2Members">[Group 2 members]</div>
-    <div class="gameRecords" hidden" id="group2Records">[Game Records]</div> <!-- shall be hidden before the game starts  -->
+    <div class="panel student-panel">
+      <div class="header">Student List</div>
+      <label for="selectAttendanceRecord">Section:</label>
+      <select id="selectAttendanceRecord">
+        <option value="">-- Select Attendance Record --</option>
+      </select>
+      <div class="studentList" id="studentList">[Students will load here]</div>
+      <button onclick="createGroups()">Create Groups</button>
+    </div>
   </div>
-
-  <div class="panel group-panel">
-    <div class="header">Group 3</div>
-    <div class="groupMembers" id="group3Members">[Group 3 members]</div>
-    <div class="gameRecords" hidden" id="group3Records">[Game Records]</div> <!-- shall be hidden before the game starts  -->
-  </div>
-    <div class="panel allQuestions-panel">
-    <div class="header">All Questions</div>
-    <div class="allQuestionsList" id="allQuestionsList">[All Questions for students discussion before the game starts will load here]</div>
-  </div>
-</div>
-
-  <div class="panel student-panel">
-    <div class="header">Student List</div>
-    <label for="selectAttendanceRecord">Section:</label>
-    <select id="selectAttendanceRecord">
-      <option value="">-- Select Attendandance Recoord --</option>
-    </select>
-    <div class="studentList" id="studentList">[Students will load here]</div>
-    <button onclick="createGroups()">Create Groups</button>
-  </div>
+</body>
   
    <script type="module">
     // 🔥 Firebase logic goes here
