@@ -96,6 +96,24 @@ button {
   padding: 6px 12px;
   font-size: 14px;
 }
+      .student {
+  padding: 6px;
+  margin-bottom: 4px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.student.active {
+  background-color: #e0f7fa;
+  color: #00796b;
+  cursor: pointer;
+}
+
+.student.inactive {
+  background-color: #f0f0f0;
+  color: #999;
+  pointer-events: none;
+}
   </style>
 </head>
 <body>
@@ -139,46 +157,97 @@ button {
   </div>
 </body>
   
-   <script type="module">
-    // 🔥 Firebase logic goes here
-     (async () => {
-    // 🔧 Firebase setup
-    const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js");
-    const { getFirestore, doc, setDoc, getDoc, getDocs, collection } = await import("https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js");
+  <script type="module">
+(async () => {
+  const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js");
+  const { getFirestore, collection, getDocs, doc, getDoc } = await import("https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js");
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyAgOsKAZWwExUzupxSNytsfOo9BOppF0ng",
-      authDomain: "jlvcpa-quizzes.firebaseapp.com",
-      projectId: "jlvcpa-quizzes",
-      storageBucket: "jlvcpa-quizzes.appspot.com",
-      messagingSenderId: "629158256557",
-      appId: "1:629158256557:web:b3d1a424b32e28cd578b24"
-    };
+  const firebaseConfig = {
+    apiKey: "AIzaSyAgOsKAZWwExUzupxSNytsfOo9BOppF0ng",
+    authDomain: "jlvcpa-quizzes.firebaseapp.com",
+    projectId: "jlvcpa-quizzes",
+    storageBucket: "jlvcpa-quizzes.appspot.com",
+    messagingSenderId: "629158256557",
+    appId: "1:629158256557:web:b3d1a424b32e28cd578b24"
+  };
 
-    // Example: Load students from Firestore and populate #studentList
-    
-    // Then randomly assign them to group1Members, group2Members, group3Members
-    function createGroups() {
-      // Placeholder logic for random assignment
-      // Replace with actual Firebase data
-      const students = Array.from(document.querySelectorAll('.studentList div')).map(el => el.textContent);
-      const shuffled = students.sort(() => 0.5 - Math.random());
-      const groupSize = Math.ceil(students.length / 3);
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
 
-      document.getElementById('group1Members').innerHTML = shuffled.slice(0, groupSize).join('<br>');
-      document.getElementById('group2Members').innerHTML = shuffled.slice(groupSize, groupSize * 2).join('<br>');
-      document.getElementById('group3Members').innerHTML = shuffled.slice(groupSize * 2).join('<br>');
-    }
+  const selectAttendance = document.getElementById("selectAttendanceRecord");
+  const studentList = document.getElementById("studentList");
 
-    // Example static data for testing
-    const sampleStudents = ['Anna', 'Ben', 'Carlos', 'Diana', 'Eli', 'Faith', 'George', 'Hannah', 'Ivan'];
-    const studentList = document.getElementById('studentList');
-    sampleStudents.forEach(name => {
-      const div = document.createElement('div');
-      div.textContent = name;
+  // 🔍 Fetch 3 most recent attendance records
+  async function loadRecentAttendanceRecords() {
+    const snapshot = await getDocs(collection(db, "attendance"));
+    const records = [];
+
+    snapshot.forEach(doc => {
+      const [section, date] = doc.id.split("_");
+      records.push({ id: doc.id, section, date });
+    });
+
+    // Sort by date descending
+    records.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+    // Take top 3
+    const recent = records.slice(0, 3);
+
+    recent.forEach(record => {
+      const option = document.createElement("option");
+      option.value = record.id;
+      option.textContent = `${record.section} - ${record.date}`;
+      selectAttendance.appendChild(option);
+    });
+  }
+
+  // 👥 Load students from selected attendance record
+  async function loadStudents(docId) {
+    studentList.innerHTML = ""; // Clear previous
+
+    const studentsRef = collection(db, "attendance", docId, "students");
+    const snapshot = await getDocs(studentsRef);
+
+    snapshot.forEach(doc => {
+      const { fullName, status } = doc.data();
+      const div = document.createElement("div");
+      div.className = `student ${status === "A" ? "inactive" : "active"}`;
+      div.textContent = `${fullName} - ${status}`;
+      div.dataset.fullName = fullName;
+      div.dataset.status = status;
       studentList.appendChild(div);
     });
-  </script>
+  }
+
+  // 🎯 Randomly assign active students to groups
+  window.createGroups = function () {
+    const activeStudents = Array.from(document.querySelectorAll(".student.active"));
+    const shuffled = activeStudents.sort(() => Math.random() - 0.5);
+
+    const groups = [[], [], []];
+    shuffled.forEach((student, i) => {
+      groups[i % 3].push(student);
+      student.classList.add("inactive"); // Gray out after assignment
+      student.classList.remove("active");
+    });
+
+    // Populate group panels
+    document.getElementById("group1Members").innerHTML = groups[0].map(s => s.textContent).join("<br>");
+    document.getElementById("group2Members").innerHTML = groups[1].map(s => s.textContent).join("<br>");
+    document.getElementById("group3Members").innerHTML = groups[2].map(s => s.textContent).join("<br>");
+  };
+
+  // 🧠 Event listener for dropdown
+  selectAttendance.addEventListener("change", e => {
+    if (e.target.value) {
+      loadStudents(e.target.value);
+    }
+  });
+
+  // 🚀 Initialize
+  loadRecentAttendanceRecords();
+})();
+</script>
 
 </body>
 </html>
