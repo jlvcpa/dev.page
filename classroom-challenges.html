@@ -459,21 +459,27 @@ function renderQuestionsToPanel(questions) {
   loadRecentAttendanceRecords();
 })();
 </script>
-  <script type="module">
- document.getElementById("generateLinkBtn").addEventListener("click", () => {
-  // 🔧 Replace with your actual quiz ID or group name logic
-  const quizId = "quiz123"; // You can fetch this from Firestore or metadata
-  const groupName = "GroupA"; // Optional
+  
+<script type="module">
+  document.getElementById("generateLinkBtn").addEventListener("click", () => {
+    const select = document.getElementById("selectAttendanceRecord");
+    const selectedDocId = select.value;
 
-  // 🧠 Construct the relative link with query parameters
-  const link = `studentsGameView.html?quiz=${encodeURIComponent(quizId)}&group=${encodeURIComponent(groupName)}`;
+    if (!selectedDocId) {
+      alert("Please select an attendance record.");
+      return;
+    }
 
-  // 🎯 Update the anchor element
-  const anchor = document.getElementById("gameViewLink");
-  anchor.href = link;
-  anchor.style.display = "inline-block"; // Make it visible
-  anchor.textContent = "Open Game View for " + groupName;
-});
+    // 🌐 Full URL to hosted studentsGameView.html
+    const baseUrl = "https://jlvcpa.github.io/dev.page/studentsGameView.html";
+    const link = `${baseUrl}?attendanceRecord=${encodeURIComponent(selectedDocId)}`;
+
+    // 🎯 Update the anchor element
+    const anchor = document.getElementById("gameViewLink");
+    anchor.href = link;
+    anchor.style.display = "inline-block";
+    anchor.textContent = `Open Game View for ${selectedDocId}`;
+  });
 </script>
 
 </body>
