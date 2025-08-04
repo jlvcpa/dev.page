@@ -271,6 +271,28 @@ button {
     document.getElementById("group3Members").innerHTML = groups[2].map(s => s.textContent).join("<br>");
   };
 
+  // START OF GENERATE LINK LOGIC
+  window.generateStudentLink = async function () {
+  const select = document.getElementById("selectAttendanceRecord");
+  const selectedDocId = select.value;
+
+  if (!selectedDocId) {
+    document.getElementById("generatedLinkDisplay").textContent = "Please select an attendance record.";
+    return;
+  }
+
+  const link = `studentsGameView.html?attendanceRecord=${encodeURIComponent(selectedDocId)}`;
+
+  try {
+    await navigator.clipboard.writeText(link);
+    document.getElementById("generatedLinkDisplay").innerHTML = `
+      ✅ Link copied to clipboard!<br>
+      <a href="${link}" target="_blank">${link}</a>
+    `;
+  } catch (err) {
+    document.getElementById("generatedLinkDisplay").textContent = "Failed to copy link. Here's the URL: " + link;
+  }
+}; // END OF GENERATE LINK LOGIC
   // ✅ Save groups to Firestore
 window.saveGroups = async function () {
   const attendanceDocID = selectAttendance.value;
