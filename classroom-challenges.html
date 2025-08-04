@@ -148,7 +148,6 @@ button {
       
       <div class="panel gameButtons-panel">
         <button onclick="generateQuestions()">Generate Questions</button>
-        <button onclick="saveGenerateQuiz()">Save Generated Questions</button>
         <button onclick="showGeneratedQuestions()">Show Generated Questions</button>
         <button onclick="StartGame()">Start Game</button>
       </div>
@@ -326,13 +325,92 @@ window.showGroups = async function () {
     }
   });
 };
-  
-  // 🧠 Event listener for dropdown
-  selectAttendance.addEventListener("change", e => {
-    if (e.target.value) {
-      loadStudents(e.target.value);
+
+  // ✅ Generate and save 20 Constructed-Response questions
+window.generateQuestions = async function () {
+  const attendanceDocID = selectAttendance.value;
+  if (!attendanceDocID) {
+    alert("Please select an attendance record.");
+    return;
+  }
+
+  const snapshot = await getDocs(collection(db, "questionBank"));
+  const allQuestions = [];
+  snapshot.forEach(doc => {
+    const data = doc.data();
+    if (data.testType === "Constructed-Response") {
+      allQuestions.push(data);
     }
   });
+
+  const selectedQuestions = allQuestions.sort(() => Math.random() - 0.5).slice(0, 20);
+
+  const docID = `${attendanceDocID}_groupQB`;
+  await setDoc(doc(db, "groupingsQuestionBank", docID), {
+    attendanceRef: attendanceDocID,
+    questions: selectedQuestions,
+    timestamp: Date.now()
+  });
+
+  renderQuestionsToPanel(selectedQuestions);
+  alert("✅ Questions generated and saved.");
+};
+
+// ✅ Show previously generated questions
+window.showGeneratedQuestions = async function () {
+  const attendanceDocID = selectAttendance.value;
+  if (!attendanceDocID) {
+    alert("Please select an attendance record.");
+    return;
+  }
+
+  const docID = `${attendanceDocID}_groupQB`;
+  const docSnap = await getDoc(doc(db, "groupingsQuestionBank", docID));
+  if (!docSnap.exists()) {
+    alert("No questions found for this attendance record.");
+    return;
+  }
+
+  const data = docSnap.data();
+  renderQuestionsToPanel(data.questions);
+};
+
+// ✅ Load saved groups and questions when attendance changes
+async function loadSavedGroupAndQuestions(attendanceDocID) {
+  // Load groups
+  const groupIDs = ["Group1", "Group2", "Group3"].map(g => `${attendanceDocID}-${g}`);
+  const groupData = await Promise.all(groupIDs.map(id => getDoc(doc(db, "groupings", id))));
+
+  groupData.forEach((docSnap, i) => {
+    const groupNum = i + 1;
+    const container = document.getElementById(`group${groupNum}Members`);
+    if (docSnap.exists()) {
+      const data = docSnap.data();
+      container.innerHTML = data.members.join("<br>");
+    } else {
+      container.innerHTML = "[No saved group found]";
+    }
+  });
+
+  // Load questions
+  const qbDocID = `${attendanceDocID}_groupQB`;
+  const qbSnap = await getDoc(doc(db, "groupingsQuestionBank", qbDocID));
+  if (qbSnap.exists()) {
+    const data = qbSnap.data();
+    renderQuestionsToPanel(data.questions);
+  } else {
+    document.getElementById("allQuestionsList").innerHTML = "[No questions found]";
+  }
+}
+  // 🧠 Event listener for dropdown
+  selectAttendance.addEventListener("change", async e => {
+  const attendanceDocID = e.target.value;
+  if (attendanceDocID) {
+    await loadStudents(attendanceDocID); // Load student list
+    await loadSavedGroupAndQuestions(attendanceDocID); // Load saved groups + questions
+  }
+});
+
 
   // 🚀 Initialize
   loadRecentAttendanceRecords();
