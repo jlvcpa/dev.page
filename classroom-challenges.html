@@ -157,7 +157,7 @@ button {
   </div>
 </body>
   
-  <script type="module">
+<script type="module">
 (async () => {
   const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js");
   const { getFirestore, collection, getDocs, doc, getDoc } = await import("https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js");
@@ -201,15 +201,21 @@ button {
     });
   }
 
-  // 👥 Load students from selected attendance record
+  // ✅ Corrected: Load students from array field in attendance document
   async function loadStudents(docId) {
     studentList.innerHTML = ""; // Clear previous
 
-    const studentsRef = collection(db, "attendance", docId, "students");
-    const snapshot = await getDocs(studentsRef);
+    const attendanceDoc = await getDoc(doc(db, "attendance", docId));
+    if (!attendanceDoc.exists()) {
+      console.error("Attendance record not found:", docId);
+      return;
+    }
 
-    snapshot.forEach(doc => {
-      const { fullName, status } = doc.data();
+    const data = attendanceDoc.data();
+    const students = data.students || [];
+
+    students.forEach(student => {
+      const { fullName, status } = student;
       const div = document.createElement("div");
       div.className = `student ${status === "A" ? "inactive" : "active"}`;
       div.textContent = `${fullName} - ${status}`;
