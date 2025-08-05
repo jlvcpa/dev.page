@@ -26,14 +26,17 @@ h1 {
 .main-container {
   display: flex;
   height: 100vh;
+  position: relative; /* ✅ Add this line */
 }
 
 .left-column {
-  flex: 1;
+  flex-grow: 1;
   display: flex;
   flex-direction: column;
   padding: 10px;
   box-sizing: border-box;
+  transition: width 0.3s ease;
+  position: relative;
 }
 
 .group-row {
@@ -54,9 +57,37 @@ h1 {
 .allQuestions-panel {
   flex: 1;
   border: 1px solid #ccc;
-  padding: 10px;
+  padding: 8px;
   box-sizing: border-box;
   overflow-y: auto;
+}
+
+.question-columns {
+  display: flex;
+  gap: 12px;
+}
+
+.question-column {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.question-item {
+  flex: 1;
+  margin-bottom: 0;
+  padding: 6px;
+  background: #f9f9f9;
+  border-radius: 0px;
+  font-size: 1.2rem;
+  line-height: 1.2;
+}
+
+.question-item hr {
+  margin: 4px 0;
+  border: none;
+  border-top: 1px solid #ccc;
 }
 
 .student-panel {
@@ -145,14 +176,25 @@ h1 {
   color: #00796b;
   cursor: pointer;
 }
-
-.question-item {
-  margin-bottom: 10px;
-  padding: 8px;
-  background: #f9f9f9;
-  border-radius: 6px;
+.group-columns {
+  display: flex;
+  gap: 12px;
 }
 
+.group-column {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.member-item {
+  padding: 4px 6px;
+  background-color: #fff;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 0.9rem;
+}
       .group-row {
   display: flex;
   gap: 20px;
@@ -180,15 +222,54 @@ h1 {
   color: #999;
   pointer-events: none;
 }
+
+.toggle-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 10;
+  background-color: #eee;
+  border: 1px solid #ccc;
+  padding: 4px 8px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.student-panel {
+  width: 300px;
+  transition: transform 0.3s ease;
+  position: relative;
+  height: 100%;
+}
+
+.student-panel.hidden {
+  transform: translateX(100%);
+  position: absolute;
+  right: 0;
+  top: 0;
+  height: 100%;
+  overflow: hidden;
+}
+
+.left-column.expanded {
+  width: calc(100% - 0px); /* full width when student panel is hidden */
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
   </style>
 </head>
 <body>
 <body>
 <h1> TRANSACTION ANALYSIS BUILDER </h1>
   <div class="main-container">
-   
-    <div class="left-column">
-      
+       <div class="left-column">
+        <button id="toggleStudentPanelBtn" class="toggle-btn">>>>>> </button>
+        
+<!-- Your left-column content here --> 
       <div class="button-container">
 	  <button id="saveGroupsBtn" onclick="saveGroups()">Save Groups</button>
           <button id="showGroupsBtn" onclick="showGroups()">Show Groups</button>
@@ -226,15 +307,15 @@ h1 {
            </div>
       </div>
         <div class="panel gameControls-panel" hidden>
-  <button id="showAllQuestionsPanelBtn"onclick="showAllQuestionsPanel()">🔙 All-Questions</button>
-  <button id="startGameBtn" onclick="startGame()">🎮 Start-Game</button>
-  <button id="prevQuestionBtn" onclick="prevQuestion()">⬅️ Prev-Question</button>
-  <button id="nextQuestionBtn" onclick="nextQuestion()">➡️ Next-Question</button>
-</div>
+      <button id="showAllQuestionsPanelBtn"onclick="showAllQuestionsPanel()">🔙 All-Questions</button>
+        <button id="startGameBtn" onclick="startGame()">🎮 Start-Game</button>
+        <button id="prevQuestionBtn" onclick="prevQuestion()">⬅️ Prev-Question</button>
+        <button id="nextQuestionBtn" onclick="nextQuestion()">➡️ Next-Question</button>
+      </div>
 
     </div>
 
-    <div class="panel student-panel">
+    <div id="studentPanel" class="panel student-panel">
       <div class="header">Student List</div>
       <label for="selectAttendanceRecord">Section:</label>
       <select id="selectAttendanceRecord">
@@ -243,7 +324,7 @@ h1 {
       <button id="generateLinkBtn">Generate Game View Link</button>
        <a id="gameViewLink" href="#" target="_blank" style="display:none;">Open Game View</a>
       <div class="studentList" id="studentList">[Students will load here]</div>
-      <button onclick="createGroups()">Create Groups</button>
+      <button id="createGroupsBtn" onclick="createGroups()">Create Groups</button>
     </div>
     
   </div>
@@ -318,22 +399,22 @@ h1 {
   }
 
   // 🎯 Randomly assign active students to groups
-  window.createGroups = function () {
-    const activeStudents = Array.from(document.querySelectorAll(".student.active"));
-    const shuffled = activeStudents.sort(() => Math.random() - 0.5);
+window.createGroups = function () {
+  const activeStudents = Array.from(document.querySelectorAll(".student.active"));
+  const shuffled = activeStudents.sort(() => Math.random() - 0.5);
 
-    const groups = [[], [], []];
-    shuffled.forEach((student, i) => {
-      groups[i % 3].push(student);
-      student.classList.add("inactive"); // Gray out after assignment
-      student.classList.remove("active");
-    });
+  const groups = [[], [], []];
+  shuffled.forEach((student, i) => {
+    groups[i % 3].push(student);
+    student.classList.add("inactive"); // Gray out after assignment
+    student.classList.remove("active");
+  });
 
-    // Populate group panels
-    document.getElementById("group1Members").innerHTML = groups[0].map(s => s.textContent).join("<br>");
-    document.getElementById("group2Members").innerHTML = groups[1].map(s => s.textContent).join("<br>");
-    document.getElementById("group3Members").innerHTML = groups[2].map(s => s.textContent).join("<br>");
-  };
+  // ✅ Use two-column rendering
+  renderGroupMembers(document.getElementById("group1Members"), groups[0].map(s => s.textContent));
+  renderGroupMembers(document.getElementById("group2Members"), groups[1].map(s => s.textContent));
+  renderGroupMembers(document.getElementById("group3Members"), groups[2].map(s => s.textContent));
+};
 
   // START OF GENERATE LINK LOGIC
   window.generateStudentLink = async function () {
@@ -398,6 +479,7 @@ window.saveGroups = async function () {
   });
 
   alert("✅ Groups saved successfully.");
+  updateGroupButtonsState();
 };
 
 // ✅ Show saved groups from Firestore
@@ -416,10 +498,12 @@ window.showGroups = async function () {
     const container = document.getElementById(`group${groupNum}Members`);
     if (docSnap.exists()) {
       const data = docSnap.data();
-      container.innerHTML = data.members.join("<br>");
+      renderGroupMembers(container, data.members);
+      updateGroupButtonsState();
     } else {
       container.innerHTML = "[No saved group found]";
     }
+    
   });
 };
 
@@ -446,7 +530,8 @@ window.showGroups = async function () {
            timestamp: Date.now()
          });
          renderQuestionsToPanel(selectedQuestions);
-         alert("✅ Questions generated and saved.");
+         updateQuestionButtonsState();
+            alert("✅ Questions generated and saved.");
        };
 
   // ✅ Show previously generated questions
@@ -456,16 +541,23 @@ window.showGroups = async function () {
            alert("Please select an attendance record.");
            return;
          }
-  const docID = `${attendanceDocID}_groupQB`;
-  const docSnap = await getDoc(doc(db, "groupingsQuestionBank", docID));
-  if (!docSnap.exists()) {
-    alert("No questions found for this attendance record.");
-    return;
-  }
+         const docID = `${attendanceDocID}_groupQB`;
+         const docSnap = await getDoc(doc(db, "groupingsQuestionBank", docID));
+           if (!docSnap.exists()) {
+           alert("No questions found for this attendance record.");
+         return;
+         }
 
-  const data = docSnap.data();
-  renderQuestionsToPanel(data.questions);
+         const data = docSnap.data();
+         renderQuestionsToPanel(data.questions);
+         updateQuestionButtonsState();
+       };
+
+window.onload = function () {
+  updateQuestionButtonsState();
+  updateGroupButtonsState();
 };
+
 
 // ✅ Load saved groups and questions when attendance changes
 async function loadSavedGroupAndQuestions(attendanceDocID) {
@@ -478,10 +570,12 @@ async function loadSavedGroupAndQuestions(attendanceDocID) {
     const container = document.getElementById(`group${groupNum}Members`);
     if (docSnap.exists()) {
       const data = docSnap.data();
-      container.innerHTML = data.members.join("<br>");
+      renderGroupMembers(container, data.members);
+      updateGroupButtonsState();
     } else {
       container.innerHTML = "[No saved group found]";
     }
+
   });
 
   // Load questions
@@ -490,14 +584,46 @@ async function loadSavedGroupAndQuestions(attendanceDocID) {
   if (qbSnap.exists()) {
     const data = qbSnap.data();
     renderQuestionsToPanel(data.questions);
+    updateQuestionButtonsState();
+    
   } else {
     document.getElementById("allQuestionsList").innerHTML = "[No questions found]";
   }
-  
-
-
 } 
-  // 🧠 Event listener for dropdown
+  
+function updateQuestionButtonsState() {
+  const container = document.getElementById("allQuestionsList");
+  const hasContent = container && container.innerHTML.trim() !== "";
+
+  const generateBtn = document.getElementById("generateQuestionsBtn");
+  const showBtn = document.getElementById("showGeneratedQuestionsBtn");
+
+  if (hasContent) {
+    generateBtn.disabled = true;
+    showBtn.disabled = true;
+  } else {
+    generateBtn.disabled = false;
+    showBtn.disabled = false;
+  }
+}
+
+function updateGroupButtonsState() {
+  const groupIDs = ["group1Members", "group2Members", "group3Members"];
+  const hasGroups = groupIDs.some(id => {
+    const panel = document.getElementById(id);
+    return panel && panel.innerHTML.trim() !== "";
+  });
+
+  const createBtn = document.getElementById("createGroupsBtn");
+  const saveBtn = document.getElementById("saveGroupsBtn");
+  const showBtn = document.getElementById("showGroupsBtn");
+
+  createBtn.disabled = hasGroups;
+  saveBtn.disabled = hasGroups;
+  showBtn.disabled = hasGroups;
+}
+
+// 🧠 Event listener for dropdown
   selectAttendance.addEventListener("change", async e => {
   const attendanceDocID = e.target.value;
   if (attendanceDocID) {
@@ -557,17 +683,101 @@ window.showAllQuestionsPanel = function () {
   });
 };
 
+// Start of toggle Student Panel Logic
+document.getElementById("toggleStudentPanelBtn").addEventListener("click", function () {
+  const studentPanel = document.getElementById("studentPanel");
+  const toggleBtn = this;
+
+  // Toggle visibility of student panel
+  const isHidden = studentPanel.classList.toggle("hidden");
+
+  // Update button icon
+  toggleBtn.textContent = isHidden ? "<<<<<" : ">>>>>";
+
+  // ✅ Expand or contract the left column
+  const leftColumn = document.querySelector(".left-column");
+  leftColumn.classList.toggle("expanded", isHidden);
+}); // End of toggleStudentPanel logic
+
+
+  // Render Groups to Panel
+function renderGroupMembers(container, members) {
+  container.innerHTML = ""; // Clear previous content
+
+  const wrapper = document.createElement("div");
+  wrapper.className = "group-columns";
+
+  const leftColumn = document.createElement("div");
+  leftColumn.className = "group-column";
+
+  const rightColumn = document.createElement("div");
+  rightColumn.className = "group-column";
+
+  const midpoint = Math.ceil(members.length / 2);
+  const firstHalf = members.slice(0, midpoint);
+  const secondHalf = members.slice(midpoint);
+
+  firstHalf.forEach(name => {
+    const div = document.createElement("div");
+    div.className = "member-item";
+    div.textContent = name;
+    leftColumn.appendChild(div);
+  });
+
+  secondHalf.forEach(name => {
+    const div = document.createElement("div");
+    div.className = "member-item";
+    div.textContent = name;
+    rightColumn.appendChild(div);
+  });
+
+  wrapper.appendChild(leftColumn);
+  wrapper.appendChild(rightColumn);
+  container.appendChild(wrapper);
+}
+
   // Render Questions to Panel
 function renderQuestionsToPanel(questions) {
   const container = document.getElementById("allQuestionsList");
   container.innerHTML = ""; // Clear previous content
 
-  questions.forEach((q, index) => {
+  // Create the two-column wrapper
+  const columnsWrapper = document.createElement("div");
+  columnsWrapper.className = "question-columns";
+
+  // Create left and right column containers
+  const leftColumn = document.createElement("div");
+  leftColumn.className = "question-column";
+
+  const rightColumn = document.createElement("div");
+  rightColumn.className = "question-column";
+
+  // Split questions into two halves
+  const midpoint = Math.ceil(questions.length / 2);
+  const firstHalf = questions.slice(0, midpoint);
+  const secondHalf = questions.slice(midpoint);
+
+  // Render first half into left column
+  firstHalf.forEach((q, index) => {
     const div = document.createElement("div");
     div.className = "question-item";
     div.innerHTML = `<strong>Q${index + 1}:</strong> ${q.question || "[No question text]"}<hr>`;
-    container.appendChild(div);
+    leftColumn.appendChild(div);
   });
+
+  // Render second half into right column
+  secondHalf.forEach((q, index) => {
+    const div = document.createElement("div");
+    div.className = "question-item";
+    div.innerHTML = `<strong>Q${midpoint + index + 1}:</strong> ${q.question || "[No question text]"}<hr>`;
+    rightColumn.appendChild(div);
+  });
+
+  // Append columns to wrapper, then to container
+  columnsWrapper.appendChild(leftColumn);
+  columnsWrapper.appendChild(rightColumn);
+  container.appendChild(columnsWrapper);
+
 } // End of render questions to panel
 
   // 🚀 Initialize
