@@ -458,12 +458,9 @@ async function loadSavedGroupAndQuestions(attendanceDocID) {
     document.getElementById("allQuestionsList").innerHTML = "[No questions found]";
   }
   
-// ✅ Show Start Game button after loading
- /* document.getElementById("startGameBtn").hidden = false
-  document.getElementById("prevQuestionBtn").hidden = false;
-  document.getElementById("nextQuestionBtn").hidden = false; */
 
-}
+
+} 
   // 🧠 Event listener for dropdown
   selectAttendance.addEventListener("change", async e => {
   const attendanceDocID = e.target.value;
@@ -478,6 +475,10 @@ window.showGameRecords = function () {
   const allQuestionsPanel = document.querySelector(".allQuestions-panel");
   if (allQuestionsPanel) {
     allQuestionsPanel.style.display = "none";
+    // ✅ Show Start Game button after loading
+  document.getElementById("startGameBtn").hidden = false
+  document.getElementById("prevQuestionBtn").hidden = false;
+  document.getElementById("nextQuestionBtn").hidden = false;
   }
 
   // 🔒 Hide the game buttons panel
