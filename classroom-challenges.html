@@ -10,6 +10,18 @@
   font-family: 'Segoe UI', sans-serif;
   height: 100vh;
 }
+h1 {
+  font-family: 'Segoe UI', sans-serif;
+  font-size: 2rem;
+  font-weight: 600;
+  color: #2c3e50;
+  text-align: center;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  border-bottom: 2px solid #3498db;
+  padding-bottom: 10px;
+  margin-bottom: 20px;
+}
 
 .main-container {
   display: flex;
@@ -92,58 +104,35 @@
   display: none;
 }
 
-.button {
-  margin-top: 10px;       
-  margin-left: 20px;      
-  margin-right: 20px;    
-  padding: 6px 12px;
-  font-size: 14px; 
-} 
-      #gameControls-panel {
+.button-container {
   display: flex;
-  justify-content: center;   /* Center horizontally */
-  align-items: center;       /* Center vertically if needed */
-  flex-direction: row;    /* Stack children horizontally */
-  margin-top: 20px;          /* Optional spacing */
-  gap: 16px;                 /* Optional spacing between children */
+  justify-content: center; /* centers buttons horizontally */
+  gap: 10px;               /* optional spacing between buttons */
+  margin-top: 1px;        /* optional spacing from top */
 }
 
-      #startGameBtn {
-  width: 100px;
-  height: 100px;
+.button {
+  padding: 6px 12px;
+  font-size: 14px;
+}
+
+      #startGameBtn, #prevQuestionBtn, #nextQuestionBtn, 
+      #saveGroupsBtn, #showGroupsBtn, #showAllQuestionsPanelBtn,
+      #generateQuestionsBtn, #showGeneratedQuestionsBtn,
+      #showGameRecordsBtn {
+  width: 160px;
+  height: 25px;
   padding: 0;
-        font-size: 18px;
+  font-size: 18px;
   text-align: center;
-  line-height: 50px;
   border-radius: 8px;
-  display: flex;           /* Makes margin auto work */
-  margin-left: auto;        /* Center horizontally */
-  margin-right: auto;
-  margin-top: 20px;         /* Optional spacing from top */
+  display: flex, hidden;           /* Makes margin auto work */
+  margin-left: 20px;        /* Center horizontally */
+  margin-right: 20px;
+  margin-top: 1px;         /* Optional spacing from top */
 
       }
-      
-/* Apply fixed size and center content inside each child */
-#gameControls-panel .button {
-  margin: 0;
-  padding: 0;
-  font-size: 18px; /* match panel child style */
-  width: 80px;
-  height: 80px;
-  display: flex;             /* Center content inside */
-  justify-content: center;
-  align-items: center;
-  border-radius: 8px;        /* Optional styling */
-   background-color: #f0f0f0; /* Optional background */
-  cursor: pointer;
-}
-
-      #gameControls-panel .button:hover {
-  background-color: #e0e0e0;
-  transform: scale(1.05);
-}
-
-      
+       
       .student {
   padding: 6px;
   margin-bottom: 4px;
@@ -195,12 +184,14 @@
 </head>
 <body>
 <body>
+<h1> TRANSACTION ANALYSIS BUILDER </h1>
   <div class="main-container">
+   
     <div class="left-column">
       
-      <div class="groupButtons">
-          <button onclick="saveGroups()">Save Groups</button>
-          <button onclick="showGroups()">Show Groups</button>
+      <div class="button-container">
+	  <button id="saveGroupsBtn" onclick="saveGroups()">Save Groups</button>
+          <button id="showGroupsBtn" onclick="showGroups()">Show Groups</button>
         </div>
       
       <div class="group-row">
@@ -224,10 +215,10 @@
       </div>
           
       <div class="panel allQuestions-panel">
-        <div class="panel gameButtons-panel">
-           <button onclick="generateQuestions()">Generate Questions</button>
-           <button onclick="showGeneratedQuestions()">Show Generated Questions</button>
-           <button onclick="showGameRecords()">Show Game Dashboard</button>
+        <div class="button-container">
+           <button id="generateQuestionsBtn" onclick="generateQuestions()">Select Questions</button>
+           <button id="showGeneratedQuestionsBtn" onclick="showGeneratedQuestions()">Show-Questions</button>
+           <button id="showGameRecordsBtn" onclick="showGameRecords()">Go To Game</button>
            </div>
         <div class="header">All Questions</div>
         <div class="allQuestionsList" id="allQuestionsList">
@@ -235,9 +226,10 @@
            </div>
       </div>
         <div class="panel gameControls-panel" hidden>
-  <button id="startGameBtn" onclick="startGame()">🎮 Start Game</button>
-  <button id="prevQuestionBtn" onclick="prevQuestion()">⬅️ Previous</button>
-  <button id="nextQuestionBtn" onclick="nextQuestion()">➡️ Next</button>
+  <button id="showAllQuestionsPanelBtn"onclick="showAllQuestionsPanel()">🔙 All-Questions</button>
+  <button id="startGameBtn" onclick="startGame()">🎮 Start-Game</button>
+  <button id="prevQuestionBtn" onclick="prevQuestion()">⬅️ Prev-Question</button>
+  <button id="nextQuestionBtn" onclick="nextQuestion()">➡️ Next-Question</button>
 </div>
 
     </div>
@@ -537,6 +529,30 @@ panel.style.gap = "10px"; // optional spacing between buttons
 
       // Optional: Add a motivational header
       panel.innerHTML = `<div class="gameHeader">🎯 Get ready! Your group’s performance will be tracked here.</div>` + panel.innerHTML;
+    }
+  });
+};
+
+window.showAllQuestionsPanel = function () {
+  // ✅ Show the All Questions panel
+  const allQuestionsPanel = document.querySelector(".allQuestions-panel");
+  if (allQuestionsPanel) {
+    allQuestionsPanel.style.display = "block";
+  }
+
+  // 🔒 Hide the game controls panel
+  const controlsPanel = document.querySelector(".gameControls-panel");
+  if (controlsPanel) {
+    controlsPanel.hidden = true;
+    controlsPanel.style.display = "none";
+  }
+
+  // 🔒 Hide all group game record panels
+  const groupRecordIDs = ["group1Records", "group2Records", "group3Records"];
+  groupRecordIDs.forEach(id => {
+    const panel = document.getElementById(id);
+    if (panel) {
+      panel.style.display = "none";
     }
   });
 };
