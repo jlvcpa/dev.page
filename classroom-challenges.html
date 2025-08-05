@@ -116,6 +116,28 @@ button {
   border-radius: 6px;
 }
 
+      .group-row {
+  display: flex;
+  gap: 20px;
+  padding: 20px;
+}
+
+.panel.group-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  max-height: calc(50vh - 1in); /* Half of viewport minus footer */
+  overflow-y: auto;
+}
+
+.gameRecords {
+  flex: 1;
+  padding: 10px;
+  background: #eef;
+  border-top: 1px dashed #aaa;
+  overflow-y: auto;
+}
+      
 .student.inactive {
   background-color: #f0f0f0;
   color: #999;
@@ -163,6 +185,11 @@ button {
         <div class="header">All Questions</div>
         <div class="allQuestionsList" id="allQuestionsList">
           [All Questions for students discussion before the game starts will load here]
+        </div>
+        <button onclick="startGame()">Start GAme</button>
+        <div class="panel gameControls-panel">
+          <button onclick="previous()">Previous</button>
+          <button onclick="next()">Next</button>
         </div>
       </div>
       
