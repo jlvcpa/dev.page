@@ -105,6 +105,20 @@ button {
   align-items: center;       /* Center vertically if needed */
   flex-direction: row;    /* Stack children vertically */
   margin-top: 20px;          /* Optional spacing */
+  gap: 16px;                 /* Optional spacing between children */
+}
+
+/* Apply fixed size and center content inside each child */
+#gameControls-panel > * {
+  width: 80px;
+  height: 80px;
+  display: flex;             /* Center content inside */
+  justify-content: center;
+  align-items: center;
+  border-radius: 8px;        /* Optional styling */
+  font-size: 18px;
+  background-color: #f0f0f0; /* Optional background */
+  cursor: pointer;
 }
       
       .student {
