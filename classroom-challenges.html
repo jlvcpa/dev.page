@@ -99,27 +99,35 @@
   padding: 6px 12px;
   font-size: 14px; 
 } 
-      #gameControls-panel .button {
+      #gameControls-panel {
   display: flex;
   justify-content: center;   /* Center horizontally */
   align-items: center;       /* Center vertically if needed */
-  flex-direction: row;    /* Stack children vertically */
+  flex-direction: row;    /* Stack children horizontally */
   margin-top: 20px;          /* Optional spacing */
   gap: 16px;                 /* Optional spacing between children */
 }
 
 /* Apply fixed size and center content inside each child */
-#gameControls-panel > * {
+#gameControls-panel .button {
+  margin: 0;
+  padding: 0;
+  font-size: 18px; /* match panel child style */
   width: 80px;
   height: 80px;
   display: flex;             /* Center content inside */
   justify-content: center;
   align-items: center;
   border-radius: 8px;        /* Optional styling */
-  font-size: 18px;
-  background-color: #f0f0f0; /* Optional background */
+   background-color: #f0f0f0; /* Optional background */
   cursor: pointer;
 }
+
+      #gameControls-panel .button:hover {
+  background-color: #e0e0e0;
+  transform: scale(1.05);
+}
+
       
       .student {
   padding: 6px;
