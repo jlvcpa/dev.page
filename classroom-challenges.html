@@ -100,13 +100,17 @@ button {
   font-size: 14px;
 }
       #startGameBtn {
-  width: 50px;            /* Equal width */
-  height: 50px;           /* Equal height */
+  width: 100px;            /* Equal width */
+  height: 100px;           /* Equal height */
   padding: 0;             /* Remove extra spacing */
   font-size: 18px;        /* Adjust text/icon size */
   text-align: center;     /* Center content */
   border-radius: 8px;     /* Optional: rounded corners */
-  display: inline-block;  /* Ensures proper layout */
+  display: block;           /* Makes margin auto work */
+  margin-left: auto;        /* Center horizontally */
+  margin-right: auto;
+  margin-top: 20px;         /* Optional spacing from top */
+
 }
 
       .student {
