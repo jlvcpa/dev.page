@@ -99,6 +99,15 @@ button {
   padding: 6px 12px;
   font-size: 14px;
 }
+      #startGameBtn {
+  width: 50px;            /* Equal width */
+  height: 50px;           /* Equal height */
+  padding: 0;             /* Remove extra spacing */
+  font-size: 18px;        /* Adjust text/icon size */
+  text-align: center;     /* Center content */
+  border-radius: 8px;     /* Optional: rounded corners */
+  display: inline-block;  /* Ensures proper layout */
+}
 
       .student {
   padding: 6px;
@@ -387,43 +396,38 @@ window.showGroups = async function () {
 };
 
   // ✅ Generate and save 20 Constructed-Response questions
-window.generateQuestions = async function () {
-  const attendanceDocID = selectAttendance.value;
-  if (!attendanceDocID) {
-    alert("Please select an attendance record.");
-    return;
-  }
+     window.generateQuestions = async function () {
+         const attendanceDocID = selectAttendance.value;
+         if (!attendanceDocID) {
+           alert("Please select an attendance record.");
+           return;
+         }
+         const snapshot = await getDocs(collection(db, "questionBank"));
+         const allQuestions = [];
+         snapshot.forEach(doc => {
+           const data = doc.data();
+           if (data.testType === "Constructed-Response") {
+             allQuestions.push(data);
+           }
+         });
+         const selectedQuestions = allQuestions.sort(() => Math.random() - 0.5).slice(0, 20);
+         const docID = `${attendanceDocID}_groupQB`;
+         await setDoc(doc(db, "groupingsQuestionBank", docID), {
+           attendanceRef: attendanceDocID,
+           questions: selectedQuestions,
+           timestamp: Date.now()
+         });
+         renderQuestionsToPanel(selectedQuestions);
+         alert("✅ Questions generated and saved.");
+       };
 
-  const snapshot = await getDocs(collection(db, "questionBank"));
-  const allQuestions = [];
-  snapshot.forEach(doc => {
-    const data = doc.data();
-    if (data.testType === "Constructed-Response") {
-      allQuestions.push(data);
-    }
-  });
-
-  const selectedQuestions = allQuestions.sort(() => Math.random() - 0.5).slice(0, 20);
-
-  const docID = `${attendanceDocID}_groupQB`;
-  await setDoc(doc(db, "groupingsQuestionBank", docID), {
-    attendanceRef: attendanceDocID,
-    questions: selectedQuestions,
-    timestamp: Date.now()
-  });
-
-  renderQuestionsToPanel(selectedQuestions);
-  alert("✅ Questions generated and saved.");
-};
-
-// ✅ Show previously generated questions
-window.showGeneratedQuestions = async function () {
-  const attendanceDocID = selectAttendance.value;
-  if (!attendanceDocID) {
-    alert("Please select an attendance record.");
-    return;
-  }
-
+  // ✅ Show previously generated questions
+     window.showGeneratedQuestions = async function () {
+         const attendanceDocID = selectAttendance.value;
+         if (!attendanceDocID) {
+           alert("Please select an attendance record.");
+           return;
+         }
   const docID = `${attendanceDocID}_groupQB`;
   const docSnap = await getDoc(doc(db, "groupingsQuestionBank", docID));
   if (!docSnap.exists()) {
