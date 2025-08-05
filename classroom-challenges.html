@@ -449,6 +449,19 @@ async function loadSavedGroupAndQuestions(attendanceDocID) {
     allQuestionsPanel.style.display = "none";
   }
 
+window.showGameRecords = function () {
+  // 🔒 Hide the entire All Questions panel
+  const allQuestionsPanel = document.querySelector(".allQuestions-panel");
+  if (allQuestionsPanel) {
+    allQuestionsPanel.style.display = "none";
+  }
+
+  // 🔒 Hide the game buttons panel
+  const gameButtonsPanel = document.querySelector(".gameButtons-panel");
+  if (gameButtonsPanel) {
+    gameButtonsPanel.style.display = "none";
+  }
+
   // 🎯 Show all group game record panels
   const groupRecordIDs = ["group1Records", "group2Records", "group3Records"];
   groupRecordIDs.forEach(id => {
@@ -456,7 +469,9 @@ async function loadSavedGroupAndQuestions(attendanceDocID) {
     if (panel) {
       panel.classList.remove("hidden");
       panel.style.display = "block";
-      panel.innerHTML = `<strong>Get ready! Your group’s performance will be tracked here.</strong>`;
+
+      // Optional: Add a motivational header
+      panel.innerHTML = `<div class="gameHeader">🎯 Get ready! Your group’s performance will be tracked here.</div>` + panel.innerHTML;
     }
   });
 };
