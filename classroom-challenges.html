@@ -442,6 +442,25 @@ async function loadSavedGroupAndQuestions(attendanceDocID) {
   }
 });
 
+  window.showGameRecords = function () {
+  // 🔒 Hide the allQuestionsList panel
+  const allQuestionsPanel = document.getElementById("allQuestionsList");
+  if (allQuestionsPanel) {
+    allQuestionsPanel.style.display = "none";
+  }
+
+  // 🎯 Show all group game record panels
+  const groupRecordIDs = ["group1Records", "group2Records", "group3Records"];
+  groupRecordIDs.forEach(id => {
+    const panel = document.getElementById(id);
+    if (panel) {
+      panel.classList.remove("hidden");
+      panel.style.display = "block";
+      panel.innerHTML = `<strong>Get ready! Your group’s performance will be tracked here.</strong>`;
+    }
+  });
+};
+
   // Render Questions to Panel
 function renderQuestionsToPanel(questions) {
   const container = document.getElementById("allQuestionsList");
