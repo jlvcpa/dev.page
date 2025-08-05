@@ -234,11 +234,12 @@
           [All Questions for students discussion before the game starts will load here]
            </div>
       </div>
-        <div class="panel gameControls-panel">
-          <button hidden id="startGameBtn" onclick="startGame()">🎮 Start Game</button>
-          <button hidden id="prevQuestionBtn" onclick="prevQuestion()">⬅️ Previous</button>
-          <button hidden id="nextQuestionBtn" onclick="nextQuestion()">➡️ Next</button>
-          </div>
+        <div class="panel gameControls-panel" hidden>
+  <button id="startGameBtn" onclick="startGame()">🎮 Start Game</button>
+  <button id="prevQuestionBtn" onclick="prevQuestion()">⬅️ Previous</button>
+  <button id="nextQuestionBtn" onclick="nextQuestion()">➡️ Next</button>
+</div>
+
     </div>
 
     <div class="panel student-panel">
@@ -519,9 +520,12 @@ window.showGameRecords = function () {
   if (allQuestionsPanel) {
     allQuestionsPanel.style.display = "none";
     // ✅ Show Start Game button after loading
-  document.getElementById("startGameBtn").hidden = false
-  document.getElementById("prevQuestionBtn").hidden = false;
-  document.getElementById("nextQuestionBtn").hidden = false;
+  const panel = document.querySelector(".gameControls-panel");
+panel.hidden = false;
+panel.style.display = "flex";
+panel.style.justifyContent = "center";
+panel.style.gap = "10px"; // optional spacing between buttons
+
   }
   // 🎯 Show all group game record panels
   const groupRecordIDs = ["group1Records", "group2Records", "group3Records"];
