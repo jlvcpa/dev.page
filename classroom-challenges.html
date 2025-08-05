@@ -174,25 +174,23 @@ button {
           <div class="gameRecords hidden" id="group3Records">[Game Records]</div>
         </div>
       </div>
-      
-      <div class="panel gameButtons-panel">
-        <button onclick="generateQuestions()">Generate Questions</button>
-        <button onclick="showGeneratedQuestions()">Show Generated Questions</button>
-        <button onclick="showGameRecords()">Show Game Dashboard</button>
-      </div>
-      
+          
       <div class="panel allQuestions-panel">
+        <div class="panel gameButtons-panel">
+           <button onclick="generateQuestions()">Generate Questions</button>
+           <button onclick="showGeneratedQuestions()">Show Generated Questions</button>
+           <button onclick="showGameRecords()">Show Game Dashboard</button>
+           </div>
         <div class="header">All Questions</div>
         <div class="allQuestionsList" id="allQuestionsList">
           [All Questions for students discussion before the game starts will load here]
-        </div>
-         <button hidden id="startGameBtn" onclick="startGame()">🎮 Start Game</button>
+           </div>
+      </div>
+        <button hidden id="startGameBtn" onclick="startGame()">🎮 Start Game</button>
         <div class="panel gameControls-panel">
           <button hidden id="prevQuestionBtn" onclick="prevQuestion()">⬅️ Previous</button>
           <button hidden id="nextQuestionBtn" onclick="nextQuestion()">➡️ Next</button>
-        </div>
-      </div>
-      
+          </div>
     </div>
 
     <div class="panel student-panel">
@@ -483,10 +481,10 @@ window.showGameRecords = function () {
   }
 
   // 🔒 Hide the game buttons panel
-  const gameButtonsPanel = document.querySelector(".gameButtons-panel");
+  /* const gameButtonsPanel = document.querySelector(".gameButtons-panel");
   if (gameButtonsPanel) {
     gameButtonsPanel.style.display = "none";
-  }
+  } */
 
   // 🎯 Show all group game record panels
   const groupRecordIDs = ["group1Records", "group2Records", "group3Records"];
