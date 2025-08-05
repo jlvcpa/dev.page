@@ -442,13 +442,6 @@ async function loadSavedGroupAndQuestions(attendanceDocID) {
   }
 });
 
-  window.showGameRecords = function () {
-  // 🔒 Hide the allQuestionsList panel
-  const allQuestionsPanel = document.getElementById("allQuestionsList");
-  if (allQuestionsPanel) {
-    allQuestionsPanel.style.display = "none";
-  }
-
 window.showGameRecords = function () {
   // 🔒 Hide the entire All Questions panel
   const allQuestionsPanel = document.querySelector(".allQuestions-panel");
