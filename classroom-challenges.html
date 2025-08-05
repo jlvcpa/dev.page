@@ -99,20 +99,14 @@ button {
   padding: 6px 12px;
   font-size: 14px;
 }
-      .gameControls-panel {
-  width: 100px;            /* Equal width */
-  height: 100px;           /* Equal height */
-  padding: 0;             /* Remove extra spacing */
-  font-size: 18px;        /* Adjust text/icon size */
-  text-align: center;     /* Center content */
-  border-radius: 8px;     /* Optional: rounded corners */
-  display: block;           /* Makes margin auto work */
-  margin-left: auto;        /* Center horizontally */
-  margin-right: auto;
-  margin-top: 20px;         /* Optional spacing from top */
-
+      #gameControls-panel {
+  display: flex;
+  justify-content: center;   /* Center horizontally */
+  align-items: center;       /* Center vertically if needed */
+  flex-direction: row;    /* Stack children vertically */
+  margin-top: 20px;          /* Optional spacing */
 }
-
+      
       .student {
   padding: 6px;
   margin-bottom: 4px;
@@ -203,8 +197,8 @@ button {
           [All Questions for students discussion before the game starts will load here]
            </div>
       </div>
-        <button hidden id="startGameBtn" onclick="startGame()">🎮 Start Game</button>
         <div class="panel gameControls-panel">
+          <button hidden id="startGameBtn" onclick="startGame()">🎮 Start Game</button>
           <button hidden id="prevQuestionBtn" onclick="prevQuestion()">⬅️ Previous</button>
           <button hidden id="nextQuestionBtn" onclick="nextQuestion()">➡️ Next</button>
           </div>
