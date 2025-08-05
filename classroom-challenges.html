@@ -188,8 +188,8 @@ button {
         </div>
          <button hidden id="startGameBtn" onclick="startGame()">🎮 Start Game</button>
         <div class="panel gameControls-panel">
-          <button hidden onclick="previous()">Previous</button>
-          <button hidden onclick="next()">Next</button>
+          <button hidden id="prevQuestionBtn" onclick="prevQuestion()">⬅️ Previous</button>
+          <button hidden id="nextQuestionBtn" onclick="nextQuestion()">➡️ Next</button>
         </div>
       </div>
       
@@ -459,6 +459,12 @@ async function loadSavedGroupAndQuestions(attendanceDocID) {
   } else {
     document.getElementById("allQuestionsList").innerHTML = "[No questions found]";
   }
+  
+// ✅ Show Start Game button after loading
+  document.getElementById("startGameBtn").hidden = false
+  document.getElementById("prevQuestionBtn").hidden = false;
+  document.getElementById("nextQuestionBtn").hidden = false;
+
 }
   // 🧠 Event listener for dropdown
   selectAttendance.addEventListener("change", async e => {
