@@ -179,6 +179,7 @@ h1 {
       }
        
       .student {
+  transition: all 0.3s ease;
   padding: 6px;
   margin-bottom: 4px;
   border: 1px solid #ccc;
@@ -241,6 +242,25 @@ h1 {
   background-color: #ffff99;
   transition: background-color 0.3s ease;
 }
+.highlight {
+  background-color: yellow;
+  font-weight: bold;
+}
+
+.selected {
+  background-color: lightgray;
+  font-weight: bold;
+}
+
+.faded {
+  opacity: 0.4;
+}
+
+.deactivated {
+  pointer-events: none;
+  opacity: 0.5;
+}
+
 
 .toggle-btn {
   position: absolute;
@@ -331,7 +351,7 @@ button:disabled {
         <div class="panel gameControls-panel" hidden>
           <button id="showAllQuestionsPanelBtn"onclick="showAllQuestionsPanel()">🔙 All-Questions</button>
            <button id="startGameBtn" onclick="startGame()">🎮 Start-Game</button>
-           <button id="selectStudentBtn" onclick="selectStudent()">⬅️ Select Student </button>
+           <button id="selectQuestionAndChallengersBtn" onclick="selectQuestionAndChallengers()">⬅️ Select a Question and Challengers </button>
            <button id="showQuestionBtn" onclick="showQuestion()">➡️ Show-Question</button>
         </div>
       </div>
@@ -340,19 +360,19 @@ button:disabled {
       <div class="group-row">
         <div class="panel group-panel">
           <div class="header">Group 1</div>
-	   <div class="gameRecords hidden" id="group1Records">[Game Records]</div>
+	   <div class="gameRecords hidden" id="group1Records"></div>
            <div class="groupMembers" id="group1Members">[Group 1 members]</div>
           </div>
         
         <div class="panel group-panel">
           <div class="header">Group 2</div>
-            <div class="gameRecords hidden" id="group2Records">[Game Records]</div>
+            <div class="gameRecords hidden" id="group2Records"></div>
             <div class="groupMembers" id="group2Members">[Group 2 members]</div>
           </div>
         
         <div class="panel group-panel">
           <div class="header">Group 3</div>
-            <div class="gameRecords hidden" id="group3Records">[Game Records]</div>
+            <div class="gameRecords hidden" id="group3Records"></div>
             <div class="groupMembers" id="group3Members">[Group 3 members]</div>
           </div>
       </div>
@@ -401,6 +421,8 @@ button:disabled {
 
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
+  window.db = db; // ✅ Add this line safely
+
 
   const selectAttendance = document.getElementById("selectAttendanceRecord");
   const studentList = document.getElementById("studentList");
@@ -801,22 +823,18 @@ window.showGameDashboard = function () {
       recordPanel.style.display = "block";
       recordPanel.style.flex = "1";
 
-      if (!recordPanel.dataset.headerAdded) {
-        recordPanel.innerHTML = `<div class="gameHeader">🎯 Get ready! Your group’s performance will be tracked here.</div>` + recordPanel.innerHTML;
-        recordPanel.dataset.headerAdded = "true";
-      }
 
       memberPanel.style.flex = "4";
     }
   });
 
   // 🧩 Set initial state of game buttons
-  const selectStudentBtn = document.getElementById("selectStudentBtn");
+  const selectQuestionAndChallengersBtn = document.getElementById("selectQuestionAndChallengersBtn");
   const showQuestionBtn = document.getElementById("showQuestionBtn");
 
-  if (selectStudentBtn) {
-    selectStudentBtn.disabled = true;
-    selectStudentBtn.classList.add("inactive-btn");
+  if (selectQuestionAndChallengersBtn) {
+    selectQuestionAndChallengersBtn.disabled = true;
+    selectQuestionAndChallengersBtn.classList.add("inactive-btn");
   }
 
   if (showQuestionBtn) {
@@ -894,57 +912,29 @@ window.startGame = function () {
 
   if (startGameBtn) startGameBtn.style.display = "none";
   if (showAllQuestionsPanelBtn) showAllQuestionsPanelBtn.style.display = "none";
+  if (showQuestionBtn) showQuestionBtn.style.display = "none";
 
-  // ✅ Enable and show selectStudentBtn
-  const selectStudentBtn = document.getElementById("selectStudentBtn");
-  if (selectStudentBtn) {
-    selectStudentBtn.style.display = "inline-block";
-    selectStudentBtn.disabled = false;
-    selectStudentBtn.classList.remove("inactive-btn");
+  // ✅ Enable and show selectQuestionAndChallengersBtn
+  const selectQuestionAndChallengersBtn = document.getElementById("selectQuestionAndChallengersBtn");
+  if (selectQuestionAndChallengersBtn) {
+    selectQuestionAndChallengersBtn.style.display = "inline-block";
+    selectQuestionAndChallengersBtn.disabled = false;
+    selectQuestionAndChallengersBtn.classList.remove("inactive-btn");
   }
 
-  // ✅ Show showQuestionBtn (still disabled)
-  const showQuestionBtn = document.getElementById("showQuestionBtn");
-  if (showQuestionBtn) {
-    showQuestionBtn.style.display = "inline-block";
-    showQuestionBtn.disabled = true;
-    showQuestionBtn.classList.add("inactive-btn");
-  }
 };
 
-window.selectStudent = function () {
-  const groupNums = [1, 2, 3];
-  let selectedStudents = [];
+window.selectQuestionAndChallengers = async function () {
+  await window.selectRandomQuestion(); // Select and display the question
 
-  groupNums.forEach(groupNum => {
-    const membersBox = document.getElementById(`group${groupNum}Members`);
-    const recordBox = document.getElementById(`group${groupNum}Records`);
-    const students = Array.from(membersBox.querySelectorAll(".student:not(.inactive)"));
+  const timeLimitInput = document.getElementById("timeLimitInput");
+  const timeLimitSeconds = parseInt(timeLimitInput.value, 10) || 60; // Fallback to 60 if invalid
 
-    if (students.length === 0) return;
-
-    // Random selection with animation
-    let selectedIndex = Math.floor(Math.random() * students.length);
-    let selectedStudent = students[selectedIndex];
-    selectedStudents.push(selectedStudent);
-
-    // Animate selection (simplified)
-    selectedStudent.classList.add("highlight");
-    setTimeout(() => {
-      selectedStudent.classList.remove("highlight");
-      selectedStudent.classList.add("inactive"); // Grayed out
-      recordBox.innerHTML += `<div class="selectedStudent">🎯 ${selectedStudent.textContent} is up!</div>`;
-    }, 5000);
-  });
-
-  // ✅ Disable selectStudentBtn
-  document.getElementById("selectStudentBtn").disabled = true;
-
-  // ✅ Enable showQuestionBtn
-  document.getElementById("showQuestionBtn").disabled = false;
+  const savedTimestamp = Date.now(); // Sync with gameSession timestamp
+  startCountdown(savedTimestamp, timeLimitSeconds);
 };
 
-window.selectRandomQuestion = async function () {
+window.selectQuestionAndChallengers = async function () {
   const attendanceDocID = selectAttendance.value;
   if (!attendanceDocID) {
     alert("Please select an attendance record.");
@@ -974,6 +964,16 @@ window.selectRandomQuestion = async function () {
   // 🎲 Select a random question
   const randomIndex = Math.floor(Math.random() * questions.length);
   const selectedQuestion = questions[randomIndex];
+  console.log("🧪 Selected Question:", selectedQuestion);
+
+  // 🛡️ Validate question format
+  const competency = selectedQuestion?.competency || "";
+  const topic = selectedQuestion?.topic || "";
+  const testType = selectedQuestion?.testType || "";
+
+  const questionText = typeof selectedQuestion === "string"
+    ? selectedQuestion
+    : selectedQuestion?.question || "[No question text available]";
 
   // 🔍 Load groupings with full fields
   const groupIDs = ["Group1", "Group2", "Group3"].map(g => `${attendanceDocID}-${g}`);
@@ -997,19 +997,27 @@ window.selectRandomQuestion = async function () {
     }
   });
 
+    Object.entries(selectedStudents).forEach(([groupID, student]) => {
+      const groupNum = groupID.replace("group", ""); // e.g., "group1" → "1"
+      animateAndFinalizeSelection(groupNum, student);
+    });
+
   // 🧠 Consolidate all data into game session
   const gameSessionData = {
     gameSessionID,
     attendanceRef: attendanceDocID,
-    questionBank: qbData, // includes timestamp and full question list
-    currentQuestion: selectedQuestion, // full question object
-    selectedStudents, // just names or IDs
-    groupDetails, // full group data including attendance fields
+    questionBank: qbData,
+    currentQuestion: selectedQuestion,
+    selectedStudents,
+    groupDetails,
     questionActive: true,
     timestamp
   };
 
   await setDoc(doc(db, "games", gameSessionID), gameSessionData);
+
+  // 🗂️ Store for reuse
+  window.currentQuestion = selectedQuestion;
 
   // 🎯 Display question in dashboard
   const questionPanel = document.getElementById("gameQuestion");
@@ -1017,18 +1025,83 @@ window.selectRandomQuestion = async function () {
     questionPanel.innerHTML = `
       <div class="questionPrompt">
         <strong>Constructed Response:</strong><br>
-        ${selectedQuestion.text}
+        ${questionText}<br><br>
+        <em><strong>Competency:</strong> ${competency}</em><br>
+        <em><strong>Topic:</strong> ${topic}</em><br>
+        <em><strong>Test Type:</strong> ${testType}</em>
       </div>
     `;
+    const timeLimitInput = document.getElementById("timeLimitInput");
+    const timeLimitSeconds = parseInt(timeLimitInput.value, 10) || 60; // Fallback to 60 if invalid
+    const savedTimestamp = Date.now(); // Sync with gameSession timestamp
+    startCountdown(savedTimestamp, timeLimitSeconds);
   }
 };
+
+function animateAndFinalizeSelection(groupNum, selectedStudent) {
+  const memberPanel = document.getElementById(`group${groupNum}Members`);
+  const recordPanel = document.getElementById(`group${groupNum}Records`);
+  if (!memberPanel || !recordPanel) return;
+
+  const studentEls = Array.from(memberPanel.querySelectorAll(".student"));
+  const eligibleEls = studentEls.filter(el => !el.classList.contains("deactivated"));
+
+  let highlightIndex = 0;
+  const interval = 150;
+  const duration = 5000;
+  const totalCycles = Math.floor(duration / interval);
+  let cycleCount = 0;
+
+  const animation = setInterval(() => {
+    eligibleEls.forEach(el => el.classList.remove("highlight"));
+    const currentEl = eligibleEls[highlightIndex];
+    if (currentEl) currentEl.classList.add("highlight");
+
+    highlightIndex = (highlightIndex + 1) % eligibleEls.length;
+    cycleCount++;
+
+    if (cycleCount >= totalCycles) {
+      clearInterval(animation);
+
+      eligibleEls.forEach(el => {
+        const name = el.dataset.fullName;
+        if (name === selectedStudent.fullName) {
+          el.classList.add("selected");
+          el.classList.add("deactivated");
+        } else {
+          el.classList.add("faded");
+        }
+        el.classList.remove("highlight");
+      });
+
+      // 📝 Display in gameRecords panel
+      // 🧼 Remove highlight from previous entries
+const previousEntries = recordPanel.querySelectorAll(".recordEntry");
+previousEntries.forEach(entry => {
+  entry.classList.remove("highlight");
+  entry.innerHTML = entry.innerHTML.replace(/<strong>(.*?)<\/strong>/, '$1'); // Remove <strong>
+});
+
+// 📝 Create and emphasize new entry
+const recordEntry = document.createElement("div");
+recordEntry.className = "recordEntry highlight"; // Apply highlight style
+recordEntry.innerHTML = `🎯 <strong>${selectedStudent.fullName}</strong> selected for the challenge`;
+recordPanel.insertBefore(recordEntry, recordPanel.firstChild);
+    }
+  }, interval);
+}
 
 let countdownInterval;
 
 function startCountdown(savedTimestamp, timeLimitSeconds) {
-  clearInterval(countdownInterval); // Clear any previous countdown
+  clearInterval(countdownInterval);
 
   const timerDisplay = document.getElementById("remainingTime");
+  const showQuestionBtn = document.getElementById("showQuestionBtn");
+  const selectQuestionAndChallengersBtn = document.getElementById("selectQuestionAndChallengersBtn");
+
+  if (showQuestionBtn) showQuestionBtn.disabled = true;
+  if (selectQuestionAndChallengersBtn) selectQuestionAndChallengersBtn.disabled = true;
 
   countdownInterval = setInterval(() => {
     const now = Date.now();
@@ -1039,22 +1112,15 @@ function startCountdown(savedTimestamp, timeLimitSeconds) {
       timerDisplay.textContent = "0";
       clearInterval(countdownInterval);
       alert("⏰ Time's up!");
-      // Optionally disable inputs or move to next question
+
+      // ✅ Re-enable selectQuestionAndChallengersBtn
+      if (selectQuestionAndChallengersBtn) selectQuestionAndChallengersBtn.disabled = false;
+      if (showQuestionBtn) showQuestionBtn.disabled = false;
     } else {
       timerDisplay.textContent = remaining;
     }
   }, 1000);
 }
-
-window.showQuestion = async function () {
-  await window.selectRandomQuestion(); // Select and display the question
-
-  const timeLimitInput = document.getElementById("timeLimitInput");
-  const timeLimitSeconds = parseInt(timeLimitInput.value, 10) || 60; // Fallback to 60 if invalid
-
-  const savedTimestamp = Date.now(); // Sync with gameSession timestamp
-  startCountdown(savedTimestamp, timeLimitSeconds);
-};
 
 // Start of toggle Student Panel Logic
 document.getElementById("toggleStudentPanelBtn").addEventListener("click", function () {
