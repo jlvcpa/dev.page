@@ -273,6 +273,29 @@ h1 {
 .left-column.expanded {
   width: calc(100% - 0px); /* full width when student panel is hidden */
 }
+.questionPrompt {
+  font-size: 1.1rem;
+  background-color: #fff;
+  padding: 12px;
+  border-radius: 6px;
+  box-shadow: 0 0 4px rgba(0,0,0,0.1);
+}
+.gameControls {
+  margin-bottom: 10px;
+  font-size: 1rem;
+}
+
+#timeLimitInput {
+  width: 80px;
+  padding: 4px;
+  margin-left: 6px;
+}
+
+.timerDisplay {
+  margin-top: 10px;
+  font-weight: bold;
+  color: #d9534f;
+}
 
 button:disabled {
   opacity: 0.5;
@@ -293,8 +316,15 @@ button:disabled {
 	  <button id="saveGroupsBtn" onclick="saveGroups()">Save Groups</button>
           <button id="showGroupsBtn" onclick="showGroups()">Show Groups</button>
         </div>
-
       <div id="gameDashboard" class="panel gameDashboard-panel" hidden>
+	<div id=class="gameControls">
+          <label for="timeLimitInput">⏱️ Time Limit (seconds):</label>
+          <input type="number" id="timeLimitInput" min="10" max="600" value="60" />
+          <div class="timerDisplay" id="timerDisplay">
+  Remaining Time: <span id="remainingTime">--</span> seconds
+       </div>
+
+      </div>
         <div class="gameQuestion" id="gameQuestion">
           [Game questions for students will load here one at a time]
           </div>
@@ -358,7 +388,7 @@ button:disabled {
 <script type="module">
 (async () => {
   const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js");
-  const { getFirestore, collection, getDocs, doc, getDoc, setDoc } = await import("https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js");
+  const { getFirestore, collection, getDocs, doc, getDoc, setDoc, serverTimestamp } = await import("https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js");
 
   const firebaseConfig = {
     apiKey: "AIzaSyAgOsKAZWwExUzupxSNytsfOo9BOppF0ng",
@@ -429,16 +459,26 @@ window.createGroups = function () {
   const shuffled = activeStudents.sort(() => Math.random() - 0.5);
 
   const groups = [[], [], []];
-  shuffled.forEach((student, i) => {
-    groups[i % 3].push(student);
-    student.classList.add("inactive"); // Gray out after assignment
-    student.classList.remove("active");
-  });
+shuffled.forEach((studentEl, i) => {
+  const studentData = {
+    fullName: studentEl.dataset.fullName,
+    status: studentEl.dataset.status,
+    lnumber: studentEl.dataset.lnumber || "", // optional
+  };
+
+  groups[i % 3].push(studentData);
+
+  studentEl.classList.add("inactive");
+  studentEl.classList.remove("active");
+});
+console.log("🧪 Group 1 (created):", groups[0]);
+console.log("🧪 Group 2 (created):", groups[1]);
+console.log("🧪 Group 3 (created):", groups[2]);
 
   // ✅ Use two-column rendering
-  renderGroupMembers(document.getElementById("group1Members"), groups[0].map(s => s.textContent));
-  renderGroupMembers(document.getElementById("group2Members"), groups[1].map(s => s.textContent));
-  renderGroupMembers(document.getElementById("group3Members"), groups[2].map(s => s.textContent));
+renderGroupMembers(document.getElementById("group1Members"), groups[0]);
+renderGroupMembers(document.getElementById("group2Members"), groups[1]);
+renderGroupMembers(document.getElementById("group3Members"), groups[2]);
 };
 
   // START OF GENERATE LINK LOGIC
@@ -464,7 +504,7 @@ window.createGroups = function () {
   }
 }; // END OF GENERATE LINK LOGIC
 
-  // ✅ Save groups to Firestore
+
 window.saveGroups = async function () {
   const attendanceDocID = selectAttendance.value;
   if (!attendanceDocID) {
@@ -472,7 +512,19 @@ window.saveGroups = async function () {
     return;
   }
 
-  const groupRefs = ["Group1", "Group2", "Group3"].map(
+  const attendanceRef = doc(db, "attendance", attendanceDocID);
+  const attendanceSnap = await getDoc(attendanceRef);
+
+  if (!attendanceSnap.exists()) {
+    alert("❌ Attendance record not found.");
+    return;
+  }
+
+  const attendanceData = attendanceSnap.data();
+
+  // 🔍 Check if groups already saved
+  const groupNames = ["Group1", "Group2", "Group3"];
+  const groupRefs = groupNames.map(
     g => doc(db, "groupings", `${attendanceDocID}-${g}`)
   );
 
@@ -484,30 +536,54 @@ window.saveGroups = async function () {
     return;
   }
 
-  const group1 = document.getElementById("group1Members").innerHTML.split("<br>").filter(Boolean);
-  const group2 = document.getElementById("group2Members").innerHTML.split("<br>").filter(Boolean);
-  const group3 = document.getElementById("group3Members").innerHTML.split("<br>").filter(Boolean);
+  // ✅ Extract group data from DOM
+  const extractGroupData = (groupId) => {
+    const container = document.getElementById(groupId);
+    const students = container.querySelectorAll(".student");
+    return Array.from(students).map(el => ({
+      fullName: el.dataset.fullName,
+      status: el.dataset.status,
+      lnumber: el.dataset.lnumber || null,
+      group: groupId
+    }));
+  };
 
-  await setDoc(doc(db, "groupings", `${attendanceDocID}-Group1`), {
-    group: "Group1",
-    members: group1,
-    attendanceRef: attendanceDocID
-  });
-  await setDoc(doc(db, "groupings", `${attendanceDocID}-Group2`), {
-    group: "Group2",
-    members: group2,
-    attendanceRef: attendanceDocID
-  });
-  await setDoc(doc(db, "groupings", `${attendanceDocID}-Group3`), {
-    group: "Group3",
-    members: group3,
-    attendanceRef: attendanceDocID
+  const groupArrays = [
+    extractGroupData("group1Members"),
+    extractGroupData("group2Members"),
+    extractGroupData("group3Members")
+  ];
+
+  // 🧪 Diagnostic logs
+  groupArrays.forEach((group, i) => {
+    console.log(`🧪 ${groupNames[i]} count:`, group.length);
+    console.log(`🧪 ${groupNames[i]} students to be saved:`, group);
+    console.log(`🧪 ${groupNames[i]} DOM:`, document.getElementById(`group${i + 1}Members`).innerHTML);
   });
 
-  alert("✅ Groups saved successfully.");
-  updateGroupButtonsState();
+  // ✅ Save each group to Firestore
+  try {
+    const savePromises = groupNames.map((groupName, index) => {
+      const groupDocID = `${attendanceDocID}-${groupName}`;
+      const groupData = {
+        ...attendanceData, // Spread first to avoid overwriting
+        group: groupName,
+        students: groupArrays[index],
+        attendanceRef: attendanceDocID,
+        createdAt: serverTimestamp()
+      };
+
+      return setDoc(doc(db, "groupings", groupDocID), groupData);
+    });
+
+    await Promise.all(savePromises);
+    alert("✅ Groups saved successfully.");
+    updateGroupButtonsState();
+  } catch (error) {
+    console.error("❌ Error saving groups:", error);
+    alert("An error occurred while saving groups.");
+  }
 };
-
 // ✅ Show saved groups from Firestore
 window.showGroups = async function () {
   const attendanceDocID = selectAttendance.value;
@@ -524,7 +600,7 @@ window.showGroups = async function () {
     const container = document.getElementById(`group${groupNum}Members`);
     if (docSnap.exists()) {
       const data = docSnap.data();
-      renderGroupMembers(container, data.members);
+      renderGroupMembers(container, data.students);
       updateGroupButtonsState();
     } else {
       container.innerHTML = "[No saved group found]";
@@ -596,7 +672,7 @@ async function loadSavedGroupAndQuestions(attendanceDocID) {
     const container = document.getElementById(`group${groupNum}Members`);
     if (docSnap.exists()) {
       const data = docSnap.data();
-      renderGroupMembers(container, data.members);
+      renderGroupMembers(container, data.students);
       updateGroupButtonsState();
     } else {
       container.innerHTML = "[No saved group found]";
@@ -730,7 +806,7 @@ window.showGameDashboard = function () {
         recordPanel.dataset.headerAdded = "true";
       }
 
-      memberPanel.style.flex = "2";
+      memberPanel.style.flex = "4";
     }
   });
 
@@ -868,6 +944,118 @@ window.selectStudent = function () {
   document.getElementById("showQuestionBtn").disabled = false;
 };
 
+window.selectRandomQuestion = async function () {
+  const attendanceDocID = selectAttendance.value;
+  if (!attendanceDocID) {
+    alert("Please select an attendance record.");
+    return;
+  }
+
+  const timestamp = Date.now();
+  const gameSessionID = `${attendanceDocID}-gamesessionID-${timestamp}`;
+  const questionBankID = `${attendanceDocID}_groupQB`;
+  window.currentGameSessionID = gameSessionID;
+
+  // 🔍 Load question bank
+  const qbSnap = await getDoc(doc(db, "groupingsQuestionBank", questionBankID));
+  if (!qbSnap.exists()) {
+    alert("❌ No question bank found.");
+    return;
+  }
+
+  const qbData = qbSnap.data();
+  const questions = qbData.questions;
+
+  if (!questions || questions.length === 0) {
+    alert("❌ No questions available.");
+    return;
+  }
+
+  // 🎲 Select a random question
+  const randomIndex = Math.floor(Math.random() * questions.length);
+  const selectedQuestion = questions[randomIndex];
+
+  // 🔍 Load groupings with full fields
+  const groupIDs = ["Group1", "Group2", "Group3"].map(g => `${attendanceDocID}-${g}`);
+  const groupSnaps = await Promise.all(groupIDs.map(id => getDoc(doc(db, "groupings", id))));
+
+  const selectedStudents = {};
+  const groupDetails = {};
+
+  groupSnaps.forEach((snap, i) => {
+    const groupNum = i + 1;
+    const groupID = `group${groupNum}`;
+    if (snap.exists()) {
+      const groupData = snap.data();
+      groupDetails[groupID] = groupData;
+
+      const students = groupData.students;
+      if (students && students.length > 0) {
+        const randomStudent = students[Math.floor(Math.random() * students.length)];
+        selectedStudents[groupID] = randomStudent;
+      }
+    }
+  });
+
+  // 🧠 Consolidate all data into game session
+  const gameSessionData = {
+    gameSessionID,
+    attendanceRef: attendanceDocID,
+    questionBank: qbData, // includes timestamp and full question list
+    currentQuestion: selectedQuestion, // full question object
+    selectedStudents, // just names or IDs
+    groupDetails, // full group data including attendance fields
+    questionActive: true,
+    timestamp
+  };
+
+  await setDoc(doc(db, "games", gameSessionID), gameSessionData);
+
+  // 🎯 Display question in dashboard
+  const questionPanel = document.getElementById("gameQuestion");
+  if (questionPanel) {
+    questionPanel.innerHTML = `
+      <div class="questionPrompt">
+        <strong>Constructed Response:</strong><br>
+        ${selectedQuestion.text}
+      </div>
+    `;
+  }
+};
+
+let countdownInterval;
+
+function startCountdown(savedTimestamp, timeLimitSeconds) {
+  clearInterval(countdownInterval); // Clear any previous countdown
+
+  const timerDisplay = document.getElementById("remainingTime");
+
+  countdownInterval = setInterval(() => {
+    const now = Date.now();
+    const elapsed = Math.floor((now - savedTimestamp) / 1000);
+    const remaining = timeLimitSeconds - elapsed;
+
+    if (remaining <= 0) {
+      timerDisplay.textContent = "0";
+      clearInterval(countdownInterval);
+      alert("⏰ Time's up!");
+      // Optionally disable inputs or move to next question
+    } else {
+      timerDisplay.textContent = remaining;
+    }
+  }, 1000);
+}
+
+window.showQuestion = async function () {
+  await window.selectRandomQuestion(); // Select and display the question
+
+  const timeLimitInput = document.getElementById("timeLimitInput");
+  const timeLimitSeconds = parseInt(timeLimitInput.value, 10) || 60; // Fallback to 60 if invalid
+
+  const savedTimestamp = Date.now(); // Sync with gameSession timestamp
+  startCountdown(savedTimestamp, timeLimitSeconds);
+};
+
 // Start of toggle Student Panel Logic
 document.getElementById("toggleStudentPanelBtn").addEventListener("click", function () {
   const studentPanel = document.getElementById("studentPanel");
@@ -884,10 +1072,8 @@ document.getElementById("toggleStudentPanelBtn").addEventListener("click", funct
   leftColumn.classList.toggle("expanded", isHidden);
 }); // End of toggleStudentPanel logic
 
-
-  // Render Groups to Panel
-function renderGroupMembers(container, members) {
-  container.innerHTML = ""; // Clear previous content
+function renderGroupMembers(container, students) {
+  container.innerHTML = "";
 
   const wrapper = document.createElement("div");
   wrapper.className = "group-columns";
@@ -898,23 +1084,36 @@ function renderGroupMembers(container, members) {
   const rightColumn = document.createElement("div");
   rightColumn.className = "group-column";
 
-  const midpoint = Math.ceil(members.length / 2);
-  const firstHalf = members.slice(0, midpoint);
-  const secondHalf = members.slice(midpoint);
+  const midpoint = Math.ceil(students.length / 2);
+  const firstHalf = students.slice(0, midpoint);
+  const secondHalf = students.slice(midpoint);
 
-  firstHalf.forEach(name => {
+  const renderStudent = (student, column) => {
     const div = document.createElement("div");
-    div.className = "member-item";
-    div.textContent = name;
-    leftColumn.appendChild(div);
+    div.className = "student active member-item";
+
+    if (typeof student === "string") {
+      div.textContent = student;
+    } else {
+      div.textContent = student.fullName || student.lnumber || "[Unnamed]";
+      div.dataset.fullName = student.fullName || "";
+      div.dataset.status = student.status || "";
+      div.dataset.lnumber = student.lnumber || "";
+    }
+
+  // 🧪 Debug log
+  console.log(`🧪 Rendering to ${column.className} in ${container.id}:`, {
+    fullName: student.fullName || null,
+    lnumber: student.lnumber || null,
+    status: student.status || null,
+    raw: student
   });
 
-  secondHalf.forEach(name => {
-    const div = document.createElement("div");
-    div.className = "member-item";
-    div.textContent = name;
-    rightColumn.appendChild(div);
-  });
+    column.appendChild(div);
+  };
+
+  firstHalf.forEach(student => renderStudent(student, leftColumn));
+  secondHalf.forEach(student => renderStudent(student, rightColumn));
 
   wrapper.appendChild(leftColumn);
   wrapper.appendChild(rightColumn);
