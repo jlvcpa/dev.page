@@ -2,17 +2,25 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Firestore Field Editor</title>
+  <title>Firestore Explorer</title>
   <style>
     body {
       font-family: Arial, sans-serif;
       padding: 2em;
-      background: #f9f9f9;
+      background: #f0f0f0;
+    }
+    .panel {
+      background: #fff;
+      padding: 1.5em;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      max-width: 800px;
+      margin: auto;
     }
     h3 {
-      margin-bottom: 0.5em;
+      margin-bottom: 1em;
     }
-    input[type="text"] {
+    input[type="text"], input[type="password"] {
       padding: 0.5em;
       margin: 0.3em 0;
       width: 100%;
@@ -23,40 +31,52 @@
       margin-top: 0.5em;
       cursor: pointer;
     }
-    .fieldRow {
-      background: #fff;
-      padding: 1em;
-      margin-bottom: 1em;
-      border: 1px solid #ddd;
-      border-radius: 5px;
+    .hidden {
+      display: none;
     }
-    label {
-      display: block;
-      margin-bottom: 0.3em;
+    .tree {
+      margin-top: 1em;
+      font-size: 0.95em;
+    }
+    .node {
+      margin-left: 1em;
+      padding: 0.3em 0;
+    }
+    .field {
+      margin-left: 2em;
+      padding: 0.2em 0;
+    }
+    .field input {
+      width: 60%;
+    }
+    .toggle {
+      cursor: pointer;
+      color: #0077cc;
     }
   </style>
 </head>
 <body>
 
-  <div id="firestoreEditor">
-    <h3>🗂️ Firestore Field Editor</h3>
-    <label>Collection Name:</label>
-    <input type="text" id="collectionInput" placeholder="e.g., groupingsQuestionBank" />
-    <label>Document ID:</label>
-    <input type="text" id="docInput" placeholder="e.g., attendanceID_groupQB" />
-    <button onclick="loadFirestoreDoc()">📂 Load Document</button>
+  <!-- 🔐 Login Panel -->
+  <div id="loginPanel" class="panel">
+    <h3>🔐 Teacher Login</h3>
+    <label>Username:</label>
+    <input type="text" id="loginUsername" placeholder="e.g., joselito.vilarta" />
+    <label>Password:</label>
+    <input type="password" id="loginPassword" placeholder="Enter your password" />
+    <button onclick="authenticateUser()">🔓 Login</button>
+  </div>
 
-    <div id="fieldSearchPanel" style="margin-top: 1em; display: none;">
-      <label>🔍 Search Fields:</label>
-      <input type="text" id="fieldSearchInput" placeholder="Type keyword..." oninput="filterFields()" />
-      <div id="fieldEditorPanel" style="margin-top: 1em;"></div>
-    </div>
+  <!-- 🗂️ Firestore Explorer -->
+  <div id="explorerPanel" class="panel hidden">
+    <h3>🗂️ Firestore Explorer</h3>
+    <div id="treeRoot" class="tree"></div>
   </div>
 
   <script type="module">
     (async () => {
       const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js");
-      const { getFirestore, doc, getDoc, setDoc } = await import("https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js");
+      const { getFirestore, collection, getDocs, doc, getDoc, setDoc } = await import("https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js");
 
       const firebaseConfig = {
         apiKey: "AIzaSyAgOsKAZWwExUzupxSNytsfOo9BOppF0ng",
@@ -71,72 +91,97 @@
       const db = getFirestore(app);
       window.db = db;
 
-      window.loadFirestoreDoc = async function () {
-        const collectionName = document.getElementById("collectionInput").value.trim();
-        const docID = document.getElementById("docInput").value.trim();
+      // 🔐 Authentication
+      window.authenticateUser = async function () {
+        const username = document.getElementById("loginUsername").value.trim();
+        const password = document.getElementById("loginPassword").value.trim();
 
-        if (!collectionName || !docID) {
-          alert("Please enter both collection name and document ID.");
-          return;
+        const teachersRef = collection(db, "teachers");
+        const snapshot = await getDocs(teachersRef);
+        let authenticated = false;
+
+        snapshot.forEach(doc => {
+          const data = doc.data();
+          if (data.userName === username && data.passWord === password) {
+            authenticated = true;
+          }
+        });
+
+        if (authenticated) {
+          document.getElementById("loginPanel").classList.add("hidden");
+          document.getElementById("explorerPanel").classList.remove("hidden");
+          loadCollections("root", null, document.getElementById("treeRoot"));
+        } else {
+          alert("❌ Invalid credentials.");
         }
-
-        const docRef = doc(window.db, collectionName, docID);
-        const snap = await getDoc(docRef);
-
-        if (!snap.exists()) {
-          alert("❌ Document not found.");
-          return;
-        }
-
-        const data = snap.data();
-        window.currentFirestoreDocRef = docRef;
-        window.currentFirestoreData = data;
-
-        renderFieldEditor(data);
-        document.getElementById("fieldSearchPanel").style.display = "block";
       };
 
-      function renderFieldEditor(data) {
-        const panel = document.getElementById("fieldEditorPanel");
-        panel.innerHTML = "";
+      // 📁 Load collections/documents recursively
+      async function loadCollections(label, parentRef, container) {
+        const colRef = parentRef ? collection(parentRef, label) : collection(db, label);
+        const colSnap = await getDocs(colRef);
 
-        Object.entries(data).forEach(([key, value]) => {
-          const fieldRow = document.createElement("div");
-          fieldRow.className = "fieldRow";
-          fieldRow.dataset.key = key;
-          fieldRow.innerHTML = `
-            <label><strong>${key}</strong></label>
-            <input type="text" value="${JSON.stringify(value)}" />
-            <button onclick="saveField('${key}', this.previousElementSibling.value)">💾 Save</button>
-          `;
-          panel.appendChild(fieldRow);
-        });
+        const node = document.createElement("div");
+        node.className = "node";
+        node.innerHTML = `<span class="toggle">📁 ${label}</span>`;
+        container.appendChild(node);
+
+        const children = document.createElement("div");
+        children.className = "hidden";
+        node.appendChild(children);
+
+        node.querySelector(".toggle").onclick = () => {
+          children.classList.toggle("hidden");
+        };
+
+        for (const docSnap of colSnap.docs) {
+          const docNode = document.createElement("div");
+          docNode.className = "node";
+          docNode.innerHTML = `<span class="toggle">📄 ${docSnap.id}</span>`;
+          children.appendChild(docNode);
+
+          const docChildren = document.createElement("div");
+          docChildren.className = "hidden";
+          docNode.appendChild(docChildren);
+
+          docNode.querySelector(".toggle").onclick = () => {
+            docChildren.classList.toggle("hidden");
+          };
+
+          const data = docSnap.data();
+          Object.entries(data).forEach(([key, value]) => {
+            const field = document.createElement("div");
+            field.className = "field";
+            field.innerHTML = `
+              <label><strong>${key}</strong></label>
+              <input type="text" value="${JSON.stringify(value)}" />
+              <button>💾 Save</button>
+            `;
+            field.querySelector("button").onclick = async () => {
+              let parsed;
+              try {
+                parsed = JSON.parse(field.querySelector("input").value);
+              } catch {
+                alert("⚠️ Invalid JSON format.");
+                return;
+              }
+              await setDoc(doc(docRef(colRef, docSnap.id)), { [key]: parsed }, { merge: true });
+              alert(`✅ Saved "${key}"`);
+            };
+            docChildren.appendChild(field);
+          });
+
+          // 🔁 Recursively load subcollections
+          const subcollections = await docSnap.ref.listCollections();
+          for (const sub of subcollections) {
+            await loadCollections(sub.id, docSnap.ref, docChildren);
+          }
+        }
       }
 
-      window.filterFields = function () {
-        const keyword = document.getElementById("fieldSearchInput").value.toLowerCase();
-        const rows = document.querySelectorAll(".fieldRow");
-
-        rows.forEach(row => {
-          const key = row.dataset.key.toLowerCase();
-          row.style.display = key.includes(keyword) ? "block" : "none";
-        });
-      };
-
-      window.saveField = async function (fieldKey, rawValue) {
-        let parsedValue;
-        try {
-          parsedValue = JSON.parse(rawValue);
-        } catch (e) {
-          alert("⚠️ Invalid JSON format. Please correct the value.");
-          return;
-        }
-
-        const docRef = window.currentFirestoreDocRef;
-        await setDoc(docRef, { [fieldKey]: parsedValue }, { merge: true });
-
-        alert(`✅ Field "${fieldKey}" updated.`);
-      };
+      function docRef(colRef, docId) {
+        return doc(colRef, docId);
+      }
     })();
   </script>
 
