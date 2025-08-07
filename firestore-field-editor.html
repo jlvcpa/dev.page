@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Firestore Field Editor</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 2em;
+      background: #f9f9f9;
+    }
+    h3 {
+      margin-bottom: 0.5em;
+    }
+    input[type="text"] {
+      padding: 0.5em;
+      margin: 0.3em 0;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    button {
+      padding: 0.5em 1em;
+      margin-top: 0.5em;
+      cursor: pointer;
+    }
+    .fieldRow {
+      background: #fff;
+      padding: 1em;
+      margin-bottom: 1em;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+    }
+    label {
+      display: block;
+      margin-bottom: 0.3em;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="firestoreEditor">
+    <h3>🗂️ Firestore Field Editor</h3>
+    <label>Collection Name:</label>
+    <input type="text" id="collectionInput" placeholder="e.g., groupingsQuestionBank" />
+    <label>Document ID:</label>
+    <input type="text" id="docInput" placeholder="e.g., attendanceID_groupQB" />
+    <button onclick="loadFirestoreDoc()">📂 Load Document</button>
+
+    <div id="fieldSearchPanel" style="margin-top: 1em; display: none;">
+      <label>🔍 Search Fields:</label>
+      <input type="text" id="fieldSearchInput" placeholder="Type keyword..." oninput="filterFields()" />
+      <div id="fieldEditorPanel" style="margin-top: 1em;"></div>
+    </div>
+  </div>
+
+  <script type="module">
+    (async () => {
+      const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js");
+      const { getFirestore, doc, getDoc, setDoc } = await import("https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js");
+
+      const firebaseConfig = {
+        apiKey: "AIzaSyAgOsKAZWwExUzupxSNytsfOo9BOppF0ng",
+        authDomain: "jlvcpa-quizzes.firebaseapp.com",
+        projectId: "jlvcpa-quizzes",
+        storageBucket: "jlvcpa-quizzes.appspot.com",
+        messagingSenderId: "629158256557",
+        appId: "1:629158256557:web:b3d1a424b32e28cd578b24"
+      };
+
+      const app = initializeApp(firebaseConfig);
+      const db = getFirestore(app);
+      window.db = db;
+
+      window.loadFirestoreDoc = async function () {
+        const collectionName = document.getElementById("collectionInput").value.trim();
+        const docID = document.getElementById("docInput").value.trim();
+
+        if (!collectionName || !docID) {
+          alert("Please enter both collection name and document ID.");
+          return;
+        }
+
+        const docRef = doc(window.db, collectionName, docID);
+        const snap = await getDoc(docRef);
+
+        if (!snap.exists()) {
+          alert("❌ Document not found.");
+          return;
+        }
+
+        const data = snap.data();
+        window.currentFirestoreDocRef = docRef;
+        window.currentFirestoreData = data;
+
+        renderFieldEditor(data);
+        document.getElementById("fieldSearchPanel").style.display = "block";
+      };
+
+      function renderFieldEditor(data) {
+        const panel = document.getElementById("fieldEditorPanel");
+        panel.innerHTML = "";
+
+        Object.entries(data).forEach(([key, value]) => {
+          const fieldRow = document.createElement("div");
+          fieldRow.className = "fieldRow";
+          fieldRow.dataset.key = key;
+          fieldRow.innerHTML = `
+            <label><strong>${key}</strong></label>
+            <input type="text" value="${JSON.stringify(value)}" />
+            <button onclick="saveField('${key}', this.previousElementSibling.value)">💾 Save</button>
+          `;
+          panel.appendChild(fieldRow);
+        });
+      }
+
+      window.filterFields = function () {
+        const keyword = document.getElementById("fieldSearchInput").value.toLowerCase();
+        const rows = document.querySelectorAll(".fieldRow");
+
+        rows.forEach(row => {
+          const key = row.dataset.key.toLowerCase();
+          row.style.display = key.includes(keyword) ? "block" : "none";
+        });
+      };
+
+      window.saveField = async function (fieldKey, rawValue) {
+        let parsedValue;
+        try {
+          parsedValue = JSON.parse(rawValue);
+        } catch (e) {
+          alert("⚠️ Invalid JSON format. Please correct the value.");
+          return;
+        }
+
+        const docRef = window.currentFirestoreDocRef;
+        await setDoc(docRef, { [fieldKey]: parsedValue }, { merge: true });
+
+        alert(`✅ Field "${fieldKey}" updated.`);
+      };
+    })();
+  </script>
+
+</body>
+</html>
