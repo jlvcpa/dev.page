@@ -16,7 +16,1524 @@ h1 {
   font-weight: 600;
   color: #2c3e50;
   text-align: center;
+  <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Group Assignment</title>
+  <style>
+    body {
+      body {
+  margin: 0;
+  font-family: 'Segoe UI', sans-serif;
+  height: 100vh;
+}
+h1 {
+  font-family: 'Segoe UI', sans-serif;
+  font-size: 2rem;
+  font-weight: 600;
+  color: #2c3e50;
+  text-align: center;
   letter-spacing: 1px;
+  text-transform: uppercase;
+  border-bottom: 2px solid #3498db;
+  padding-bottom: 10px;
+  margin-bottom: 20px;
+}
+
+.main-container {
+  display: flex;
+  height: 100vh;
+  position: relative; /* ✅ Add this line */
+}
+
+.left-column {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 10px;
+  box-sizing: border-box;
+  transition: width 0.3s ease;
+  position: relative;
+}
+
+.group-row {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.group-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #ccc;
+  padding: 10px;
+  box-sizing: border-box;
+}
+
+.allQuestions-panel {
+  flex: 2;
+  border: 1px solid #ccc;
+  padding: 8px;
+  box-sizing: border-box;
+  overflow-y: auto;
+}
+
+.question-columns {
+  display: flex;
+  gap: 12px;
+}
+
+.question-column {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.question-item {
+  flex: 1;
+  margin-bottom: 0;
+  padding: 6px;
+  background: #f9f9f9;
+  border-radius: 0px;
+  font-size: 1.2rem;
+  line-height: 1.2;
+}
+
+.question-item hr {
+  margin: 4px 0;
+  border: none;
+  border-top: 1px solid #ccc;
+}
+
+.student-panel {
+  width: 16%;
+  border-left: 1px solid #ccc;
+  padding: 10px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+}
+
+.header {
+  font-weight: bold;
+  font-size: 18px;
+  margin-bottom: 10px;
+  color: #007acc;
+}
+#gameDashboard {
+  display: none;
+  flex-direction: column;
+  gap: 10px;
+}
+
+#gameChoices, #gameQuestion {
+  flex: 0 0 50%; /* Fixed half-width */
+  max-width: 50%;
+  padding: 12px;
+  background-color: #ffffff;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.05);
+  position: relative;
+  overflow-y: auto;
+}
+
+.gameDashboard-panel {
+  display: none; /* hidden by default */
+  flex: 1;
+  flex-direction: column;
+  justify-content: center;
+  gap: 10px;
+}
+
+.groupMembers {
+  flex: 2;
+  background-color: #f9f9f9;
+  border: 1px solid #ccc;
+  padding: 8px;
+  margin-bottom: 10px;
+  overflow-y: auto;
+}
+
+.gameRecords {
+  flex: 1;
+  height: 100px;
+  background-color: #e8f0fe;
+  border: 1px solid #007acc;
+  padding: 8px;
+}
+
+.studentList {
+  flex: 1;
+  background-color: #fff;
+  border: 1px solid #ccc;
+  padding: 8px;
+  overflow-y: auto;
+}
+
+.hidden {
+  display: none;
+}
+
+.button-container {
+  display: flex;
+  justify-content: center; /* centers buttons horizontally */
+  gap: 10px;               /* optional spacing between buttons */
+  margin-top: 1px;        /* optional spacing from top */
+}
+
+.button {
+  padding: 6px 12px;
+  font-size: 14px;
+}
+
+      #startGameBtn, #prevQuestionBtn, #nextQuestionBtn, 
+      #saveGroupsBtn, #showGroupsBtn, #showAllQuestionsPanelBtn,
+      #generateQuestionsBtn, #showGeneratedQuestionsBtn,
+      #showGameRecordsBtn {
+  width: 160px;
+  height: 25px;
+  padding: 0;
+  font-size: 18px;
+  text-align: center;
+  border-radius: 8px;
+  display: flex, hidden;           /* Makes margin auto work */
+  margin-left: 20px;        /* Center horizontally */
+  margin-right: 20px;
+  margin-top: 1px;         /* Optional spacing from top */
+
+      }
+       
+      .student {
+  transition: all 0.3s ease;
+  padding: 6px;
+  margin-bottom: 4px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.student.active {
+  background-color: #e0f7fa;
+  color: #00796b;
+  cursor: pointer;
+}
+.group-columns {
+  display: flex;
+  gap: 12px;
+}
+
+.group-column {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.questionContent {
+  font-size: 1.5em; /* Adjust as needed for emphasis */
+  line-height: 1.6; /* Optional: improves readability */
+}
+.member-item {
+  padding: 4px 6px;
+  background-color: #fff;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 0.9rem;
+}
+      .group-row {
+  display: flex;
+  gap: 20px;
+  padding: 20px;
+}
+
+.panel.group-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  max-height: calc(50vh - 1in); /* Half of viewport minus footer */
+  overflow-y: auto;
+}
+
+.gameRecords {
+  flex: 1;
+  padding: 10px;
+  background: #eef;
+  border-top: 1px dashed #aaa;
+  overflow-y: auto;
+}
+      
+.student.inactive {
+  background-color: #f0f0f0;
+  color: #999;
+  pointer-events: none;
+}
+
+.student.highlight {
+  background-color: #ffff99;
+  transition: background-color 0.3s ease;
+}
+.highlight {
+  background-color: yellow;
+  font-weight: bold;
+}
+
+.selected {
+  background-color: lightgray;
+  font-weight: bold;
+}
+
+.faded {
+  opacity: 0.4;
+}
+
+.deactivated {
+  pointer-events: none;
+  opacity: 0.5;
+}
+
+
+.toggle-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 10;
+  background-color: #eee;
+  border: 1px solid #ccc;
+  padding: 4px 8px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.student-panel {
+  width: 300px;
+  transition: transform 0.3s ease;
+  position: relative;
+  height: 100%;
+}
+
+.student-panel.hidden {
+  transform: translateX(100%);
+  position: absolute;
+  right: 0;
+  top: 0;
+  height: 100%;
+  overflow: hidden;
+}
+
+.left-column.expanded {
+  width: calc(100% - 0px); /* full width when student panel is hidden */
+}
+.questionPrompt {
+  font-size: 1.1rem;
+  background-color: #fff;
+  padding: 12px;
+  border-radius: 6px;
+  box-shadow: 0 0 4px rgba(0,0,0,0.1);
+}
+.gameControls {
+  margin-bottom: 10px;
+  font-size: 1rem;
+}
+.choiceGroup {
+  margin-bottom: 0.01em;
+}
+.groupTitle {
+  font-weight: bold;
+  margin-bottom: 0.01em;
+  text-align: center; /* Centers the title horizontally */
+}
+.choiceColumns {
+  display: flex;
+  gap: 1em; /* Space between columns */
+}
+
+.choiceList {
+  list-style: none;
+  padding-left: .01em;
+  flex: 1; /* Equal width for both columns */
+
+}
+.choiceItem {
+  padding: .01px 0;
+}
+
+#timeLimitInput {
+  width: 80px;
+  padding: 4px;
+  margin-left: 6px;
+}
+
+.timerDisplay {
+  margin-top: 10px;
+  font-weight: bold;
+  color: #d9534f;
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+  </style>
+</head>
+<body>
+<body>
+<h1> TRANSACTION ANALYSIS BUILDER </h1>
+  <div class="main-container">
+       <div class="left-column">
+        <button id="toggleStudentPanelBtn" class="toggle-btn">>>>>> </button>
+        
+      <!-- Your left-column content here --> 
+      <div id="groupSaveShow" class="groupSaveShow-buttons">
+	  <button id="saveGroupsBtn" onclick="saveGroups()">Save Groups</button>
+          <button id="showGroupsBtn" onclick="showGroups()">Show Groups</button>
+        </div>
+      <div id="gameDashboard" class="panel gameDashboard-panel" hidden>
+  <!-- Choices Panel -->
+  <div id="gameChoices" class="gameChoices">
+    <div class="panelHeader">🧩 Choices</div>
+    <!-- Choices content goes here -->
+  </div>
+
+  <!-- Question Panel -->
+  <div id="gameQuestion" class="gameQuestion">
+    <div class="panelHeader">📝 Question:</div>
+     <label for="timeLimitInput">⏱️ Time Limit (seconds):</label>
+      <input type="number" id="timeLimitInput" min="10" max="600"  />
+
+      <div class="timerDisplay" id="timerDisplay">
+        Remaining Time: <span id="remainingTime">--</span> seconds
+      </div>
+
+    <!-- Question Content -->
+    <div class="questionContent">
+      </div>
+
+    <!-- Controls (nested inside question panel) -->
+    <div id="gameControls" class="gameControls">
+        <div class="controlButtons">
+        <button id="showAllQuestionsPanelBtn" onclick="showAllQuestionsPanel()">🔙 All-Questions</button>
+        <button id="startGameBtn" onclick="startGame()">🎮 Start-Game</button>
+        <button id="selectQuestionAndChallengersBtn" onclick="selectQuestionAndChallengers()">⬅️ Select a Question and Challengers</button>
+        <button id="showQuestionBtn" onclick="showQuestion()">➡️ Show-Question</button>
+      </div>
+    </div>
+  </div>
+</div>
+    
+
+      <div class="group-row">
+        <div class="panel group-panel">
+          <div class="header">Group 1</div>
+	   <div class="gameRecords hidden" id="group1Records"></div>
+           <div class="groupMembers" id="group1Members">[Group 1 members]</div>
+          </div>
+        
+        <div class="panel group-panel">
+          <div class="header">Group 2</div>
+            <div class="gameRecords hidden" id="group2Records"></div>
+            <div class="groupMembers" id="group2Members">[Group 2 members]</div>
+          </div>
+        
+        <div class="panel group-panel">
+          <div class="header">Group 3</div>
+            <div class="gameRecords hidden" id="group3Records"></div>
+            <div class="groupMembers" id="group3Members">[Group 3 members]</div>
+          </div>
+      </div>
+          
+      <div class="panel allQuestions-panel">
+        <div class="button-container">
+           <button id="generateQuestionsBtn" onclick="generateQuestions()">Select Questions</button>
+           <button id="showGeneratedQuestionsBtn" onclick="showGeneratedQuestions()">Show-Questions</button>
+           <button id="showGameDashBoardBtn" onclick="showGameDashboard()">Go To Game</button>
+           </div>
+        <div class="header">All Questions</div>
+        <div class="allQuestionsList" id="allQuestionsList">
+          [All Questions for students discussion before the game starts will load here]
+           </div>
+      </div>
+    </div>
+
+    <div id="studentPanel" class="panel student-panel">
+      <div class="header">Student List</div>
+      <label for="selectAttendanceRecord">Section:</label>
+      <select id="selectAttendanceRecord">
+        <option value="">-- Select Attendance Record --</option>
+      </select>
+      <button id="generateLinkBtn">Generate Game View Link</button>
+       <a id="gameViewLink" href="#" target="_blank" style="display:none;">Open Game View</a>
+      <div class="studentList" id="studentList">[Students will load here]</div>
+      <button id="createGroupsBtn" onclick="createGroups()">Create Groups</button>
+    </div>
+    
+  </div>
+</body>
+  
+<script type="module">
+// 🔁 Persistent time limit across renders
+let lastTimeLimitValue = 10;
+
+(async () => {
+  const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js");
+  const { getFirestore, collection, getDocs, doc, getDoc, setDoc, serverTimestamp } = await import("https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js");
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyAgOsKAZWwExUzupxSNytsfOo9BOppF0ng",
+    authDomain: "jlvcpa-quizzes.firebaseapp.com",
+    projectId: "jlvcpa-quizzes",
+    storageBucket: "jlvcpa-quizzes.appspot.com",
+    messagingSenderId: "629158256557",
+    appId: "1:629158256557:web:b3d1a424b32e28cd578b24"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+  window.db = db; // ✅ Add this line safely
+
+
+  const selectAttendance = document.getElementById("selectAttendanceRecord");
+  const studentList = document.getElementById("studentList");
+
+  // 🔍 Fetch 3 most recent attendance records
+  async function loadRecentAttendanceRecords() {
+    const snapshot = await getDocs(collection(db, "attendance"));
+    const records = [];
+
+    snapshot.forEach(doc => {
+      const [section, date] = doc.id.split("_");
+      records.push({ id: doc.id, section, date });
+    });
+
+    // Sort by date descending
+    records.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+    // Take top 3
+    const recent = records.slice(0, 3);
+
+    recent.forEach(record => {
+      const option = document.createElement("option");
+      option.value = record.id;
+      option.textContent = `${record.section} - ${record.date}`;
+      selectAttendance.appendChild(option);
+    });
+  }
+
+  // ✅ Corrected: Load students from array field in attendance document
+  async function loadStudents(docId) {
+    studentList.innerHTML = ""; // Clear previous
+
+    const attendanceDoc = await getDoc(doc(db, "attendance", docId));
+    if (!attendanceDoc.exists()) {
+      console.error("Attendance record not found:", docId);
+      return;
+    }
+
+    const data = attendanceDoc.data();
+    const students = data.students || [];
+
+    students.forEach(student => {
+      const { fullName, status } = student;
+      const div = document.createElement("div");
+      div.className = `student ${status === "A" ? "inactive" : "active"}`;
+      div.textContent = `${fullName} - ${status}`;
+      div.dataset.fullName = fullName;
+      div.dataset.status = status;
+      studentList.appendChild(div);
+    });
+  }
+
+  // 🎯 Randomly assign active students to groups
+window.createGroups = function () {
+  const activeStudents = Array.from(document.querySelectorAll(".student.active"));
+  const shuffled = activeStudents.sort(() => Math.random() - 0.5);
+
+  const groups = [[], [], []];
+shuffled.forEach((studentEl, i) => {
+  const studentData = {
+    fullName: studentEl.dataset.fullName,
+    status: studentEl.dataset.status,
+    lnumber: studentEl.dataset.lnumber || "", // optional
+  };
+
+  groups[i % 3].push(studentData);
+
+  studentEl.classList.add("inactive");
+  studentEl.classList.remove("active");
+});
+console.log("🧪 Group 1 (created):", groups[0]);
+console.log("🧪 Group 2 (created):", groups[1]);
+console.log("🧪 Group 3 (created):", groups[2]);
+
+  // ✅ Use two-column rendering
+renderGroupMembers(document.getElementById("group1Members"), groups[0]);
+renderGroupMembers(document.getElementById("group2Members"), groups[1]);
+renderGroupMembers(document.getElementById("group3Members"), groups[2]);
+};
+
+  // START OF GENERATE LINK LOGIC
+  window.generateStudentLink = async function () {
+  const select = document.getElementById("selectAttendanceRecord");
+  const selectedDocId = select.value;
+
+  if (!selectedDocId) {
+    document.getElementById("generatedLinkDisplay").textContent = "Please select an attendance record.";
+    return;
+  }
+
+  const link = `studentsGameView.html?attendanceRecord=${encodeURIComponent(selectedDocId)}`;
+
+  try {
+    await navigator.clipboard.writeText(link);
+    document.getElementById("generatedLinkDisplay").innerHTML = `
+      ✅ Link copied to clipboard!<br>
+      <a href="${link}" target="_blank">${link}</a>
+    `;
+  } catch (err) {
+    document.getElementById("generatedLinkDisplay").textContent = "Failed to copy link. Here's the URL: " + link;
+  }
+}; // END OF GENERATE LINK LOGIC
+
+
+window.saveGroups = async function () {
+  const attendanceDocID = selectAttendance.value;
+  if (!attendanceDocID) {
+    alert("Please select an attendance record.");
+    return;
+  }
+
+  const attendanceRef = doc(db, "attendance", attendanceDocID);
+  const attendanceSnap = await getDoc(attendanceRef);
+  if (!attendanceSnap.exists()) {
+    alert("❌ Attendance record not found.");
+    return;
+  }
+
+  const attendanceData = attendanceSnap.data();
+  const { schoolYear, section, subject, term, students: attendanceStudents } = attendanceData;
+
+  const groupNames = ["Group1", "Group2", "Group3"];
+  const groupRefs = groupNames.map(g => doc(db, "groupings", `${attendanceDocID}-${g}`));
+  const existing = await Promise.all(groupRefs.map(ref => getDoc(ref)));
+  const alreadySaved = existing.every(docSnap => docSnap.exists());
+
+  if (alreadySaved) {
+    alert("Groups already saved. Click 'Show Groups' to view them.");
+    return;
+  }
+
+  // 🔍 Helper to find student metadata from attendance record
+  const findStudentMeta = (fullName) => {
+    return attendanceStudents?.find(s => s.fullName === fullName) || {};
+  };
+
+  // 🔧 Extract and enrich group data
+  const extractGroupData = (groupId, groupLabel) => {
+    const container = document.getElementById(groupId);
+    const studentEls = container.querySelectorAll(".student");
+
+    return Array.from(studentEls).map(el => {
+      const fullName = el.dataset.fullName;
+      const studentMeta = findStudentMeta(fullName);
+
+      return {
+        attendanceDocID,
+        group: groupLabel,
+        schoolYear,
+        section,
+        subject,
+        term,
+        Idnumber: studentMeta.Idnumber || null,
+        fullName
+       };
+    });
+  };
+
+  const groupArrays = [
+    extractGroupData("group1Members", "Group1"),
+    extractGroupData("group2Members", "Group2"),
+    extractGroupData("group3Members", "Group3")
+  ];
+
+  // 🧪 Diagnostic logs
+  groupArrays.forEach((group, i) => {
+    console.log(`🧪 ${groupNames[i]} students to be saved:`, group);
+  });
+
+  // ✅ Save each group document with a single 'students' array
+  try {
+  const savePromises = groupNames.map((groupName, index) => {
+    const groupDocID = `${attendanceDocID}-${groupName}`;
+    const groupData = {
+      students: groupArrays[index],
+      createdAt: serverTimestamp() // ✅ Timestamp at document level
+    };
+    return setDoc(doc(db, "groupings", groupDocID), groupData);
+  });
+
+  await Promise.all(savePromises);
+  alert("✅ Groups saved successfully.");
+  updateGroupButtonsState();
+} catch (error) {
+  console.error("❌ Error saving groups:", error);
+  alert("An error occurred while saving groups.");
+}
+};
+
+// ✅ Show saved groups from Firestore
+window.showGroups = async function () {
+  const attendanceDocID = selectAttendance.value;
+  if (!attendanceDocID) {
+    alert("Please select an attendance record.");
+    return;
+  }
+
+  const groupIDs = ["Group1", "Group2", "Group3"].map(g => `${attendanceDocID}-${g}`);
+  const groupData = await Promise.all(groupIDs.map(id => getDoc(doc(db, "groupings", id))));
+
+  groupData.forEach((docSnap, i) => {
+    const groupNum = i + 1;
+    const container = document.getElementById(`group${groupNum}Members`);
+    if (docSnap.exists()) {
+      const data = docSnap.data();
+      renderGroupMembers(container, data.students);
+      updateGroupButtonsState();
+    } else {
+      container.innerHTML = "[No saved group found]";
+    }
+    
+  });
+};
+
+  // ✅ Generate and save 20 Constructed-Response questions
+     window.generateQuestions = async function () {
+         const attendanceDocID = selectAttendance.value;
+         if (!attendanceDocID) {
+           alert("Please select an attendance record.");
+           return;
+         }
+         const snapshot = await getDocs(collection(db, "questionBank"));
+         const allQuestions = [];
+         snapshot.forEach(doc => {
+           const data = doc.data();
+           if (data.testType === "Constructed-Response") {
+             allQuestions.push(data);
+           }
+         });
+         const selectedQuestions = allQuestions.sort(() => Math.random() - 0.5).slice(0, 20);
+         const docID = `${attendanceDocID}_groupQB`;
+         await setDoc(doc(db, "groupingsQuestionBank", docID), {
+           attendanceRef: attendanceDocID,
+           questions: selectedQuestions,
+           timestamp: Date.now()
+         });
+         renderQuestionsToPanel(selectedQuestions);
+         updateQuestionButtonsState();
+            alert("✅ Questions generated and saved.");
+       };
+
+  // ✅ Show previously generated questions
+     window.showGeneratedQuestions = async function () {
+         const attendanceDocID = selectAttendance.value;
+         if (!attendanceDocID) {
+           alert("Please select an attendance record.");
+           return;
+         }
+         const docID = `${attendanceDocID}_groupQB`;
+         const docSnap = await getDoc(doc(db, "groupingsQuestionBank", docID));
+           if (!docSnap.exists()) {
+           alert("No questions found for this attendance record.");
+         return;
+         }
+
+         const data = docSnap.data();
+         renderQuestionsToPanel(data.questions);
+         updateQuestionButtonsState();
+       };
+
+window.onload = function () {
+  updateQuestionButtonsState();
+  updateGroupButtonsState();
+};
+
+
+// ✅ Load saved groups and questions when attendance changes
+async function loadSavedGroupAndQuestions(attendanceDocID) {
+  // Load groups
+  const groupIDs = ["Group1", "Group2", "Group3"].map(g => `${attendanceDocID}-${g}`);
+  const groupData = await Promise.all(groupIDs.map(id => getDoc(doc(db, "groupings", id))));
+
+  groupData.forEach((docSnap, i) => {
+    const groupNum = i + 1;
+    const container = document.getElementById(`group${groupNum}Members`);
+    if (docSnap.exists()) {
+      const data = docSnap.data();
+      renderGroupMembers(container, data.students);
+      updateGroupButtonsState();
+    } else {
+      container.innerHTML = "[No saved group found]";
+    }
+
+  });
+
+  // Load questions
+  const qbDocID = `${attendanceDocID}_groupQB`;
+  const qbSnap = await getDoc(doc(db, "groupingsQuestionBank", qbDocID));
+  if (qbSnap.exists()) {
+    const data = qbSnap.data();
+    renderQuestionsToPanel(data.questions);
+    updateQuestionButtonsState();
+    
+  } else {
+    document.getElementById("allQuestionsList").innerHTML = "[No questions found]";
+  }
+} 
+  
+function updateQuestionButtonsState() {
+  const container = document.getElementById("allQuestionsList");
+  const hasContent = container && container.innerHTML.trim() !== "";
+
+  const generateBtn = document.getElementById("generateQuestionsBtn");
+  const showBtn = document.getElementById("showGeneratedQuestionsBtn");
+
+  if (hasContent) {
+    generateBtn.disabled = true;
+    showBtn.disabled = true;
+  } else {
+    generateBtn.disabled = false;
+    showBtn.disabled = false;
+  }
+}
+
+function updateGroupButtonsState() {
+  const groupIDs = ["group1Members", "group2Members", "group3Members"];
+  const hasGroups = groupIDs.some(id => {
+    const panel = document.getElementById(id);
+    return panel && panel.innerHTML.trim() !== "";
+  });
+
+  const createBtn = document.getElementById("createGroupsBtn");
+  const saveBtn = document.getElementById("saveGroupsBtn");
+  const showBtn = document.getElementById("showGroupsBtn");
+
+  createBtn.disabled = hasGroups;
+  saveBtn.disabled = hasGroups;
+  showBtn.disabled = hasGroups;
+}
+
+// 🧠 Event listener for dropdown
+  selectAttendance.addEventListener("change", async e => {
+  const attendanceDocID = e.target.value;
+  if (attendanceDocID) {
+    await loadStudents(attendanceDocID); // Load student list
+    await loadSavedGroupAndQuestions(attendanceDocID); // Load saved groups + questions
+  }
+});
+
+
+window.showGameDashboard = function () {
+  // 🔒 Hide All Questions panel
+  const allQuestionsPanel = document.querySelector(".allQuestions-panel");
+  if (allQuestionsPanel) {
+    allQuestionsPanel.style.display = "none";
+    allQuestionsPanel.style.flex = "0";
+  }
+
+  // 🔒 Hide Group Save/Show buttons
+  const groupSaveShow = document.getElementById("groupSaveShow");
+  if (groupSaveShow) {
+    groupSaveShow.style.display = "none";
+  }
+
+  // ✅ Show Game Dashboard panel
+// ✅ Show Game Dashboard panel
+const gameDashboard = document.getElementById("gameDashboard");
+if (gameDashboard) {
+  gameDashboard.hidden = false;
+  gameDashboard.style.display = "flex";
+  gameDashboard.style.flexDirection = "row"; // ⬅️ Horizontal split
+  gameDashboard.style.justifyContent = "space-between";
+  gameDashboard.style.alignItems = "stretch";
+  gameDashboard.style.padding = "16px";
+  gameDashboard.style.margin = "12px 0";
+  gameDashboard.style.backgroundColor = "#f0fff0";
+  gameDashboard.style.border = "2px dashed #4CAF50";
+  gameDashboard.style.borderRadius = "8px";
+  gameDashboard.style.boxShadow = "0 0 8px rgba(0, 0, 0, 0.1)";
+  gameDashboard.style.gap = "16px"; // ⬅️ Space between panels
+
+  // ✅ Style gameQuestion and gameChoices as 1:1 flex panels
+  const gameQuestion = document.getElementById("gameQuestion");
+  const gameChoices = document.getElementById("gameChoices");
+
+  [gameQuestion, gameChoices].forEach(panel => {
+  if (panel) {
+    panel.style.flex = "1"; // Equal width
+    panel.style.display = "flex";
+    panel.style.flexDirection = "column";
+    panel.style.padding = "12px";
+    panel.style.backgroundColor = "#ffffff";
+    panel.style.border = "2px solid #4CAF50"; // ✅ Green border
+    panel.style.borderRadius = "8px";         // ✅ Rounded corners
+    panel.style.boxShadow = "0 2px 6px rgba(0, 0, 0, 0.1)"; // ✅ Soft shadow
+    panel.style.overflowY = "auto";
+  }
+});
+
+  // ✅ Ensure gameControls stays at the bottom of gameQuestion
+  const gameControls = document.getElementById("gameControls");
+  if (gameControls) {
+    gameControls.style.marginTop = "auto"; // Push to bottom
+  }
+}
+
+// ✅ Show Game Controls panel inside dashboard
+const controlsPanel = document.querySelector(".gameControls-panel");
+if (controlsPanel) {
+  controlsPanel.hidden = false;
+  controlsPanel.style.display = "flex";
+  controlsPanel.style.justifyContent = "center";
+  controlsPanel.style.gap = "10px";
+  controlsPanel.style.marginTop = "auto"; // ✅ Pushes it to the bottom
+}
+
+  // ✅ Adjust group-row layout BEFORE styling group panels
+  const groupRow = document.querySelector(".group-row");
+  if (groupRow) {
+    groupRow.style.flex = "2";
+    groupRow.style.display = "flex";
+    groupRow.style.gap = "20px";
+    groupRow.style.padding = "20px";
+  }
+
+  // 🎯 Adjust each group panel layout
+  const groupPanels = document.querySelectorAll(".group-panel");
+  groupPanels.forEach(panel => {
+    panel.style.flex = "2";
+    panel.style.marginBottom = "0.5in";
+  });
+
+  const groupNums = [1, 2, 3];
+  groupNums.forEach(num => {
+    const recordPanel = document.getElementById(`group${num}Records`);
+    const memberPanel = document.getElementById(`group${num}Members`);
+
+    if (recordPanel && memberPanel) {
+      recordPanel.classList.remove("hidden");
+      recordPanel.style.display = "block";
+      recordPanel.style.flex = "1";
+
+
+      memberPanel.style.flex = "4";
+    }
+  });
+
+  // 🧩 Set initial state of game buttons
+  const selectQuestionAndChallengersBtn = document.getElementById("selectQuestionAndChallengersBtn");
+  const showQuestionBtn = document.getElementById("showQuestionBtn");
+
+  if (selectQuestionAndChallengersBtn) {
+    selectQuestionAndChallengersBtn.disabled = true;
+    selectQuestionAndChallengersBtn.classList.add("inactive-btn");
+  }
+
+  if (showQuestionBtn) {
+    showQuestionBtn.disabled = true;
+    showQuestionBtn.classList.add("inactive-btn");
+  }
+fetchAndDisplayChoices();
+};
+
+window.showAllQuestionsPanel = function () {
+  // ✅ Show the All Questions panel
+  const allQuestionsPanel = document.querySelector(".allQuestions-panel");
+  if (allQuestionsPanel) {
+    allQuestionsPanel.style.display = "block";
+    allQuestionsPanel.style.flex = ""; // Reset to default
+  }
+
+  // ✅ Show Group Save/Show buttons again
+  const groupSaveShow = document.getElementById("groupSaveShow");
+  if (groupSaveShow) {
+    groupSaveShow.style.display = "block";
+  }
+
+  // 🔒 Hide the game controls panel
+  const controlsPanel = document.querySelector(".gameControls-panel");
+  if (controlsPanel) {
+    controlsPanel.hidden = true;
+    controlsPanel.style.display = "none";
+    controlsPanel.style.marginTop = ""; // Reset margin
+  }
+
+  // 🔒 Hide the game dashboard
+  const gameDashboard = document.querySelector("#gameDashboard");
+  if (gameDashboard) {
+    gameDashboard.style.display = "none";
+    gameDashboard.hidden = true;
+    gameDashboard.removeAttribute("style"); // Optional: clears all inline styles
+  }
+
+  // 🔒 Reset group-row layout
+  const groupRow = document.querySelector(".group-row");
+  if (groupRow) {
+    groupRow.removeAttribute("style"); // Optional: clears all inline styles
+  }
+
+  // 🔒 Reset each group panel layout
+  const groupPanels = document.querySelectorAll(".group-panel");
+  groupPanels.forEach(panel => {
+    panel.style.flex = "";
+    panel.style.marginBottom = "";
+  });
+
+  // 🔒 Hide all group game record panels
+  const groupRecordIDs = ["group1Records", "group2Records", "group3Records"];
+  groupRecordIDs.forEach(id => {
+    const panel = document.getElementById(id);
+    if (panel) {
+      panel.style.display = "none";
+      panel.style.flex = "";
+    }
+  });
+
+  // 🔄 Optionally reset member panels
+  const groupNums = [1, 2, 3];
+  groupNums.forEach(num => {
+    const memberPanel = document.getElementById(`group${num}Members`);
+    if (memberPanel) {
+      memberPanel.style.flex = "";
+    }
+  });
+};
+
+window.startGame = function () {
+  // 🔒 Hide setup buttons
+  const startGameBtn = document.getElementById("startGameBtn");
+  const showAllQuestionsPanelBtn = document.getElementById("showAllQuestionsPanelBtn");
+
+  if (startGameBtn) startGameBtn.style.display = "none";
+  if (showAllQuestionsPanelBtn) showAllQuestionsPanelBtn.style.display = "none";
+  if (showQuestionBtn) showQuestionBtn.style.display = "none";
+
+  // ✅ Enable and show selectQuestionAndChallengersBtn
+  const selectQuestionAndChallengersBtn = document.getElementById("selectQuestionAndChallengersBtn");
+  if (selectQuestionAndChallengersBtn) {
+    selectQuestionAndChallengersBtn.style.display = "inline-block";
+    selectQuestionAndChallengersBtn.disabled = false;
+    selectQuestionAndChallengersBtn.classList.remove("inactive-btn");
+  }
+
+};
+
+
+window.selectQuestionAndChallengers = async function () {
+  const attendanceDocID = selectAttendance.value;
+  if (!attendanceDocID) {
+    alert("Please select an attendance record.");
+    return;
+  }
+
+const timeLimitInputEl = document.getElementById("timeLimitInput");
+if (!timeLimitInputEl) {
+  alert("⏱️ Time limit input is missing. Please return to the dashboard and try again.");
+  window.startGame();
+  return;
+}
+
+const currentInputRaw = timeLimitInputEl.value;
+const currentInput = parseInt(currentInputRaw, 10);
+
+if (isNaN(currentInput) || currentInput < 10 || currentInput > 600) {
+  alert("⏱️ Please set a valid time limit between 10 and 600 seconds before proceeding.");
+  window.startGame();
+  return;
+}
+
+lastTimeLimitValue = currentInput;
+
+  const timestamp = Date.now();
+  const sessionDocID = `${attendanceDocID}-gamesessionID`;
+  const sessionFieldID = `gamesessionID-${timestamp}`;
+  const questionBankID = `${attendanceDocID}_groupQB`;
+  window.currentGameSessionID = sessionDocID;
+
+  // 🔍 Load question bank
+  const qbSnap = await getDoc(doc(db, "groupingsQuestionBank", questionBankID));
+  if (!qbSnap.exists()) {
+    alert("❌ No question bank found.");
+    return;
+  }
+
+  const qbData = qbSnap.data();
+  let questions = qbData.questions;
+  if (!questions || questions.length === 0) {
+    alert("❌ No questions available.");
+    return;
+  }
+
+  // 🚫 Filter out previously used questions
+  const usedQuestionsSnap = await getDoc(doc(db, "games", "usedQuestions"));
+  const usedQuestions = usedQuestionsSnap.exists() ? usedQuestionsSnap.data()[attendanceDocID] || [] : [];
+  questions = questions.filter(q => !usedQuestions.includes(q.question));
+
+  if (questions.length === 0) {
+  const confirmReset = confirm("✅ All questions have been used. Do you want to reset and start over?");
+  if (confirmReset) {
+    await setDoc(doc(db, "games", "usedQuestions"), {
+      [attendanceDocID]: []
+    }, { merge: true });
+
+    alert("🔄 Question pool has been reset. You can now reselect.");
+    window.selectQuestionAndChallengers(); // Restart flow
+  }
+  return;
+}
+
+
+  // 🔍 Load groupings and animate student selection
+  const groupNames = ["Group1", "Group2", "Group3"];
+  const groupIDs = groupNames.map(g => `${attendanceDocID}-${g}`);
+  const groupSnaps = await Promise.all(groupIDs.map(id => getDoc(doc(db, "groupings", id))));
+
+  const selectedStudents = {};
+  const studentMetadata = {};
+
+// 🔄 Parallel animation setup
+const animationPromises = groupSnaps.map(async (snap, i) => {
+  const groupNum = i + 1;
+  const groupID = `group${groupNum}`;
+  if (!snap.exists()) return null;
+
+  const groupData = snap.data();
+  const students = groupData.students;
+  if (!students || students.length === 0) return null;
+
+  const container = document.getElementById(`${groupID}Members`);
+  const recordPanel = document.getElementById(`${groupID}Records`);
+  const studentEls = container.querySelectorAll(".student");
+  let highlightIndex = 0;
+
+  const interval = setInterval(() => {
+    studentEls.forEach(el => el.classList.remove("highlight"));
+    const el = studentEls[highlightIndex % studentEls.length];
+    el.classList.add("highlight");
+    highlightIndex++;
+  }, 150);
+
+  // Wait 5 seconds, then finalize selection
+  await new Promise(resolve => setTimeout(resolve, 5000));
+  clearInterval(interval);
+  studentEls.forEach(el => el.classList.remove("highlight"));
+
+  const selected = students[Math.floor(Math.random() * students.length)];
+  selectedStudents[groupID] = selected;
+  studentMetadata[groupID] = selected;
+
+  return { groupNum, groupID, selected, recordPanel };
+});
+
+// 🕒 Wait for all animations to complete
+const finalizedSelections = await Promise.all(animationPromises);
+
+// 🎯 Display all selected challengers together
+finalizedSelections.forEach(({ groupNum, groupID, selected, recordPanel }) => {
+  if (selected && recordPanel) {
+    animateAndFinalizeSelection(groupNum, selected);
+    }
+});
+
+  // 🎲 Randomize question with 5s delay
+const questionPanel = document.getElementById("gameQuestion");
+  if (questionPanel) {
+    questionPanel.innerHTML = `<div class="questionPrompt">🎲 Selecting question...</div>`;
+  }
+
+  await new Promise(resolve => setTimeout(resolve, 5000));
+  const selectedQuestion = questions[Math.floor(Math.random() * questions.length)];
+  const { competency = "", topic = "", testType = "", question = "[No question text available]" } = selectedQuestion;
+
+  // 🧠 Save round data to gamesession document
+  const roundData = {
+    attendanceRef: attendanceDocID,
+    Question: selectedQuestion,
+    students: studentMetadata,
+    timestamp: serverTimestamp(),
+    timeLimitSeconds: lastTimeLimitValue,
+  };
+
+  await setDoc(doc(db, "games", sessionDocID), {
+    [sessionFieldID]: roundData
+  }, { merge: true });
+
+  // 🗂️ Mark question as used
+  const updatedUsed = [...usedQuestions, selectedQuestion.question];
+  await setDoc(doc(db, "games", "usedQuestions"), {
+    [attendanceDocID]: updatedUsed
+  }, { merge: true });
+
+  // 🎯 Display question
+  if (questionPanel) {
+    questionPanel.innerHTML = `
+  <div class="questionPrompt">
+    <label for="timeLimitInput">⏱️ Time Limit (seconds):</label>
+    <input type="number" id="timeLimitInput" min="10" max="600" value="${currentInput}" />
+    <div class="timerDisplay" id="timerDisplay">
+      <strong>Remaining Time:</strong> <span id="remainingTime">--</span> seconds
+    </div>
+    <strong>Question:</strong><br>
+    <div style="font-size: 2.5em; font-weight: 800; color: #111; margin-bottom: 1em;">
+      ${question}
+    </div>
+    <div style="font-size: 1em; font-weight: normal; color: #666;">
+      <span>Competency: ${competency}</span><br>
+      <span>Topic: ${topic}</span><br>
+      <span>Test Type: ${testType}</span>
+    </div>
+    <button id="selectQuestionAndChallengersBtn" onclick="selectQuestionAndChallengers()" style="margin-top: 1em;">
+      ⬅️ Select a Question and Challengers
+    </button>
+  </div>
+`;
+
+    // ⏱️ Start countdown 20s after Firebase timestamp
+    setTimeout(() => {
+  const timeLimitInput = document.getElementById("timeLimitInput");
+  const timeLimitSeconds = parseInt(timeLimitInput.value, 10) || 60;
+  startCountdown(timestamp, timeLimitSeconds);
+}, 1000);
+
+
+  }
+
+  // 🗂️ Store for reuse
+  window.currentQuestion = selectedQuestion;
+};
+
+function resetStudentTags(attendanceDocID) {
+  const groupNames = ["Group1", "Group2", "Group3"];
+  groupNames.forEach((group, i) => {
+    const groupNum = i + 1;
+    const memberPanel = document.getElementById(`group${groupNum}Members`);
+    if (!memberPanel) return;
+
+    const studentEls = memberPanel.querySelectorAll(".student");
+    studentEls.forEach(el => {
+      el.classList.remove("deactivated", "faded", "selected", "highlight");
+    });
+  });
+}
+
+function animateAndFinalizeSelection(groupNum, selectedStudent) {
+  const memberPanel = document.getElementById(`group${groupNum}Members`);
+  const recordPanel = document.getElementById(`group${groupNum}Records`);
+  if (!memberPanel || !recordPanel) return;
+
+  const studentEls = Array.from(memberPanel.querySelectorAll(".student"));
+  const eligibleEls = studentEls.filter(el => !el.classList.contains("deactivated"));
+
+  let highlightIndex = 0;
+  const interval = 150;
+  const duration = 5000;
+  const totalCycles = Math.floor(duration / interval);
+  let cycleCount = 0;
+
+  const animation = setInterval(() => {
+    eligibleEls.forEach(el => el.classList.remove("highlight"));
+    const currentEl = eligibleEls[highlightIndex];
+    if (currentEl) currentEl.classList.add("highlight");
+
+    highlightIndex = (highlightIndex + 1) % eligibleEls.length;
+    cycleCount++;
+
+    if (cycleCount >= totalCycles) {
+      clearInterval(animation);
+
+      eligibleEls.forEach(el => {
+        const name = el.dataset.fullName;
+        if (name === selectedStudent.fullName) {
+          el.classList.add("selected");
+          el.classList.add("deactivated");
+        } else {
+          el.classList.add("faded");
+        }
+        el.classList.remove("highlight");
+      });
+
+      // 📝 Display in gameRecords panel
+      // 🧼 Remove highlight from previous entries
+const previousEntries = recordPanel.querySelectorAll(".recordEntry");
+previousEntries.forEach(entry => {
+  entry.classList.remove("highlight");
+  entry.innerHTML = entry.innerHTML.replace(/<strong>(.*?)<\/strong>/, '$1'); // Remove <strong>
+});
+
+// 📝 Create and emphasize new entry
+const recordEntry = document.createElement("div");
+recordEntry.className = "recordEntry highlight"; // Apply highlight style
+recordEntry.innerHTML = `🎯 <strong>${selectedStudent.fullName}</strong> selected for the challenge`;
+recordPanel.insertBefore(recordEntry, recordPanel.firstChild);
+    }
+  }, interval);
+}
+
+let countdownInterval;
+
+function startCountdown(startTimestamp, timeLimitSeconds, onComplete) {
+  clearInterval(countdownInterval);
+
+  const timerDisplay = document.getElementById("remainingTime");
+  const showQuestionBtn = document.getElementById("showQuestionBtn");
+  const selectQuestionAndChallengersBtn = document.getElementById("selectQuestionAndChallengersBtn");
+
+  // 🔒 Disable buttons during countdown
+  if (showQuestionBtn) showQuestionBtn.disabled = true;
+  if (selectQuestionAndChallengersBtn) selectQuestionAndChallengersBtn.disabled = true;
+
+  countdownInterval = setInterval(() => {
+    const now = Date.now() - 15000; // 15 seconds = 15000 milliseconds
+    const elapsed = Math.floor((now - startTimestamp) / 1000);
+    const remaining = timeLimitSeconds - elapsed;
+
+    if (remaining <= 0) {
+      timerDisplay.textContent = "0";
+      clearInterval(countdownInterval);
+      alert("⏰ Time's up!");
+
+      // 🔓 Re-enable buttons
+      if (selectQuestionAndChallengersBtn) selectQuestionAndChallengersBtn.disabled = false;
+      if (showQuestionBtn) showQuestionBtn.disabled = false;
+
+      // 🔁 Optional callback
+      if (typeof onComplete === "function") {
+        onComplete();
+      }
+    } else {
+      timerDisplay.textContent = remaining;
+    }
+  }, 1000);
+}
+// Start of toggle Student Panel Logic
+document.getElementById("toggleStudentPanelBtn").addEventListener("click", function () {
+  const studentPanel = document.getElementById("studentPanel");
+  const toggleBtn = this;
+
+  // Toggle visibility of student panel
+  const isHidden = studentPanel.classList.toggle("hidden");
+
+  // Update button icon
+  toggleBtn.textContent = isHidden ? "<<<<<" : ">>>>>";
+
+  // ✅ Expand or contract the left column
+  const leftColumn = document.querySelector(".left-column");
+  leftColumn.classList.toggle("expanded", isHidden);
+}); // End of toggleStudentPanel logic
+
+function renderGroupMembers(container, students) {
+  container.innerHTML = "";
+
+  const wrapper = document.createElement("div");
+  wrapper.className = "group-columns";
+
+  const leftColumn = document.createElement("div");
+  leftColumn.className = "group-column";
+
+  const rightColumn = document.createElement("div");
+  rightColumn.className = "group-column";
+
+  const midpoint = Math.ceil(students.length / 2);
+  const firstHalf = students.slice(0, midpoint);
+  const secondHalf = students.slice(midpoint);
+
+  const renderStudent = (student, column) => {
+    const div = document.createElement("div");
+    div.className = "student active member-item";
+
+    if (typeof student === "string") {
+      div.textContent = student;
+    } else {
+      div.textContent = student.fullName || student.lnumber || "[Unnamed]";
+      div.dataset.fullName = student.fullName || "";
+      div.dataset.status = student.status || "";
+      div.dataset.lnumber = student.lnumber || "";
+    }
+
+  // 🧪 Debug log
+  console.log(`🧪 Rendering to ${column.className} in ${container.id}:`, {
+    fullName: student.fullName || null,
+    lnumber: student.lnumber || null,
+    status: student.status || null,
+    raw: student
+  });
+
+    column.appendChild(div);
+  };
+
+  firstHalf.forEach(student => renderStudent(student, leftColumn));
+  secondHalf.forEach(student => renderStudent(student, rightColumn));
+
+  wrapper.appendChild(leftColumn);
+  wrapper.appendChild(rightColumn);
+  container.appendChild(wrapper);
+}
+
+async function fetchAndDisplayChoices() {
+  const attendanceDocID = selectAttendance.value;
+  if (!attendanceDocID) {
+    alert("Please select an attendance record.");
+    return;
+  }
+
+  const docID = `${attendanceDocID}_groupQB`;
+  const docRef = doc(db, "groupingsQuestionBank", docID);
+  const docSnap = await getDoc(docRef);
+
+  if (!docSnap.exists()) {
+    alert("❌ No questions found for this attendance record.");
+    return;
+  }
+
+  const questions = docSnap.data().questions;
+
+  const types = new Set();
+  const elements = new Set();
+  const accounts = new Set();
+
+  questions.forEach(q => {
+    const answer = q.answer;
+    if (answer?.type) types.add(answer.type);
+
+    if (Array.isArray(answer.effects)) {
+      answer.effects.forEach(effect => {
+        if (effect.element) elements.add(effect.element);
+        if (effect.account) accounts.add(effect.account);
+      });
+    }
+  });
+
+  // Convert sets to sorted arrays
+  const sortedTypes = [...types].sort();
+  const sortedElements = [...elements].sort();
+  const sortedAccounts = [...accounts].sort();
+
+  // Render to gameChoices panel
+  const gameChoicesPanel = document.getElementById("gameChoices");
+  gameChoicesPanel.innerHTML = `
+    <div class="panelHeader">🧩 Choices</div>
+    ${renderGroup("Type", sortedTypes)}
+    ${renderGroup("Element", sortedElements)}
+    ${renderGroup("Account", sortedAccounts)}
+  `;
+}
+
+function renderGroup(title, items) {
+  return `
+    <div class="choiceGroup">
+      <div class="groupTitle">${title}:</div>
+      <ul class="choiceList">
+        ${items.map(item => `<li class="choiceItem">${item}</li>`).join("")}
+      </ul>
+    </div>
+  `;
+}
+function renderGroup(title, items) {
+  const half = Math.ceil(items.length / 2);
+  const firstColumn = items.slice(0, half);
+  const secondColumn = items.slice(half);
+
+  return `
+    <div class="choiceGroup">
+      <div class="groupTitle">${title}:</div>
+      <div class="choiceColumns">
+        <ul class="choiceList">
+          ${firstColumn.map(item => `<li class="choiceItem">${item}</li>`).join("")}
+        </ul>
+        <ul class="choiceList">
+          ${secondColumn.map(item => `<li class="choiceItem">${item}</li>`).join("")}
+        </ul>
+      </div>
+    </div>
+  `;
+}
+
+
+
+
+  // Render Questions to allQuestionsList Panel
+function renderQuestionsToPanel(questions) {
+  const container = document.getElementById("allQuestionsList");
+  container.innerHTML = ""; // Clear previous content
+
+  // Create the two-column wrapper
+  const columnsWrapper = document.createElement("div");
+  columnsWrapper.className = "question-columns";
+
+  // Create left and right column containers
+  const leftColumn = document.createElement("div");
+  leftColumn.className = "question-column";
+
+  const rightColumn = document.createElement("div");
+  rightColumn.className = "question-column";
+
+  // Split questions into two halves
+  const midpoint = Math.ceil(questions.length / 2);
+  const firstHalf = questions.slice(0, midpoint);
+  const secondHalf = questions.slice(midpoint);
+
+  // Render first half into left column
+  firstHalf.forEach((q, index) => {
+    const div = document.createElement("div");
+    div.className = "question-item";
+    div.innerHTML = `<strong>Q${index + 1}:</strong> ${q.question || "[No question text]"}<hr>`;
+    leftColumn.appendChild(div);
+  });
+
+  // Render second half into right column
+  secondHalf.forEach((q, index) => {
+    const div = document.createElement("div");
+    div.className = "question-item";
+    div.innerHTML = `<strong>Q${midpoint + index + 1}:</strong> ${q.question || "[No question text]"}<hr>`;
+    rightColumn.appendChild(div);
+  });
+
+  // Append columns to wrapper, then to container
+  columnsWrapper.appendChild(leftColumn);
+  columnsWrapper.appendChild(rightColumn);
+  container.appendChild(columnsWrapper);
+
+} // End of render questions to allQuestionsList panel
+
+  // 🚀 Initialize
+  loadRecentAttendanceRecords();
+})();
+</script>
+  
+<script type="module">
+  document.getElementById("generateLinkBtn").addEventListener("click", () => {
+    const select = document.getElementById("selectAttendanceRecord");
+    const selectedDocId = select.value;
+
+    if (!selectedDocId) {
+      alert("Please select an attendance record.");
+      return;
+    }
+
+    // 🌐 Full URL to hosted studentsGameView.html
+    const baseUrl = "https://jlvcpa.github.io/dev.page/studentsGameView.html";
+    const link = `${baseUrl}?attendanceRecord=${encodeURIComponent(selectedDocId)}`;
+
+    // 🎯 Update the anchor element
+    const anchor = document.getElementById("gameViewLink");
+    anchor.href = link;
+    anchor.style.display = "inline-block";
+    anchor.textContent = `Open Game View for ${selectedDocId}`;
+  });
+</script>
+
+</body>
+</html>: 1px;
   text-transform: uppercase;
   border-bottom: 2px solid #3498db;
   padding-bottom: 10px;
