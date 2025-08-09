@@ -1012,52 +1012,120 @@ window.startGame = function () {
 };
 
 
-window.selectQuestionAndChallengers = async function () {
+// VALIDATION UTILITIES
+
+function validateAttendanceSelection() {
   const attendanceDocID = selectAttendance.value;
   if (!attendanceDocID) {
     alert("Please select an attendance record.");
-    return;
+    return null;
   }
+  return attendanceDocID;
+}
 
+function validateTimeLimit() {
   const timeLimitInputEl = document.getElementById("timeLimitInput");
   if (!timeLimitInputEl) {
     alert("⏱️ Time limit input is missing. Please return to the dashboard and try again.");
     window.startGame();
-    return;
+    return null;
   }
 
-  const currentInputRaw = timeLimitInputEl.value;
-  const currentInput = parseInt(currentInputRaw, 10);
-
+  const currentInput = parseInt(timeLimitInputEl.value, 10);
   if (isNaN(currentInput) || currentInput < 10 || currentInput > 600) {
     alert("⏱️ Please set a valid time limit between 10 and 600 seconds before proceeding.");
     window.startGame();
-    return;
+    return null;
   }
 
-  lastTimeLimitValue = currentInput;
+  return currentInput;
+}
 
-  const timestamp = Date.now();
-  const sessionDocID = `${attendanceDocID}-gamesessionID`;
-  const sessionFieldID = `gamesessionID-${timestamp}`;
+// GROUP DATA LOADER
+async function loadGroupSnapshots(attendanceDocID) {
+  const groupNames = ["Group1", "Group2", "Group3"];
+  const groupIDs = groupNames.map(g => `${attendanceDocID}-${g}`);
+  return await Promise.all(groupIDs.map(id => getDoc(doc(db, "groupings", id))));
+}
+
+async function selectAndAnimateStudents(groupSnaps, attendanceDocID) {
+  const selectedStudents = {};
+  const studentMetadata = {};
+  const animationTasks = [];
+
+  for (let i = 0; i < groupSnaps.length; i++) {
+    const snap = groupSnaps[i];
+    const groupNum = i + 1;
+    const groupID = `group${groupNum}`;
+    if (!snap.exists()) continue;
+
+    const groupData = snap.data();
+    const students = groupData.students;
+    if (!students || students.length === 0) continue;
+
+    const container = document.getElementById(`${groupID}Members`);
+    const studentEls = Array.from(container.querySelectorAll(".student"));
+    const eligibleEls = studentEls.filter(el => !el.classList.contains("deactivated"));
+
+    const eligibleStudents = students.filter(student =>
+      eligibleEls.some(el => el.dataset.fullName === student.fullName)
+    );
+
+    let selected = null;
+    if (eligibleStudents.length > 0) {
+      selected = eligibleStudents[Math.floor(Math.random() * eligibleStudents.length)];
+      selectedStudents[groupID] = selected;
+      studentMetadata[groupID] = selected;
+    }
+
+    // Push animation task
+    animationTasks.push({ groupNum, groupID, selected, container, students });
+  }
+
+  // 🔁 Retry reset groups and finalize animations
+  const animationPromises = animationTasks.map(async ({ groupNum, groupID, selected, container, students }) => {
+    let result = await animateAndFinalizeSelection(groupNum, selected);
+
+    if (result.wasReset) {
+      const retryEligibleEls = Array.from(container.querySelectorAll(".student"))
+        .filter(el => !el.classList.contains("deactivated"));
+
+      const retryEligibleStudents = students.filter(student =>
+        retryEligibleEls.some(el => el.dataset.fullName === student.fullName)
+      );
+
+      let retrySelected = null;
+      if (retryEligibleStudents.length > 0) {
+        retrySelected = retryEligibleStudents[Math.floor(Math.random() * retryEligibleStudents.length)];
+        selectedStudents[groupID] = retrySelected;
+        studentMetadata[groupID] = retrySelected;
+      }
+
+      result = await animateAndFinalizeSelection(groupNum, retrySelected);
+    }
+
+    return result;
+  });
+
+  const finalizedSelections = (await Promise.all(animationPromises)).filter(entry => entry && entry.selected);
+  return { finalizedSelections, studentMetadata };
+}
+
+// QUESTION BANK HANDLER
+async function loadValidQuestions(attendanceDocID) {
   const questionBankID = `${attendanceDocID}_groupQB`;
-  window.currentGameSessionID = sessionDocID;
-
-  // 🔍 Load question bank
   const qbSnap = await getDoc(doc(db, "groupingsQuestionBank", questionBankID));
   if (!qbSnap.exists()) {
     alert("❌ No question bank found.");
-    return;
+    return null;
   }
 
-  const qbData = qbSnap.data();
-  let questions = qbData.questions;
+  let questions = qbSnap.data().questions;
   if (!questions || questions.length === 0) {
     alert("❌ No questions available.");
-    return;
+    return null;
   }
 
-  // 🚫 Filter out previously used questions
   const usedQuestionsSnap = await getDoc(doc(db, "games", "usedQuestions"));
   const usedQuestions = usedQuestionsSnap.exists() ? usedQuestionsSnap.data()[attendanceDocID] || [] : [];
   questions = questions.filter(q => !usedQuestions.includes(q.question));
@@ -1072,84 +1140,17 @@ window.selectQuestionAndChallengers = async function () {
       alert("🔄 Question pool has been reset. You can now reselect.");
       window.selectQuestionAndChallengers(); // Restart flow
     }
-    return;
+    return null;
   }
 
-  // 🔍 Load groupings and animate student selection
-  const groupNames = ["Group1", "Group2", "Group3"];
-  const groupIDs = groupNames.map(g => `${attendanceDocID}-${g}`);
-  const groupSnaps = await Promise.all(groupIDs.map(id => getDoc(doc(db, "groupings", id))));
+  return { questions, usedQuestions };
+}
 
-  const selectedStudents = {};
-  const studentMetadata = {};
-
-  const animationPromises = groupSnaps.map(async (snap, i) => {
-    const groupNum = i + 1;
-    const groupID = `group${groupNum}`;
-    if (!snap.exists()) return null;
-
-    const groupData = snap.data();
-    const students = groupData.students;
-    if (!students || students.length === 0) return null;
-
-    const container = document.getElementById(`${groupID}Members`);
-    const studentEls = Array.from(container.querySelectorAll(".student"));
-    const eligibleEls = studentEls.filter(el => !el.classList.contains("deactivated"));
-
-    const eligibleStudents = students.filter(student =>
-      eligibleEls.some(el => el.dataset.fullName === student.fullName)
-    );
-
-    if (eligibleStudents.length === 0) return null;
-
-    const selected = eligibleStudents[Math.floor(Math.random() * eligibleStudents.length)];
-    selectedStudents[groupID] = selected;
-    studentMetadata[groupID] = selected;
-
-    await animateAndFinalizeSelection(groupNum, selected);
-    return { groupNum, groupID, selected };
-  });
-
-  // 🕒 Wait for all animations to complete
-  const finalizedSelections = await Promise.all(animationPromises);
-
-  // 🎯 Display all selected challengers together
-  finalizedSelections
-    .filter(entry => entry) // ✅ Prevent destructuring error
-    .forEach(({ groupNum, groupID, selected }) => {
-      // You can add additional logic here if needed
-    });
-
-  // 🎲 Randomize question with 5s delay
-  const questionPanel = document.getElementById("gameQuestion");
-  if (questionPanel) {
-    questionPanel.innerHTML = `<div class="questionPrompt">🎲 Selecting question...</div>`;
-  }
-
-  await new Promise(resolve => setTimeout(resolve, 5000));
-  const selectedQuestion = questions[Math.floor(Math.random() * questions.length)];
+// QUESTION RENDERER
+function renderSelectedQuestion(selectedQuestion, currentInput, timestamp) {
   const { competency = "", topic = "", testType = "", question = "[No question text available]" } = selectedQuestion;
+  const questionPanel = document.getElementById("gameQuestion");
 
-  // 🧠 Save round data to gamesession document
-  const roundData = {
-    attendanceRef: attendanceDocID,
-    Question: selectedQuestion,
-    students: studentMetadata,
-    timestamp: serverTimestamp(),
-    timeLimitSeconds: lastTimeLimitValue,
-  };
-
-  await setDoc(doc(db, "games", sessionDocID), {
-    [sessionFieldID]: roundData
-  }, { merge: true });
-
-  // 🗂️ Mark question as used
-  const updatedUsed = [...usedQuestions, selectedQuestion.question];
-  await setDoc(doc(db, "games", "usedQuestions"), {
-    [attendanceDocID]: updatedUsed
-  }, { merge: true });
-
-  // 🎯 Display question
   if (questionPanel) {
     questionPanel.innerHTML = `
       <div class="questionPrompt">
@@ -1173,44 +1174,93 @@ window.selectQuestionAndChallengers = async function () {
       </div>
     `;
 
-    // ⏱️ Start countdown 1s after render
     setTimeout(() => {
       const timeLimitInput = document.getElementById("timeLimitInput");
       const timeLimitSeconds = parseInt(timeLimitInput.value, 10) || 60;
       startCountdown(timestamp, timeLimitSeconds);
     }, 1000);
   }
+}
 
-  // 🗂️ Store for reuse
+// MAIN ORCHESTRATOR
+window.selectQuestionAndChallengers = async function () {
+  const attendanceDocID = validateAttendanceSelection();
+  if (!attendanceDocID) return;
+
+  const currentInput = validateTimeLimit();
+  if (!currentInput) return;
+  lastTimeLimitValue = currentInput;
+
+  const timestamp = Date.now();
+  const sessionDocID = `${attendanceDocID}-gamesessionID`;
+  const sessionFieldID = `gamesessionID-${timestamp}`;
+  window.currentGameSessionID = sessionDocID;
+
+  const groupSnaps = await loadGroupSnapshots(attendanceDocID);
+  const { finalizedSelections, studentMetadata } = await selectAndAnimateStudents(groupSnaps, attendanceDocID);
+
+  const questionData = await loadValidQuestions(attendanceDocID);
+  if (!questionData) return;
+
+  const { questions, usedQuestions } = questionData;
+
+  const questionPanel = document.getElementById("gameQuestion");
+  if (questionPanel) {
+    questionPanel.innerHTML = `<div class="questionPrompt">🎲 Selecting question...</div>`;
+  }
+
+  await new Promise(resolve => setTimeout(resolve, 3000));
+  const selectedQuestion = questions[Math.floor(Math.random() * questions.length)];
+
+  const roundData = {
+    attendanceRef: attendanceDocID,
+    Question: selectedQuestion,
+    students: studentMetadata,
+    timestamp: serverTimestamp(),
+    timeLimitSeconds: lastTimeLimitValue,
+  };
+
+  await setDoc(doc(db, "games", sessionDocID), {
+    [sessionFieldID]: roundData
+  }, { merge: true });
+
+  const updatedUsed = [...usedQuestions, selectedQuestion.question];
+  await setDoc(doc(db, "games", "usedQuestions"), {
+    [attendanceDocID]: updatedUsed
+  }, { merge: true });
+
+  renderSelectedQuestion(selectedQuestion, currentInput, timestamp);
   window.currentQuestion = selectedQuestion;
 };
-
-function resetStudentTags(attendanceDocID) {
-  const groupNames = ["Group1", "Group2", "Group3"];
-  groupNames.forEach((group, i) => {
-    const groupNum = i + 1;
-    const memberPanel = document.getElementById(`group${groupNum}Members`);
-    if (!memberPanel) return;
-
-    const studentEls = memberPanel.querySelectorAll(".student");
-    studentEls.forEach(el => {
-      el.classList.remove("deactivated", "faded", "selected", "highlight");
-    });
-  });
-}
 
 function animateAndFinalizeSelection(groupNum, selectedStudent) {
   return new Promise(resolve => {
     const memberPanel = document.getElementById(`group${groupNum}Members`);
     const recordPanel = document.getElementById(`group${groupNum}Records`);
-    if (!memberPanel || !recordPanel) return resolve();
+    if (!memberPanel || !recordPanel) return resolve("done");
 
     const studentEls = Array.from(memberPanel.querySelectorAll(".student"));
     const eligibleEls = studentEls.filter(el => !el.classList.contains("deactivated"));
 
+    // ✅ PRE-CHECK: If no eligible students or no selection, prompt for reset
+    if (!selectedStudent || eligibleEls.length === 0) {
+      const confirmResetGroup = confirm(`✅ All members of Group ${groupNum} have been selected. Reset this group’s tags and records?`);
+      if (confirmResetGroup) {
+        studentEls.forEach(el => {
+           el.classList.remove("deactivated", "faded", "selected", "highlight");
+         });
+        //recordPanel.innerHTML = "";
+        alert(`🔄 Group ${groupNum} is now reset and ready for new selections.`);
+	return resolve({ groupNum, groupID: `group${groupNum}`, selected: null, wasReset: true }); // ✅ Add flag
+
+      }
+      return resolve("done"); // No reset, just exit
+    }
+
+    // ✅ Proceed with animation
     let highlightIndex = 0;
     const interval = 150;
-    const duration = 5000;
+    const duration = 1000;
     const totalCycles = Math.floor(duration / interval);
     let cycleCount = 0;
 
@@ -1236,19 +1286,6 @@ function animateAndFinalizeSelection(groupNum, selectedStudent) {
           el.classList.remove("highlight");
         });
 
-        // ✅ Check if all students are used
-        const allGroupUsed = studentEls.every(el => el.classList.contains("deactivated"));
-        if (allGroupUsed) {
-          const confirmResetGroup = confirm(`✅ All members of Group ${groupNum} have been selected. Reset this group’s tags and records?`);
-          if (confirmResetGroup) {
-            studentEls.forEach(el => {
-              el.classList.remove("deactivated", "faded", "selected", "highlight");
-            });
-            recordPanel.innerHTML = "";
-            alert(`🔄 Group ${groupNum} is now reset and ready for new selections.`);
-          }
-        }
-
         // 📝 Update record panel
         const previousEntries = recordPanel.querySelectorAll(".recordEntry");
         previousEntries.forEach(entry => {
@@ -1261,14 +1298,16 @@ function animateAndFinalizeSelection(groupNum, selectedStudent) {
         recordEntry.innerHTML = `🎯 <strong>${selectedStudent.fullName}</strong> selected for the challenge`;
         recordPanel.insertBefore(recordEntry, recordPanel.firstChild);
 
-        resolve(); // ✅ Finish promise
+        resolve({ groupNum, groupID: `group${groupNum}`, selected: selectedStudent, wasReset: false });
       }
     }, interval);
   });
 }
+
+
 let countdownInterval;
 
-function startCountdown(startTimestamp, timeLimitSeconds, onComplete) {
+/* function startCountdown(startTimestamp, timeLimitSeconds, onComplete) {
   clearInterval(countdownInterval);
 
   const timerDisplay = document.getElementById("remainingTime");
@@ -1280,7 +1319,7 @@ function startCountdown(startTimestamp, timeLimitSeconds, onComplete) {
   if (selectQuestionAndChallengersBtn) selectQuestionAndChallengersBtn.disabled = true;
 
   countdownInterval = setInterval(() => {
-    const now = Date.now() - 15000; // 15 seconds = 15000 milliseconds
+    const now = Date.now() - 1000; // 8 seconds = 8000 milliseconds
     const elapsed = Math.floor((now - startTimestamp) / 1000);
     const remaining = timeLimitSeconds - elapsed;
 
@@ -1301,7 +1340,33 @@ function startCountdown(startTimestamp, timeLimitSeconds, onComplete) {
       timerDisplay.textContent = remaining;
     }
   }, 1000);
+} */
+
+function startCountdown(startTimestamp, timeLimitSeconds) {
+  const displayEl = document.getElementById("remainingTime");
+  if (!displayEl) return;
+
+  const interval = setInterval(() => {
+    const now = Date.now();
+    const elapsed = Math.floor((now - startTimestamp) / 1000);
+    const remaining = Math.max(0, timeLimitSeconds - elapsed);
+
+    displayEl.textContent = remaining;
+
+    if (remaining <= 0) {
+      clearInterval(interval);
+
+      // ⏰ Timer expired — prompt user
+      setTimeout(() => {
+        const confirmed = confirm("⏰ Time's up! Ready to select the next question and challengers?");
+        if (confirmed) {
+          window.selectQuestionAndChallengers();
+        }
+      }, 500); // slight delay for smoother UX
+    }
+  }, 1000);
 }
+
 // Start of toggle Student Panel Logic
 document.getElementById("toggleStudentPanelBtn").addEventListener("click", function () {
   const studentPanel = document.getElementById("studentPanel");
