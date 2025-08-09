@@ -1128,22 +1128,23 @@ async function loadValidQuestions(attendanceDocID) {
 
   const usedQuestionsSnap = await getDoc(doc(db, "games", "usedQuestions"));
   const usedQuestions = usedQuestionsSnap.exists() ? usedQuestionsSnap.data()[attendanceDocID] || [] : [];
-  questions = questions.filter(q => !usedQuestions.includes(q.question));
+  let filteredQuestions = questions.filter(q => !usedQuestions.includes(q.question));
 
-  if (questions.length === 0) {
-    const confirmReset = confirm("✅ All questions have been used. Do you want to reset and start over?");
+  if (filteredQuestions.length === 0) {
+    const confirmReset = confirm("✅ All questions have been used. Do you want to reset and continue?");
     if (confirmReset) {
       await setDoc(doc(db, "games", "usedQuestions"), {
         [attendanceDocID]: []
       }, { merge: true });
 
-      alert("🔄 Question pool has been reset. You can now reselect.");
-      window.selectQuestionAndChallengers(); // Restart flow
+      alert("🔄 Question pool has been reset. Continuing with current challengers...");
+      filteredQuestions = questions; // ✅ Use full pool now
+    } else {
+      return null; // ❌ User declined reset
     }
-    return null;
   }
 
-  return { questions, usedQuestions };
+  return { questions: filteredQuestions, usedQuestions };
 }
 
 // QUESTION RENDERER
@@ -1199,10 +1200,24 @@ window.selectQuestionAndChallengers = async function () {
   const groupSnaps = await loadGroupSnapshots(attendanceDocID);
   const { finalizedSelections, studentMetadata } = await selectAndAnimateStudents(groupSnaps, attendanceDocID);
 
-  const questionData = await loadValidQuestions(attendanceDocID);
+  const qbSnap = await getDoc(doc(db, "groupingsQuestionBank", `${attendanceDocID}_groupQB`));
+  if (!qbSnap.exists()) {
+    alert("❌ No question bank found.");
+    return;
+  }
+
+  const questions = qbSnap.data().questions;
+  if (!questions || questions.length === 0) {
+    alert("❌ No questions available.");
+    return;
+  }
+
+  const questionData = await maybeResetQuestionPool(attendanceDocID, questions);
   if (!questionData) return;
 
-  const { questions, usedQuestions } = questionData;
+  const { filteredQuestions, usedQuestions } = questionData;
+  const selectedQuestion = filteredQuestions[Math.floor(Math.random() * filteredQuestions.length)];
+  clearQuestionPoolResetFlag(); // ✅ Reset flag after selection
 
   const questionPanel = document.getElementById("gameQuestion");
   if (questionPanel) {
@@ -1210,7 +1225,6 @@ window.selectQuestionAndChallengers = async function () {
   }
 
   await new Promise(resolve => setTimeout(resolve, 3000));
-  const selectedQuestion = questions[Math.floor(Math.random() * questions.length)];
 
   const roundData = {
     attendanceRef: attendanceDocID,
@@ -1233,6 +1247,8 @@ window.selectQuestionAndChallengers = async function () {
   window.currentQuestion = selectedQuestion;
 };
 
+
+// GROUP RANDOM SELECTOR ANIMATION
 function animateAndFinalizeSelection(groupNum, selectedStudent) {
   return new Promise(resolve => {
     const memberPanel = document.getElementById(`group${groupNum}Members`);
@@ -1304,43 +1320,8 @@ function animateAndFinalizeSelection(groupNum, selectedStudent) {
   });
 }
 
-
+// COUNTDOWN TIMER FOR THE GAMEQUESTION
 let countdownInterval;
-
-/* function startCountdown(startTimestamp, timeLimitSeconds, onComplete) {
-  clearInterval(countdownInterval);
-
-  const timerDisplay = document.getElementById("remainingTime");
-  const showQuestionBtn = document.getElementById("showQuestionBtn");
-  const selectQuestionAndChallengersBtn = document.getElementById("selectQuestionAndChallengersBtn");
-
-  // 🔒 Disable buttons during countdown
-  if (showQuestionBtn) showQuestionBtn.disabled = true;
-  if (selectQuestionAndChallengersBtn) selectQuestionAndChallengersBtn.disabled = true;
-
-  countdownInterval = setInterval(() => {
-    const now = Date.now() - 1000; // 8 seconds = 8000 milliseconds
-    const elapsed = Math.floor((now - startTimestamp) / 1000);
-    const remaining = timeLimitSeconds - elapsed;
-
-    if (remaining <= 0) {
-      timerDisplay.textContent = "0";
-      clearInterval(countdownInterval);
-      alert("⏰ Time's up!");
-
-      // 🔓 Re-enable buttons
-      if (selectQuestionAndChallengersBtn) selectQuestionAndChallengersBtn.disabled = false;
-      if (showQuestionBtn) showQuestionBtn.disabled = false;
-
-      // 🔁 Optional callback
-      if (typeof onComplete === "function") {
-        onComplete();
-      }
-    } else {
-      timerDisplay.textContent = remaining;
-    }
-  }, 1000);
-} */
 
 function startCountdown(startTimestamp, timeLimitSeconds) {
   const displayEl = document.getElementById("remainingTime");
@@ -1367,7 +1348,50 @@ function startCountdown(startTimestamp, timeLimitSeconds) {
   }, 1000);
 }
 
-// Start of toggle Student Panel Logic
+// HELPER FUNCTIONS FOR QUESTION POOL RESET
+function markQuestionPoolJustReset() {
+  sessionStorage.setItem("justResetQuestions", "true");
+}
+
+function clearQuestionPoolResetFlag() {
+  sessionStorage.removeItem("justResetQuestions");
+}
+
+function hasJustResetQuestionPool() {
+  return sessionStorage.getItem("justResetQuestions") === "true";
+}
+
+// WRAPPER FOR THE QUESTION POOL RESET HELPER FUNCTIONS
+async function maybeResetQuestionPool(attendanceDocID, questions) {
+  const usedQuestionsSnap = await getDoc(doc(db, "games", "usedQuestions"));
+  let usedQuestions = usedQuestionsSnap.exists() ? usedQuestionsSnap.data()[attendanceDocID] || [] : [];
+
+  let filteredQuestions = questions.filter(q => !usedQuestions.includes(q.question));
+
+  if (filteredQuestions.length === 0 && !hasJustResetQuestionPool()) {
+    const confirmReset = confirm("✅ All questions have been used. Do you want to reset and continue?");
+    if (confirmReset) {
+      await setDoc(doc(db, "games", "usedQuestions"), {
+        [attendanceDocID]: []
+      }, { merge: true });
+
+      alert("🔄 Question pool has been reset. Continuing with current challengers...");
+      markQuestionPoolJustReset();
+
+      // 🔁 Refresh usedQuestions after reset
+      usedQuestions = [];
+      filteredQuestions = questions;
+    } else {
+      return null;
+    }
+  }
+
+  return { filteredQuestions, usedQuestions };
+}
+
+
+
+// TOOGLE OF STUDENT PANEL
 document.getElementById("toggleStudentPanelBtn").addEventListener("click", function () {
   const studentPanel = document.getElementById("studentPanel");
   const toggleBtn = this;
