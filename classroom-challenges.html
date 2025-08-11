@@ -431,7 +431,7 @@ button:disabled {
         <div class="button-container">
            <button id="generateQuestionsBtn" onclick="generateQuestions()">Select Questions</button>
            <button id="showGeneratedQuestionsBtn" onclick="showGeneratedQuestions()">Show-Questions</button>
-           <button id="showGameDashBoardBtn" onclick="showGameDashboard()">Go To Game</button>
+           <button id="showGameDashBoardBtn" onclick="showGameDashboard(window.currentAttendanceID)">Go To Game</button>
            </div>
         <div class="header">All Questions</div>
         <div class="allQuestionsList" id="allQuestionsList">
@@ -480,7 +480,7 @@ let lastTimeLimitValue = 10;
   const selectAttendance = document.getElementById("selectAttendanceRecord");
   const studentList = document.getElementById("studentList");
 
-  // 🔍 Fetch 3 most recent attendance records
+  // 🔍 Fetch 15 most recent attendance records
   async function loadRecentAttendanceRecords() {
     const snapshot = await getDocs(collection(db, "attendance"));
     const records = [];
@@ -494,7 +494,7 @@ let lastTimeLimitValue = 10;
     records.sort((a, b) => new Date(b.date) - new Date(a.date));
 
     // Take top 3
-    const recent = records.slice(0, 3);
+    const recent = records.slice(0, 15);
 
     recent.forEach(record => {
       const option = document.createElement("option");
@@ -595,7 +595,7 @@ window.saveGroups = async function () {
   }
 
   const attendanceData = attendanceSnap.data();
-  const { schoolYear, section, subject, term, students: attendanceStudents } = attendanceData;
+  const { schoolYear, section, subject, term, passWord, students: attendanceStudents } = attendanceData;
 
   const groupNames = ["Group1", "Group2", "Group3"];
   const groupRefs = groupNames.map(g => doc(db, "groupings", `${attendanceDocID}-${g}`));
@@ -621,6 +621,10 @@ window.saveGroups = async function () {
       const fullName = el.dataset.fullName;
       const studentMeta = findStudentMeta(fullName);
 
+      if (!studentMeta.passWord) {
+        console.warn(`Missing passWord for ${fullName}`);
+      }
+
       return {
         attendanceDocID,
         group: groupLabel,
@@ -629,7 +633,8 @@ window.saveGroups = async function () {
         subject,
         term,
         Idnumber: studentMeta.Idnumber || null,
-        fullName
+        fullName,
+        passWord: studentMeta.passWord ?? "" // ✅ Defensive fallback
        };
     });
   };
@@ -809,14 +814,15 @@ function updateGroupButtonsState() {
 // 🧠 Event listener for dropdown
   selectAttendance.addEventListener("change", async e => {
   const attendanceDocID = e.target.value;
+
   if (attendanceDocID) {
-    await loadStudents(attendanceDocID); // Load student list
-    await loadSavedGroupAndQuestions(attendanceDocID); // Load saved groups + questions
+    window.currentAttendanceID = attendanceDocID; // 🧠 Store globally
+    await loadStudents(attendanceDocID);
+    await loadSavedGroupAndQuestions(attendanceDocID);
   }
 });
 
-
-window.showGameDashboard = function () {
+window.showGameDashboard = async function (attendanceDocID) {
   // 🔒 Hide All Questions panel
   const allQuestionsPanel = document.querySelector(".allQuestions-panel");
   if (allQuestionsPanel) {
@@ -927,6 +933,7 @@ if (controlsPanel) {
     showQuestionBtn.classList.add("inactive-btn");
   }
 fetchAndDisplayChoices();
+await loadAllStudentMetadataToRecordPanel(attendanceDocID);
 };
 
 window.showAllQuestionsPanel = function () {
@@ -1148,7 +1155,7 @@ async function loadValidQuestions(attendanceDocID) {
 }
 
 // QUESTION RENDERER
-function renderSelectedQuestion(selectedQuestion, currentInput, timestamp) {
+function renderSelectedQuestion(selectedQuestion, currentInput, timestamp, sessionDocID, sessionFieldID) {
   const { competency = "", topic = "", testType = "", question = "[No question text available]" } = selectedQuestion;
   const questionPanel = document.getElementById("gameQuestion");
 
@@ -1176,10 +1183,10 @@ function renderSelectedQuestion(selectedQuestion, currentInput, timestamp) {
     `;
 
     setTimeout(() => {
-      const timeLimitInput = document.getElementById("timeLimitInput");
-      const timeLimitSeconds = parseInt(timeLimitInput.value, 10) || 60;
-      startCountdown(timestamp, timeLimitSeconds);
-    }, 1000);
+  const timeLimitInput = document.getElementById("timeLimitInput");
+  const timeLimitSeconds = parseInt(timeLimitInput.value, 10) || 60;
+  startCountdown(timestamp, timeLimitSeconds, sessionDocID, sessionFieldID);
+}, 1000);
   }
 }
 
@@ -1243,7 +1250,7 @@ window.selectQuestionAndChallengers = async function () {
     [attendanceDocID]: updatedUsed
   }, { merge: true });
 
-  renderSelectedQuestion(selectedQuestion, currentInput, timestamp);
+  renderSelectedQuestion(selectedQuestion, currentInput, timestamp, sessionDocID, sessionFieldID);
   window.currentQuestion = selectedQuestion;
 };
 
@@ -1323,12 +1330,12 @@ function animateAndFinalizeSelection(groupNum, selectedStudent) {
 // COUNTDOWN TIMER FOR THE GAMEQUESTION
 let countdownInterval;
 
-function startCountdown(startTimestamp, timeLimitSeconds) {
+function startCountdown(startTimestamp, timeLimitSeconds, sessionDocID, sessionFieldID) {
   const displayEl = document.getElementById("remainingTime");
   if (!displayEl) return;
 
   const interval = setInterval(() => {
-    const now = Date.now();
+    const now = Date.now(); // 15 seconds = 15000 milliseconds
     const elapsed = Math.floor((now - startTimestamp) / 1000);
     const remaining = Math.max(0, timeLimitSeconds - elapsed);
 
@@ -1337,13 +1344,17 @@ function startCountdown(startTimestamp, timeLimitSeconds) {
     if (remaining <= 0) {
       clearInterval(interval);
 
-      // ⏰ Timer expired — prompt user
-      setTimeout(() => {
-        const confirmed = confirm("⏰ Time's up! Ready to select the next question and challengers?");
-        if (confirmed) {
-          window.selectQuestionAndChallengers();
-        }
-      }, 500); // slight delay for smoother UX
+      // ⏰ Timer expired — mark round as expired
+      setTimeout(async () => {
+  await setDoc(doc(db, "games", sessionDocID), {
+    [sessionFieldID]: { status: "Expired" }
+  }, { merge: true });
+
+  const confirmed = confirm("⏰ Time's up! Ready to select the next question and challengers?");
+  if (confirmed) {
+    window.selectQuestionAndChallengers();
+  }
+}, 500); // slight delay for UX
     }
   }, 1000);
 }
@@ -1389,7 +1400,71 @@ async function maybeResetQuestionPool(attendanceDocID, questions) {
   return { filteredQuestions, usedQuestions };
 }
 
+async function loadAllStudentMetadataToRecordPanel(attendanceDocID) {
+  try {
+    const sessionDocID = `${attendanceDocID}-gamesessionID`;
+    const sessionRef = doc(db, "games", sessionDocID);
+    const sessionSnap = await getDoc(sessionRef);
 
+    if (!sessionSnap.exists()) return;
+
+    const sessionData = sessionSnap.data();
+    const allRounds = Object.entries(sessionData);
+    if (allRounds.length === 0) return;
+
+    const selectedMap = new Map(); // groupKey → Set of fullNames
+
+    // Sort rounds by timestamp descending
+    const sortedRounds = allRounds.sort((a, b) => {
+      const aTime = parseInt(a[0].split("gamesessionID-")[1]);
+      const bTime = parseInt(b[0].split("gamesessionID-")[1]);
+      return bTime - aTime;
+    });
+
+    sortedRounds.forEach(([sessionFieldID, roundData]) => {
+      const students = roundData.students || {};
+
+      Object.entries(students).forEach(([groupKey, student]) => {
+        const recordPanelID = `${groupKey}Records`;
+        const recordPanel = document.getElementById(recordPanelID);
+        if (!recordPanel) return;
+
+        // 📝 Add record entry
+        const recordEntry = document.createElement("div");
+        recordEntry.className = "recordEntry highlight";
+        recordEntry.innerHTML = `🎯 <strong>${student.fullName}</strong> selected for the challenge`;
+        recordPanel.insertBefore(recordEntry, recordPanel.firstChild);
+
+        // 🧠 Track selected student
+        if (!selectedMap.has(groupKey)) selectedMap.set(groupKey, new Set());
+        selectedMap.get(groupKey).add(student.fullName);
+      });
+    });
+
+    // ✅ Apply deactivation logic once per group
+    selectedMap.forEach((selectedNames, groupKey) => {
+      const memberPanelID = `${groupKey}Members`;
+      const memberPanel = document.getElementById(memberPanelID);
+      if (!memberPanel) return;
+
+      const studentEls = Array.from(memberPanel.querySelectorAll(".student"));
+      studentEls.forEach(el => {
+        const name = el.dataset.fullName;
+        if (selectedNames.has(name)) {
+          el.classList.add("selected", "deactivated");
+          el.classList.remove("faded", "highlight");
+        } else {
+          el.classList.add("faded");
+          el.classList.remove("selected", "highlight");
+        }
+      });
+    });
+
+    console.log(`✅ All past selections applied and deactivated`);
+  } catch (error) {
+    console.error("❌ Error loading student metadata:", error);
+  }
+}
 
 // TOOGLE OF STUDENT PANEL
 document.getElementById("toggleStudentPanelBtn").addEventListener("click", function () {
