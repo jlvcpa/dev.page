@@ -4,17 +4,7 @@
   <meta charset="UTF-8" />
   <title>Attendance Record</title>
   <style>
-.attendance-input-wrapper {
-  display: flex;
-  flex-direction: column;
-  width: 40%;
-  transition: width 0.3s ease;
-  background-color: #f0f0f0;
-  border-right: 1px solid #ccc;
-  overflow: hidden;
-}
-
-      /* 🧩 Responsive Layout Enhancements */
+/* 🧩 Responsive Layout Enhancements */
   .main-content-container {
     display: flex;
     height: 100vh; /* Optional: makes the container full height */
@@ -28,22 +18,41 @@
   overflow-y: auto; /* Scroll if content overflows vertically */
 }
 
-.attendance-input-panel {
-     width: 40%;
+/* .attendance-input-panel {
+  flex-grow: 1;
+  width: 95%;
+  padding: 10px;
+  display: block;
   transition: width 0.3s ease, padding 0.3s ease;
   background-color: #f0f0f0;
   border-right: 1px solid #ccc;
+  overflow: auto;
+} */
+
+.attendance-input-panel {
+  flex-grow: 1;
+  width: 95%;
   padding: 10px;
-  overflow: auto; /* Enables both horizontal and vertical scrollbars */
-    }
-  
+  display: block;
+  transition: width 0.3s ease, padding 0.3s ease;
+  background-color: #f0f0f0;
+  border-right: 1px solid #ccc;
+
+  /* Disable vertical scroll */
+  overflow-y: hidden;
+
+  /* Optional: allow horizontal scroll if needed */
+  overflow-x: auto;
+}
+
 .attendance-record-panel {
   flex-grow: 1;
-  padding: 10px;
+  width: 2%;
+  transition: width 0.3s ease, padding 0.3s ease;
   background-color: #d0e6ff;
-  transition: width 0.3s ease;
-  overflow: auto; /* Enables both horizontal and vertical scrollbars */
+  overflow: auto;
 }
+
 .record-header {
   display: flex;
   align-items: center;
@@ -67,10 +76,6 @@
   cursor: pointer;
 }
 
-.attendance-input-panel {
-  padding: 10px;
-  display: block; /* default visible */
-}
     .date-options {
       display: flex;
       gap: 10px;
@@ -85,7 +90,7 @@
 
     th,
     td {
-      padding: 6px;
+      padding: 0.1px;
       border: 1px solid #ddd;
       text-align: center;
     }
@@ -131,6 +136,142 @@ td.first-name {
   flex-grow: 1;
   padding: 6px;
   font-size: 14px;
+}
+
+td {
+  text-align: center; /* Centers the input box itself */
+}
+
+td input[type="text"] {
+  width: 5ch;              /* Fixed width for 8 characters */
+  text-align: left;      /* Centers the text inside the box */
+  font-family: monospace;  /* Optional: consistent character width */
+  padding: 1px;
+  box-sizing: border-box;
+}
+
+table tr:hover {
+  background-color: #d0e6ff; /* Light gray background */
+  cursor: pointer;          /* Optional: shows it's interactive */
+}
+
+.attendanceInputHeader-conductGradeHeader-panel {
+  display: flex;
+  gap: 2rem; /* spacing between panels */
+  align-items: flex-start;
+  flex-wrap: wrap; /* allows stacking on smaller screens */
+  margin-bottom: 2rem;
+}
+
+.attendanceInputHeader-conductGradeHeader-panel {
+  display: flex;
+  gap: .01rem;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+
+/* Fixed width for attendance panel */
+.attendance-panel {
+  width: 370px; /* or whatever fixed width you prefer */
+  padding: .01rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  background-color: #f9f9f9;
+  flex-shrink: 0; /* prevent shrinking */
+}
+
+/* Flexible conduct grade panel */
+.conductGradeHeader-pane {
+  flex: 1;
+  min-width: 300px;
+  padding: .01rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  background-color: #f9f9f9;
+}
+
+/* Optional: reduce vertical spacing when stacked */
+@media (max-width: 768px) {
+  .attendanceInputHeader-conductGradeHeader-panel {
+    gap: 0.5rem;
+  }
+}
+
+.attendanceHeader-showHideBtn-panel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between; /* header left, button right */
+  margin-bottom: 1rem;
+}
+
+.attendanceHeader-showHideBtn-panel h3 {
+  margin: 0;
+  font-size: 1.2rem;
+}
+
+.toggle-conduct-panel {
+  padding: 0.4rem 0.8rem;
+  font-size: 0.85rem;
+  cursor: pointer;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+}
+
+.attendance-panel h3,
+.conductGradeHeader-pane h3 {
+  margin-top: 0;
+}
+
+input[type="radio"] {
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border: 2px solid #555;
+  border-radius: 50%;
+  position: relative;
+  cursor: pointer;
+}
+
+input[type="radio"]:checked::before {
+  content: "";
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: 10px;
+  height: 10px;
+  background-color: #555;
+  border-radius: 50%;
+}
+
+.record-table-wrapper {
+  max-height: 400px; /* or whatever fits your layout */
+  overflow-y: auto;
+  border: 1px solid #ccc;
+}
+
+/* Ensure table fills the wrapper */
+#recordTable {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+/* Fix header rows */
+#recordTable thead th {
+  position: sticky;
+  top: 0;
+  background-color: #f9f9f9;
+  z-index: 1;
+  padding: 8px;
+  border-bottom: 1px solid #ddd;
+}
+
+/* Optional: style body rows */
+#recordTable tbody td {
+  padding: 6px;
+  border-bottom: 1px solid #eee;
 }
     .generateLetter {
       width: fit-content;
@@ -185,16 +326,22 @@ td.first-name {
     opacity: 1;
   }
 }
+
   </style>
 </head>
 <body>
   <div class="main-content-container">
   <!-- 🟦 Panel 1: Attendance Input -->
   <div class="attendance-input-panel">
-    <h3>Attendance Taking</h3>
-
+    <div class="attendanceInputHeader-conductGradeHeader-panel">
+      <div class="attendance-panel">
+    <div class="attendanceInput-header">
+     <div class="attendanceHeader-showHideBtn-panel">
+      <h3>Attendance Taking</h3>
+      <button class="toggle-conduct-panel">Hide Description</button>
+     </div>
+    </div>
     <div class="Section-date-options">
-      <!-- Section Dropdown -->
       <label for="SectionSelect">Section:</label>
       <select id="SectionSelect">
         <option value="">-- Select Section --</option>
@@ -202,18 +349,40 @@ td.first-name {
 
       <label for="attendanceDate">Date:</label>
       <input type="date" id="attendanceDate" />
-    </div>
+      </div>
+    <div class="dayType-saveAttendance">
+      <label for="dayType">Day Type:</label>
+      <select id="dayType">
+        <option value="">-- No Type Selected --</option>
+        <option value="HOL">Holiday</option>
+        <option value="ILD">Alternative Learning Day</option>
+        <option value="SAT">Saturday</option>
+        <option value="SUN">Sunday</option>
+      </select>
 
-    <!-- Day Type -->
-    <label for="dayType">Day Type:</label>
-    <select id="dayType">
-      <option value="">-- No Type Selected --</option>
-      <option value="HOL">Holiday</option>
-      <option value="ILD">Alternative Learning Day</option>
-      <option value="SAT">Saturday</option>
-      <option value="SUN">Sunday</option>
-    </select>
-     <button id="saveAttendanceBtn">Save Attendance</button>
+      <button id="saveAttendanceBtn">Save Attendance</button>
+    </div>
+  </div>
+
+  <div class="conductGradeHeader-pane">
+    <h3>Conduct Description</h3>
+      <ul>
+      <li><strong>Prayer Life</strong> = As a Christ-centered individual, the student strives to show a respectful disposition during prayer.</li>
+      <li><strong>Relationship to oneself and with others</strong> = As a person of conscience and character, the student strives to show self-discipline and respect for others.</li>
+      <li><strong>Attitude toward schoolwork</strong> = AS a person of competence, the student strives to show the values of responsibility, punctuality, industry, honesty, and orderlines.</li>
+      </ul>
+
+      <h3>Conduct Grade Description</h3>
+       <ul>
+      <li><strong>A</strong> = The student continually shows all the qualities to an exceptional degree; serves as an example to other students.</li>
+      <li><strong>B+</strong> = The student shows most of the qualities and generally serves as an example to other students.</li>
+      <li><strong>B</strong> = The student satisfactorily embodies the qualities described. The student exhibits most fo the qualities but needs to exert more effort in others.</li>
+      <li><strong>C+</strong> = The student manifests the qualities to some extent with a few oral reminders.</li>
+      <li><strong>C</strong> = The student manifiests the qualities to some extent. The student needs to be reminded to exhibit expected behavior. Student may have been referred to the Character Prefect for less serious discipline concern.</li>
+      <li><strong>D</strong> = The student has been constantly reminded of the expected behavior. Student has accumulated  a series of offenses that have been referred to the Character Prefect</li>
+    </ul>
+  </div>
+</div>
 
     <!-- Students Attendance Table -->
     <table id="studentsTable">
@@ -226,6 +395,9 @@ td.first-name {
           <th>P</th>
           <th>A</th>
           <th>L</th>
+          <th>Prayer Life</th>
+          <th>Relationship with oneself and others</th>
+          <th>Attitude toward work</th>
         </tr>
       </thead>
       <tbody></tbody>
@@ -234,14 +406,16 @@ td.first-name {
 
   <!-- 📊 Panel 2: Attendance Records -->
   <div class="attendance-record-panel">
+    <button id="toggleAttendanceInputPanelBtn" class="toggle-btn"><<<<<</button>
+    <div id="recordPanelContent" style="display: none;">
     <div class="record-header">
-      <button class="toggle-btn"><<<<<</button>
       <h3>Attendance Record</h3>
       <button class="generateLetter" id="generateLetter">Generate Letter to Parents</button>
     </div> <!-- ✅ closes .record-header -->
 
+    <div class="record-table-wrapper">
     <table id="recordTable">
-      <thead>
+            <thead>
         <tr>
           <th><input type="checkbox" id="selectAll" /></th>
           <th>Overview</th>
@@ -253,6 +427,8 @@ td.first-name {
       </thead>
       <tbody></tbody>
     </table>
+    </div>
+   </div>
   </div> <!-- ✅ closes .attendance-record-panel -->
         <!-- 🌀 Loading Spinner Overlay -->
 <div id="loadingSpinner">
@@ -264,63 +440,62 @@ td.first-name {
         
 </div> <!-- ✅ closes .main-content-container -->
 <script type="module">
-  (async () => {
-    // 🔧 Firebase setup
-    const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js");
-    const { getFirestore, doc, setDoc, getDoc, getDocs, collection } = await import("https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js");
+   
+//🔹 1. firebase.js FIREBASE SETUP
+export async function initializeFirebase() {
+  const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js");
+  const { getFirestore } = await import("https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js");
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyAgOsKAZWwExUzupxSNytsfOo9BOppF0ng",
-      authDomain: "jlvcpa-quizzes.firebaseapp.com",
-      projectId: "jlvcpa-quizzes",
-      storageBucket: "jlvcpa-quizzes.appspot.com",
-      messagingSenderId: "629158256557",
-      appId: "1:629158256557:web:b3d1a424b32e28cd578b24"
-    };
+  const config = {
+    apiKey: "AIzaSyAgOsKAZWwExUzupxSNytsfOo9BOppF0ng",
+    authDomain: "jlvcpa-quizzes.firebaseapp.com",
+    projectId: "jlvcpa-quizzes",
+    storageBucket: "jlvcpa-quizzes.appspot.com",
+    messagingSenderId: "629158256557",
+    appId: "1:629158256557:web:b3d1a424b32e28cd578b24"
+  };
 
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-    const studentsMap = new Map();
+  const app = initializeApp(config);
+  return getFirestore(app);
+}
 
-    const SectionSelect = document.getElementById("SectionSelect");
-    const studentsTableBody = document.querySelector("#studentsTable tbody");
-    const spinner = document.getElementById("loadingSpinner");
+//🔹 2. sections.js   SECTION DROPDOWN + DAY TYPE TRIGGER
+export async function populateSections(db, SectionSelect) {
+  const { getDocs, collection } = await import("https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js");
+  const snapshot = await getDocs(collection(db, "students"));
+  const sections = new Set();
 
-    // 🔄 Populate Section dropdown
-    const allStudentsSnapshot = await getDocs(collection(db, "students"));
-    const SectionSet = new Set();
+  snapshot.forEach(doc => {
+    const data = doc.data();
+    if (data.Section) sections.add(data.Section);
+  });
 
-    allStudentsSnapshot.forEach(docSnap => {
-      const data = docSnap.data();
-      if (data.Section) SectionSet.add(data.Section);
-    });
+  [...sections].forEach(section => {
+    const option = document.createElement("option");
+    option.value = section;
+    option.textContent = section;
+    SectionSelect.appendChild(option);
+  });
+}
 
-    [...SectionSet].forEach(Section => {
-      const option = document.createElement("option");
-      option.value = Section;
-      option.textContent = Section;
-      SectionSelect.appendChild(option);
-    });
-// ✅ Trigger section reload when dayType changes
-document.getElementById("dayType").addEventListener("change", () => {
-  SectionSelect.dispatchEvent(new Event("change"));
-});
+export function setupDayTypeTrigger(SectionSelect) {
+  document.getElementById("dayType").addEventListener("change", () => {
+    SectionSelect.dispatchEvent(new Event("change"));
+  });
+}
 
-
-    // 🔄 Load students by Section
-    SectionSelect.addEventListener("change", async () => {
-  const selectedSection = SectionSelect.value;
-  const selectedDayType = document.getElementById("dayType").value;
+//🔹 3. students.js	LOAD STUDENTS AND RENDER TABLE
+export async function loadStudentsBySection(db, selectedSection, selectedDayType, studentsMap, studentsTableBody) {
+  const { getDocs, collection } = await import("https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js");
   const isNoClassDay = selectedDayType !== "";
 
   studentsTableBody.innerHTML = "";
   studentsMap.clear();
 
-  const allStudentsSnapshot = await getDocs(collection(db, "students"));
-
-  allStudentsSnapshot.forEach(docSnap => {
-    const student = docSnap.data();
-    if (student.Section === selectedSection) {
+  const snapshot = await getDocs(collection(db, "students"));
+  snapshot.forEach(doc => {
+    const student = doc.data();
+    if (student?.Section === selectedSection) {
       studentsMap.set(student.Idnumber, student);
 
       const tr = document.createElement("tr");
@@ -332,30 +507,30 @@ document.getElementById("dayType").addEventListener("change", () => {
         <td><input type="radio" name="att_${student.Idnumber}" value="P" /></td>
         <td><input type="radio" name="att_${student.Idnumber}" value="A" /></td>
         <td><input type="radio" name="att_${student.Idnumber}" value="L" /></td>
+        <td><input type="text" name="prayerLife_${student.Idnumber}" /></td>
+        <td><input type="text" name="relationshipWithOneselfAndOthers_${student.Idnumber}" /></td>
+        <td><input type="text" name="attitudeTowardSchoolwork_${student.Idnumber}" /></td>
       `;
 
       const statusCell = tr.querySelector(".status-display");
 
       if (isNoClassDay) {
-        // ✅ Assign dayType as status
         statusCell.textContent = selectedDayType;
         statusCell.className = `status-display status-${selectedDayType.toLowerCase()}`;
-
-        // ✅ Disable all radio buttons
         tr.querySelectorAll(`input[name="att_${student.Idnumber}"]`).forEach(radio => {
           radio.disabled = true;
         });
       } else {
-        // ✅ Enable radio logic
         tr.querySelectorAll(`input[name="att_${student.Idnumber}"]`).forEach(radio => {
-          radio.addEventListener("change", () => {
-            if (radio.value === "P") {
+          radio.addEventListener("change", (e) => {
+            const selected = e.target.value;
+            if (selected === "P") {
               statusCell.textContent = "✔";
               statusCell.className = "status-display status-check";
-            } else if (radio.value === "A") {
+            } else if (selected === "A") {
               statusCell.textContent = "A";
               statusCell.className = "status-display status-absent";
-            } else if (radio.value === "L") {
+            } else if (selected === "L") {
               statusCell.textContent = "L";
               statusCell.className = "status-display status-late";
             }
@@ -363,179 +538,359 @@ document.getElementById("dayType").addEventListener("change", () => {
         });
       }
 
+      // Attach reason prompt to each text input
+      tr.querySelectorAll('input[type="text"]').forEach(attachReasonPrompt);
+
       studentsTableBody.appendChild(tr);
     }
   });
 
-  sortTableByCN();
+  sortTableByCN(studentsTableBody);
+}
+
+function showReasonPrompt(input) {
+  const valueReason = prompt("Would you like to enter a description or reason for this entry?");
+  if (valueReason !== null && valueReason.trim() !== "") {
+    input.setAttribute("data-reason", valueReason.trim());
+    input.title = valueReason.trim(); // optional: show on hover
+  }
+}
+
+// Modular helper for prompting and storing reason
+function attachReasonPrompt(input) {
+  input.addEventListener("click", (e) => {
+    const { offsetX } = e;
+    const edgeThreshold = 12;
+    const width = input.offsetWidth;
+
+    const isNearLeft = offsetX <= edgeThreshold;
+    const isNearRight = offsetX >= width - edgeThreshold;
+
+    if (isNearLeft || isNearRight) {
+      showReasonPrompt(input);
+    }
+  });
+}
+
+function sortTableByCN(tbody) {
+  const rows = Array.from(tbody.querySelectorAll("tr"));
+  rows.sort((a, b) => {
+    const aCN = parseInt(a.children[0].textContent.trim()) || 0;
+    const bCN = parseInt(b.children[0].textContent.trim()) || 0;
+    return aCN - bCN;
+  });
+  tbody.innerHTML = "";
+  rows.forEach(row => tbody.appendChild(row));
+}
+
+//🔹 4. attendance.js SAVE LOGIC AND METADATA
+export function getDayType(dateStr) {
+  const holidays = {
+    "2025-08-21": "HOL",
+    "2025-11-30": "HOL",
+  };
+
+  if (holidays[dateStr]) return holidays[dateStr];
+
+  const day = new Date(dateStr).getDay();
+  return day === 0 ? "SUN" : day === 6 ? "SAT" : null;
+}
+
+export function normalizeMetadata(student) {
+  return {
+    schoolYear: student.schoolYear?.replace(/–/g, "-").trim(),
+    term: student.term?.trim(),
+    subject: student.subject?.trim(),
+  };
+}
+
+export async function saveAttendanceRecord(db, students, date, section, schoolYear, term, subject, dayType) {
+  const { setDoc, doc, collection } = await import("https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js");
+  const docId = `${section}_${date}`;
+  const attendanceCollection = collection(db, "attendance");
+
+  const isNoClassDay = ["HOL", "ILD", "SAT", "SUN"].includes(dayType);
+
+  const attendanceData = {
+    schoolYear,
+    term,
+    subject,
+    date,
+    section,
+    ...(dayType && { dayType }),
+    students: students.map(student => {
+      const id = student.idNumber;
+
+      // Get input values and reasons from DOM
+      const prayerLifeInput = document.querySelector(`input[name="prayerLife_${id}"]`);
+      const relationshipWithOneselfAndOthersInput = document.querySelector(`input[name="relationshipWithOneselfAndOthers_${id}"]`);
+      const attitudeTowardSchoolworkInput = document.querySelector(`input[name="attitudeTowardSchoolwork_${id}"]`);
+
+      return {
+        Idnumber: id,
+        LastName: student.lastName,
+        firstName: student.firstName,
+        fullName: student.fullName,
+        passWord: student.passWord,
+        status: isNoClassDay ? dayType : student.status,
+
+        // Include input values and reasons
+        conductGrade: [
+          {
+            value: prayerLifeInput?.value || "",
+            valueReason: prayerLifeInput?.getAttribute("data-reason") || ""
+          },
+          {
+            value: relationshipWithOneselfAndOthersInput?.value || "",
+            valueReason: relationshipWithOneselfAndOthersInput?.getAttribute("data-reason") || ""
+          },
+          {
+            value: attitudeTowardSchoolworkInput?.value || "",
+            valueReason: attitudeTowardSchoolworkInput?.getAttribute("data-reason") || ""
+          }
+        ]
+      };
+    })
+  };
+
+  await setDoc(doc(attendanceCollection, docId), attendanceData);
+}
+
+// 🔹 5. ui.js PANEL TOGGLES + LLSORTABLE HEADERS
+ export function setupPanelToggles() {
+  const inputPanel = document.querySelector('.attendance-input-panel');
+  const inputToggleBtn = document.getElementById('toggleAttendanceInputPanelBtn');
+  const recordPanelContent = document.getElementById('recordPanelContent');
+
+  if (!inputPanel || !inputToggleBtn || !recordPanelContent) {
+    console.warn("Required elements not found.");
+    return;
+  }
+
+  inputToggleBtn.addEventListener('click', () => {
+    const isCollapsed = inputPanel.style.display === 'none' || inputPanel.style.width === '0px';
+
+    if (isCollapsed) {
+      inputPanel.style.display = 'block';
+      inputPanel.style.width = '95%';
+      inputPanel.style.padding = '10px';
+      inputToggleBtn.textContent = '<<<<<';
+      recordPanelContent.style.display = 'none';
+    } else {
+      inputPanel.style.width = '0px';
+      inputPanel.style.padding = '0px';
+      inputPanel.style.display = 'none';
+      inputToggleBtn.textContent = '>>>>>';
+      recordPanelContent.style.display = 'block';
+    }
+  });
+}
+
+export function setupColumnSorting() {
+  document.querySelectorAll(".sortable").forEach(header => {
+    header.addEventListener("click", () => {
+      const table = header.closest("table");
+      const tbody = table.querySelector("tbody");
+      const rows = Array.from(tbody.querySelectorAll("tr"));
+      const index = Array.from(header.parentNode.children).indexOf(header);
+
+      rows.sort((a, b) => {
+        const aText = a.children[index].textContent.trim();
+        const bText = b.children[index].textContent.trim();
+        return aText.localeCompare(bText);
+      });
+
+      tbody.innerHTML = "";
+      rows.forEach(row => tbody.appendChild(row));
+    });
+  });
+}
+
+// 6. main.js — Orchestrator
+(async function initAttendanceApp() {
+  const db = await initializeFirebase();
+  const SectionSelect = document.getElementById("SectionSelect");
+  const studentsTableBody = document.querySelector("#studentsTable tbody");
+  const spinner = document.getElementById("loadingSpinner");
+  const studentsMap = new Map();
+
+  // 1️⃣ Populate section dropdown
+  await populateSections(db, SectionSelect);
+
+  // 2️⃣ Get selected values BEFORE calling populateSavedAttendance
+  const selectedSection = SectionSelect.value;
+  const selectedDate = document.getElementById("attendanceDate").value;
+
+  // 3️⃣ Load saved attendance if date is selected
+  if (selectedSection && selectedDate) {
+    await populateSavedAttendance(db, selectedSection, selectedDate, studentsMap, studentsTableBody);
+  }
+
+  // 4️⃣ Setup UI triggers
+  setupDayTypeTrigger(SectionSelect);
+  setupPanelToggles();
+  setupColumnSorting();
+
+  // 5️⃣ Reload students when section changes
+ SectionSelect.addEventListener("change", async () => {
+  const selectedSection = SectionSelect.value;
+  const selectedDayType = document.getElementById("dayType").value;
+  const selectedDate = document.getElementById("attendanceDate").value;
+
+  // 1️⃣ Load students first
+  await loadStudentsBySection(db, selectedSection, selectedDayType, studentsMap, studentsTableBody);
+
+  // 2️⃣ Then hydrate saved attendance
+  if (selectedDate) {
+    await populateSavedAttendance(db, selectedSection, selectedDate, studentsMap, studentsTableBody);
+  }
 });
 
-    // 🔢 Sort table by CN
-    function sortTableByCN() {
-      const rows = Array.from(studentsTableBody.querySelectorAll("tr"));
-      rows.sort((a, b) => {
-        const aCN = parseInt(a.children[0].textContent.trim()) || 0;
-        const bCN = parseInt(b.children[0].textContent.trim()) || 0;
-        return aCN - bCN;
-      });
-      studentsTableBody.innerHTML = "";
-      rows.forEach(row => studentsTableBody.appendChild(row));
+document.getElementById("attendanceDate").addEventListener("change", async () => {
+  const selectedSection = SectionSelect.value;
+  const selectedDate = document.getElementById("attendanceDate").value;
+  const selectedDayType = document.getElementById("dayType").value;
+
+  if (selectedSection && selectedDate) {
+    await loadStudentsBySection(db, selectedSection, selectedDayType, studentsMap, studentsTableBody);
+    await populateSavedAttendance(db, selectedSection, selectedDate, studentsMap, studentsTableBody);
+  }
+});
+
+  // 6️⃣ Toggle conduct panel visibility
+  document.querySelector('.toggle-conduct-panel').addEventListener('click', function () {
+    const conductPanel = document.querySelector('.conductGradeHeader-pane');
+    const isVisible = conductPanel.style.display !== 'none';
+    conductPanel.style.display = isVisible ? 'none' : 'block';
+    this.textContent = isVisible ? 'Show Description' : 'Hide Description';
+  });
+
+
+// LOAD SAVED ATTENDANCE FROM FIREBASE FOR 
+async function populateSavedAttendance(db, selectedSection, selectedDate, studentsMap, studentsTableBody) {
+  const { getDoc, doc, collection } = await import("https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js");
+
+  const docId = `${selectedSection}_${selectedDate}`;
+  const attendanceRef = doc(collection(db, "attendance"), docId);
+  const attendanceSnap = await getDoc(attendanceRef);
+
+  if (!attendanceSnap.exists()) {
+    console.warn(`⚠️ No attendance record found for ${docId}`);
+    return;
+  }
+
+  const attendanceData = attendanceSnap.data();
+  const statusToRadioValue = {
+    "✔": "P",
+    "A": "A",
+    "L": "L",
+    "/": "A" // fallback if status is slash
+  };
+
+  attendanceData.students.forEach(savedStudent => {
+    const studentId = savedStudent.Idnumber;
+    const statusSymbol = savedStudent.status;
+    const radioValue = statusToRadioValue[statusSymbol];
+
+    const tr = studentsTableBody.querySelector(`input[name="att_${studentId}"]`)?.closest("tr");
+    if (!tr) {
+      console.warn(`❌ No row found for student ID ${studentId}`);
+      return;
     }
 
-    // 🔤 Column sorting
-    document.querySelectorAll(".sortable").forEach(header => {
-      header.addEventListener("click", () => {
-        const table = header.closest("table");
-        const tbody = table.querySelector("tbody");
-        const rows = Array.from(tbody.querySelectorAll("tr"));
-        const index = Array.from(header.parentNode.children).indexOf(header);
-
-        rows.sort((a, b) => {
-          const aText = a.children[index].textContent.trim();
-          const bText = b.children[index].textContent.trim();
-          return aText.localeCompare(bText);
-        });
-
-        tbody.innerHTML = "";
-        rows.forEach(row => tbody.appendChild(row));
-      });
-    });
-
-    // 📅 Day type utility
-    function getDayType(dateStr) {
-      const holidays = {
-        "2025-08-21": "HOL",
-        "2025-11-30": "HOL",
-        // Add more holidays here
-      };
-
-      if (holidays[dateStr]) return holidays[dateStr];
-
-      const dateObj = new Date(dateStr);
-      const day = dateObj.getDay();
-
-      if (day === 0) return "SUN";
-      if (day === 6) return "SAT";
-
-      return null;
+    const radio = tr.querySelector(`input[name="att_${studentId}"][value="${radioValue}"]`);
+    if (radio) {
+      radio.checked = true;
+      radio.dispatchEvent(new Event("change"));
+    } else {
+      console.warn(`⚠️ No matching radio found for status '${statusSymbol}' and student ID ${studentId}`);
     }
 
-    // 🧼 Normalize metadata
-    function normalizeMetadata(student) {
-      return {
-        schoolYear: student.schoolYear?.replace(/–/g, "-").trim(),
-        term: student.term?.trim(),
-        subject: student.subject?.trim(),
-      };
-    }
+    // Hydrate conduct fields
+    const conductGrade = savedStudent.conductGrade || [];
+    const fields = [
+      { name: "prayerLife", index: 0 },
+      { name: "relationshipWithOneselfAndOthers", index: 1 },
+      { name: "attitudeTowardSchoolwork", index: 2 }
+    ];
 
-    // 📨 Save attendance record
-    async function saveAttendanceRecord(students, date, section, schoolYear, term, subject) {
-      const docId = `${section}_${date}`;
-      const attendanceCollection = collection(db, "attendance");
-
-      const dayType = getDayType(date);
-      const isNoClassDay = ["HOL", "ILD", "SAT", "SUN"].includes(dayType);
-
-      const attendanceData = {
-        schoolYear,
-        term,
-        subject,
-        date,
-        section,
-        ...(dayType && { dayType }),
-        students: students.map(student => ({
-          Idnumber: student.idNumber,
-          LastName: student.lastName,
-          firstName: student.firstName,
-          fullName: student.fullName,
-          status: isNoClassDay ? dayType : student.status,
-        })),
-      };
-
-      try {
-        await setDoc(doc(attendanceCollection, docId), attendanceData);
-        console.log("Attendance saved successfully.");
-      } catch (error) {
-        console.error("Error saving attendance:", error);
-      }
-    }
-
-    // 🖱️ Save button handler
-    document.getElementById("saveAttendanceBtn").addEventListener("click", async () => {
-      const dateTaken = document.getElementById("attendanceDate").value;
-      const section = SectionSelect.value;
-      const selectedDayType = document.getElementById("dayType").value;
-      const isNoClassDay = selectedDayType !== "";
-
-      if (!dateTaken || !section) {
-        alert("Please select both a date and a Section.");
-        return;
-      }
-
-      const students = [];
-      const rows = studentsTableBody.querySelectorAll("tr");
-
-      for (const row of rows) {
-        const idNumber = row.querySelector("input[type='radio']").name.replace("att_", "");
-        const status = row.querySelector(".status-display").textContent.trim();
-        if (!studentsMap.has(idNumber)) continue;
-
-        const student = studentsMap.get(idNumber);
-        students.push({
-          idNumber: student.Idnumber,
-          lastName: student.LastName,
-          firstName: student.FirstName,
-          fullName: `${student.LastName}, ${student.FirstName}`,
-          status: isNoClassDay ? selectedDayType : status,
-        });
-      }
-
-      // 🧠 Extract and normalize metadata
-      const firstStudent = studentsMap.values().next().value;
-      const { schoolYear, term, subject } = normalizeMetadata(firstStudent);
-
-      // 🛡️ Validate consistency
-      const metadataSet = new Set();
-      studentsMap.forEach(student => {
-        const meta = normalizeMetadata(student);
-        metadataSet.add(`${meta.schoolYear}_${meta.term}_${meta.subject}`);
-      });
-
-      if (metadataSet.size > 1) {
-        alert("Inconsistent metadata across students in this section.");
-        return;
-      }
-
-      spinner.style.display = "block";
-
-      try {
-        await saveAttendanceRecord(students, dateTaken, section, schoolYear, term, subject);
-        alert("Attendance records saved successfully.");
-      } catch (error) {
-        alert("Error saving attendance.");
-        console.error(error);
-      } finally {
-        spinner.style.display = "none";
+    fields.forEach(({ name, index }) => {
+      const input = tr.querySelector(`input[name="${name}_${studentId}"]`);
+      if (input) {
+        input.value = conductGrade[index]?.value || "";
+        input.setAttribute("data-reason", conductGrade[index]?.valueReason || "");
+        attachReasonPrompt(input);
       }
     });
+  });
 
-    // 🧩 Toggle panel
-    document.querySelector('.toggle-btn').addEventListener('click', function () {
-      const inputPanel = document.querySelector('.attendance-input-panel');
-      const isCollapsed = inputPanel.style.width === '0px';
+  console.log(`✅ Hydrated saved attendance for ${attendanceData.students.length} students on ${selectedDate}`);
+}
+  // 🖱️ Save attendance
+  document.getElementById("saveAttendanceBtn").addEventListener("click", async () => {
+    const dateTaken = document.getElementById("attendanceDate").value;
+    const section = SectionSelect.value;
+    const selectedDayType = document.getElementById("dayType").value;
+    const isNoClassDay = selectedDayType !== "";
 
-      if (isCollapsed) {
-        inputPanel.style.width = '40%';
-        inputPanel.style.padding = '10px';
-        this.textContent = '<<<<<';
+    if (!dateTaken || !section) {
+      alert("Please select both a date and a Section.");
+      return;
+    }
+
+    const students = [];
+    const rows = studentsTableBody.querySelectorAll("tr");
+
+    for (const row of rows) {
+      const idNumber = row.querySelector("input[type='radio']").name.replace("att_", "");
+      const status = row.querySelector(".status-display").textContent.trim();
+      if (!studentsMap.has(idNumber)) continue;
+
+      const student = studentsMap.get(idNumber);
+      const studentRecord = {
+        idNumber: student.Idnumber,
+        lastName: student.LastName,
+        firstName: student.FirstName,
+        fullName: `${student.LastName}, ${student.FirstName}`,
+        status: isNoClassDay ? selectedDayType : status,
+      };
+
+      if (student.passWord !== undefined) {
+        studentRecord.passWord = student.passWord;
       } else {
-        inputPanel.style.width = '0px';
-        inputPanel.style.padding = '0px';
-        this.textContent = '>>>>>';
+        console.warn(`Missing passWord for student ${student.Idnumber}`);
       }
+
+      students.push(studentRecord);
+    }
+
+    const firstStudent = studentsMap.values().next().value;
+    const { schoolYear, term, subject } = normalizeMetadata(firstStudent);
+
+    const metadataSet = new Set();
+    studentsMap.forEach(student => {
+      const meta = normalizeMetadata(student);
+      metadataSet.add(`${meta.schoolYear}_${meta.term}_${meta.subject}`);
     });
-  })();
+
+    if (metadataSet.size > 1) {
+      alert("Inconsistent metadata across students in this section.");
+      return;
+    }
+
+    spinner.style.display = "block";
+
+    try {
+      await saveAttendanceRecord(db, students, dateTaken, section, schoolYear, term, subject, selectedDayType);
+      alert("Attendance records saved successfully.");
+    } catch (error) {
+      alert("Error saving attendance.");
+      console.error(error);
+    } finally {
+      spinner.style.display = "none";
+    }
+  });
+})();
 </script>
 
 <div id="loadingSpinner">
