@@ -343,10 +343,10 @@ async function loadPage(page) {
       };
     })();
 
-      function toggleSubmenu() {
+      window.toggleSubmenu = () => {
         const submenu = document.querySelector('.nav-btn .submenu');
         submenu.style.display = submenu.style.display === 'block' ? 'none' : 'block';
-      }
+      };
   </script>
 </body>
 </html>
