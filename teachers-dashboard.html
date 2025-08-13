@@ -74,13 +74,13 @@
     }
 
     .nav-btn {
-      display: block;
-      padding: 1rem;
-      color: white;
-      text-decoration: none;
-      border-bottom: 1px solid #34495e;
-      cursor: pointer;
-    }
+  position: relative;
+  padding: 10px;
+  background-color: #3498db;
+  color: white;
+  cursor: pointer;
+}
+
 
     .nav-btn:hover {
       background-color: #34495e;
@@ -116,21 +116,41 @@
 .submenu {
   display: none;
   position: absolute;
-  top: 100%;
-  left: 0;
-  background-color: #ecf0f1;
+  top: 100%; /* Hang below the parent */
+  right: 0;  /* Align to the right edge of the parent */
+  background-color: #ffffff;
   border: 1px solid #ccc;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  border-radius: 4px;
+  min-width: 180px;
   z-index: 1000;
 }
 
 .child-btn {
-  padding: 8px 12px;
+  padding: 10px 15px;
   cursor: pointer;
-  white-space: nowrap;
+  color: #2c3e50;
+  border-bottom: 1px solid #eee;
+  transition: background-color 0.2s ease;
+}
+
+.child-btn:last-child {
+  border-bottom: none;
 }
 
 .child-btn:hover {
-  background-color: #bdc3c7;
+  background-color: #f1f1f1;
+}
+.nav-btn::after {
+  content: '';
+  position: absolute;
+  bottom: -6px;
+  right: 10px;
+  width: 0;
+  height: 0;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-top: 6px solid #ffffff;
 }
   </style>
 </head>
