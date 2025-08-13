@@ -342,6 +342,11 @@ async function loadPage(page) {
         loginBtn.textContent = "Login";
       };
     })();
+
+      function toggleSubmenu() {
+        const submenu = document.querySelector('.nav-btn .submenu');
+        submenu.style.display = submenu.style.display === 'block' ? 'none' : 'block';
+      }
   </script>
 </body>
 </html>
