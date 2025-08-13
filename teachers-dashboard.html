@@ -53,7 +53,7 @@
       overflow: hidden;
     }
 
-    .sidebar {
+    .mainNavSidebar {
       width: 150px;
       background-color: #2c3e50;
       color: white;
@@ -61,11 +61,11 @@
       overflow: hidden;
     }
 
-    .sidebar.collapsed {
+    .mainNavSidebar.collapsed {
       width: 60px;
     }
 
-    .sidebar h2, h2 {
+    .mainNavSidebar h2, h2 {
       margin-top:0.1em;
       height: 10px;
       text-align: center;
@@ -122,8 +122,8 @@
   </div>
 
   <div id="dashboardContainer">
-    <div class="sidebar" id="sidebar">
-      <button class="toggle-btn" onclick="toggleSidebar()">☰</button>
+    <div class="mainNavSidebar" id="mainNavSidebar">
+      <button class="toggle-btn" onclick="togglemainNavSidebar()">☰</button>
       <h2>Menu</h2>
       <div class="nav-btn" onclick="loadPage('home')">Home</div>
       <div class="nav-btn" onclick="loadPage('attendance')">Attendance</div>
@@ -163,8 +163,8 @@
 
       let currentTeacher = null;
 
-      function toggleSidebar() {
-        document.getElementById('sidebar').classList.toggle('collapsed');
+      function togglemainNavSidebar() {
+        document.getElementById('mainNavSidebar').classList.toggle('collapsed');
       }
 
       // START OF THE GENERATEPAGEHEADER FUNCTION
@@ -245,7 +245,7 @@ async function loadPage(page) {
 } 
       
       window.loadPage = loadPage;
-      window.toggleSidebar = toggleSidebar;
+      window.togglemainNavSidebar = togglemainNavSidebar;
 
       window.handleLogin = async () => {
         const loginBtn = document.querySelector("#loginForm button");
